@@ -73,6 +73,19 @@ export async function sendBallotEmailAuto(votingState: VotingState): Promise<Aut
   // 2. EmailJS fallback
   if (EMAILJS_SERVICE_ID && EMAILJS_TEMPLATE_ID && EMAILJS_PUBLIC_KEY) {
     try {
+      const templateParams = {
+        to_email: targetEmail,
+        to_name: userName,
+        user_name: userName,
+        user_email: targetEmail,
+        submitted_at: submittedDate,
+        selected_team: ballotPayload.ballot.team,
+        selected_member: ballotPayload.ballot.member,
+        selected_event: ballotPayload.ballot.event,
+        selected_rookie: ballotPayload.ballot.rookie,
+        selected_duo: ballotPayload.ballot.duo,
+      };
+
       await emailjs.send(
         EMAILJS_SERVICE_ID,
         EMAILJS_TEMPLATE_ID,
