@@ -101,17 +101,17 @@ function emailApiPlugin(): Plugin {
                 <h3 style="color: #fbbf24; margin-bottom: 12px;">Official Ballot Selections</h3>
 
                 <div class="ballot-item">
-                  <div class="category-name">Nature Team</div>
+                  <div class="category-name">Best Team</div>
                   <div class="choice-name">${ballot?.team || 'N/A'}</div>
                 </div>
 
                 <div class="ballot-item">
-                  <div class="category-name">Nature Best Member</div>
+                  <div class="category-name">Best Member</div>
                   <div class="choice-name">${ballot?.member || 'N/A'}</div>
                 </div>
 
                 <div class="ballot-item">
-                  <div class="category-name">Nature Best Event</div>
+                  <div class="category-name">Best Event</div>
                   <div class="choice-name">${ballot?.event || 'N/A'}</div>
                 </div>
 

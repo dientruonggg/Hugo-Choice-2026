@@ -33,7 +33,7 @@ export const BallotDrawer: React.FC<BallotDrawerProps> = ({
       filled: Boolean(votingState.userName)
     },
     {
-      title: 'Nature Team',
+      title: 'Best Team',
       value: teamObj ? `${teamObj.icon} ${teamObj.name}` : 'No team selected',
       step: 'team_selection' as ScreenStep,
       filled: Boolean(teamObj)

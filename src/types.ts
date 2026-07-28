@@ -10,10 +10,10 @@ export type ScreenStep =
   | 'submission'
   | 'completed';
 
-export type NatureTeam = 'prs' | 'hc' | 'bnn' | 'niff';
+export type HugoTeam = 'prs' | 'hc' | 'bnn' | 'niff';
 
 export interface TeamInfo {
-  id: NatureTeam;
+  id: HugoTeam;
   name: string;
   icon?: string;
   image?: string;
@@ -53,7 +53,7 @@ export interface VotingState {
   userName: string;
   userEmail?: string;
   userAvatar?: string;
-  selectedTeam: NatureTeam | null;
+  selectedTeam: HugoTeam | null;
   selectedBestMember: string | null;
   selectedBestEvent: string | null;
   selectedRookie: string | null;
@@ -67,7 +67,7 @@ export interface CategoryVotes {
 }
 
 export interface LiveResultsData {
-  teams: Record<NatureTeam, number>;
+  teams: Record<HugoTeam, number>;
   bestMember: CategoryVotes;
   bestEvent: CategoryVotes;
   rookie: CategoryVotes;

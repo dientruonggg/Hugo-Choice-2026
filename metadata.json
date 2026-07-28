@@ -1,6 +1,6 @@
 {
-  "name": "Hugo Award 2024 - Hugo English Club",
-  "description": "An interactive voting and event app for Hugo English Club with nature aesthetic, multi-category voting, team selection, and live results.",
+  "name": "Hugo Award 2026 - Hugo English Club",
+  "description": "An interactive voting and event app for Hugo English Club with multi-category voting, team selection, and live results.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

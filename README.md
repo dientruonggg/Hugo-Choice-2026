@@ -7,16 +7,16 @@
 ## 🌟 Tính Năng Nổi Bật
 
 - 🗳️ **Quy Trình Bình Chọn Multi-Step**: Trải nghiệm bình chọn qua từng danh mục giải thưởng mượt mà:
-  - **Nature Team**: Bình chọn Ban/Đội được yêu thích nhất.
-  - **Nature Best Member**: Thành viên xuất sắc nhất năm.
-  - **Nature Best Event**: Sự kiện ấn tượng nhất năm.
+  - **Best Team**: Bình chọn Ban/Đội được yêu thích nhất.
+  - **Best Member**: Thành viên xuất sắc nhất năm.
+  - **Best Event**: Sự kiện ấn tượng nhất năm.
   - **The Rookie**: Gương mặt mới triển vọng nhất.
   - **The Perfect Duo**: Cặp đôi ăn ý nhất.
 - 🔐 **Xác Thực Tài Khoản Google (Firebase Auth)**: Đăng nhập bằng Gmail để lưu trữ lá phiếu và đảm bảo tính chính xác.
 - 📊 **Real-time Live Leaderboard**: Xem bảng xếp hạng kết quả bình chọn theo thời gian thực (dành cho Admin/BTC).
 - 🖼️ **Tải Xuất Phiếu Bầu Dạng PNG**: Tự động tạo và tải xuống thẻ kết quả bình chọn hình ảnh PNG chất lượng cao để chia sẻ lên Mạng xã hội.
 - ✉️ **Gửi Email Xác Nhận Tự Động**: Hệ thống gửi email xác nhận phiếu bầu chi tiết đến Gmail của người tham gia qua Nodemailer / EmailJS.
-- 🎨 **Giao Diện & Hiệu Ứng Sống Động**: Thiết kế phong cách thiên nhiên với hiệu ứng hạt bướm động (`ButterflyParticle`), hiệu ứng pháo hoa confetti khi gửi phiếu và âm thanh tương tác.
+- 🎨 **Giao Diện & Hiệu Ứng Sống Động**: Thiết kế nổi bật với hiệu ứng hạt bướm động (`ButterflyParticle`), hiệu ứng pháo hoa confetti khi gửi phiếu và âm thanh tương tác.
 
 ---
 

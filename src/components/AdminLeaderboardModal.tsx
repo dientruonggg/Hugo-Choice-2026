@@ -53,10 +53,10 @@ export const AdminLeaderboardModal: React.FC<AdminLeaderboardModalProps> = ({
 
         {/* Content Body */}
         <div className="p-6 overflow-y-auto space-y-8 flex-1">
-          {/* Nature Teams Stats */}
+          {/* Teams Stats */}
           <div>
             <h3 className="font-cinzel text-sm uppercase tracking-widest text-amber-300 mb-3 flex items-center">
-              <Users className="w-4 h-4 mr-2" /> Nature Teams Distribution
+              <Users className="w-4 h-4 mr-2" /> Teams Distribution
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {TEAMS.map(team => {
@@ -83,7 +83,7 @@ export const AdminLeaderboardModal: React.FC<AdminLeaderboardModalProps> = ({
           {/* Best Member */}
           <div>
             <h3 className="font-cinzel text-sm uppercase tracking-widest text-amber-300 mb-3 flex items-center">
-              <Sparkles className="w-4 h-4 mr-2" /> Nature Best Member
+              <Sparkles className="w-4 h-4 mr-2" /> Best Member
             </h3>
             <div className="space-y-2">
               {BEST_MEMBER_CANDIDATES.map(m => {
@@ -113,7 +113,7 @@ export const AdminLeaderboardModal: React.FC<AdminLeaderboardModalProps> = ({
           {/* Best Event */}
           <div>
             <h3 className="font-cinzel text-sm uppercase tracking-widest text-amber-300 mb-3 flex items-center">
-              <Calendar className="w-4 h-4 mr-2" /> Nature Best Event
+              <Calendar className="w-4 h-4 mr-2" /> Best Event
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {BEST_EVENTS.map(e => {

@@ -1,13 +1,13 @@
 import React from 'react';
-import { NatureTeam } from '../../types';
+import { HugoTeam } from '../../types';
 import { TEAMS } from '../../data/mockData';
 import { soundFx } from '../../utils/soundEffects';
 import { ButterflyParticle } from '../ButterflyParticle';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface TeamSelectionScreenProps {
-  selectedTeam: NatureTeam | null;
-  onSelectTeam: (team: NatureTeam) => void;
+  selectedTeam: HugoTeam | null;
+  onSelectTeam: (team: HugoTeam) => void;
   onBack: () => void;
   onNext: () => void;
 }
@@ -18,7 +18,7 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
   onBack,
   onNext
 }) => {
-  const handleSelect = (teamId: NatureTeam) => {
+  const handleSelect = (teamId: HugoTeam) => {
     soundFx.playSelect();
     onSelectTeam(teamId);
   };
@@ -35,7 +35,7 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
       {/* Title */}
       <motion.div layout className="text-center my-auto">
         <h2 className="font-cinzel text-4xl sm:text-6xl md:text-7xl font-bold tracking-wider text-white text-stroke-gold drop-shadow-[0_8px_20px_rgba(0,0,0,0.8)] uppercase">
-          NATURE TEAM<br />SELECTION
+          TEAM<br />SELECTION
         </h2>
       </motion.div>
 
@@ -129,7 +129,7 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
           onClick={() => {
             if (!selectedTeam) {
               soundFx.playClick();
-              alert('Please select a Nature Team to proceed');
+              alert('Please select a Team to proceed');
               return;
             }
             soundFx.playSelect();

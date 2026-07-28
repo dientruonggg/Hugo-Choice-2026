@@ -78,9 +78,9 @@ XÁC NHẬN PHIẾU BÌNH CHỌN CHÍNH THỨC
 • Thời gian nộp: ${votingState.submittedAt ? new Date(votingState.submittedAt).toLocaleString('vi-VN') : new Date().toLocaleString('vi-VN')}
 
 CHI TIẾT PHIẾU BÌNH CHỌN:
-1. Nature Team: ${teamObj ? `${teamObj.icon} ${teamObj.name}` : 'N/A'}
-2. Nature Best Member: ${memberObj ? memberObj.name : 'N/A'}
-3. Nature Best Event: ${eventObj ? `${eventObj.icon} ${eventObj.name}` : 'N/A'}
+1. Best Team: ${teamObj ? `${teamObj.icon} ${teamObj.name}` : 'N/A'}
+2. Best Member: ${memberObj ? memberObj.name : 'N/A'}
+3. Best Event: ${eventObj ? `${eventObj.icon} ${eventObj.name}` : 'N/A'}
 4. The Rookie Award: ${rookieObj ? rookieObj.name : 'N/A'}
 5. The Perfect Duo: ${duoObj ? duoObj.name : 'N/A'}
 
@@ -224,7 +224,7 @@ Hugo English Club`;
               )}
 
               <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex justify-between items-center">
-                <span className="text-amber-300/80">Nature Team:</span>
+                <span className="text-amber-300/80">Best Team:</span>
                 <span className="font-bold text-white">{teamObj ? `${teamObj.icon} ${teamObj.name}` : 'N/A'}</span>
               </div>
 

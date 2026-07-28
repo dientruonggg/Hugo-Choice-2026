@@ -1,4 +1,4 @@
-import { VotingState, NatureTeam } from '../types';
+import { VotingState, HugoTeam } from '../types';
 import { saveBallotToFirestore } from './firebase';
 
 const STORAGE_KEY_SAVED_BALLOTS = 'hugo_award_saved_ballots_map';
@@ -8,7 +8,7 @@ export interface SavedBallotRecord {
   userEmail?: string;
   userName: string;
   userAvatar?: string;
-  selectedTeam: NatureTeam | null;
+  selectedTeam: HugoTeam | null;
   selectedBestMember: string | null;
   selectedBestEvent: string | null;
   selectedRookie: string | null;

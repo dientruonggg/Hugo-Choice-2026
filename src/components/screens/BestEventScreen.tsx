@@ -27,7 +27,7 @@ export const BestEventScreen: React.FC<BestEventScreenProps> = ({
       {/* Title Header */}
       <div className="text-center mb-4">
         <h2 className="font-cinzel text-4xl sm:text-6xl md:text-7xl font-bold tracking-wider text-white text-stroke-gold drop-shadow-[0_8px_20px_rgba(0,0,0,0.8)] uppercase">
-          NATURE<br />BEST EVENT
+          BEST EVENT
         </h2>
         <h3 className="font-cinzel text-lg sm:text-2xl font-semibold tracking-widest text-amber-200 mt-1 uppercase">
           VOTING SCREEN

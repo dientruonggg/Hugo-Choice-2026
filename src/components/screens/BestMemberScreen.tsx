@@ -27,7 +27,7 @@ export const BestMemberScreen: React.FC<BestMemberScreenProps> = ({
       {/* Title Header */}
       <div className="text-center mb-2">
         <h2 className="font-cinzel text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-wider text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] uppercase">
-          NATURE BEST MEMBER<br />VOTING SCREEN
+          BEST MEMBER<br />VOTING SCREEN
         </h2>
       </div>
 
