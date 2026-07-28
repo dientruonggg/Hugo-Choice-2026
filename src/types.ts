@@ -1,0 +1,76 @@
+export type ScreenStep =
+  | 'landing'
+  | 'process'
+  | 'name_input'
+  | 'team_selection'
+  | 'best_member'
+  | 'best_event'
+  | 'rookie'
+  | 'perfect_duo'
+  | 'submission'
+  | 'completed';
+
+export type NatureTeam = 'prs' | 'hc' | 'bnn' | 'niff';
+
+export interface TeamInfo {
+  id: NatureTeam;
+  name: string;
+  icon?: string;
+  image?: string;
+  activeImage?: string;
+  description: string;
+  color: string;
+  glow: string;
+}
+
+export interface Candidate {
+  id: string;
+  name: string;
+  avatar?: string;
+  role?: string;
+}
+
+export interface EventOption {
+  id: string;
+  name: string;
+  icon?: string;
+  avatar?: string;
+  description?: string;
+  tag?: string;
+}
+
+export interface DuoPair {
+  id: string;
+  name: string;
+  avatar?: string;
+  personA1?: string;
+  personA2?: string;
+  personB1?: string;
+  personB2?: string;
+}
+
+export interface VotingState {
+  userName: string;
+  userEmail?: string;
+  userAvatar?: string;
+  selectedTeam: NatureTeam | null;
+  selectedBestMember: string | null;
+  selectedBestEvent: string | null;
+  selectedRookie: string | null;
+  selectedDuo: string | null;
+  isSubmitted: boolean;
+  submittedAt?: string;
+}
+
+export interface CategoryVotes {
+  [candidateId: string]: number;
+}
+
+export interface LiveResultsData {
+  teams: Record<NatureTeam, number>;
+  bestMember: CategoryVotes;
+  bestEvent: CategoryVotes;
+  rookie: CategoryVotes;
+  perfectDuo: CategoryVotes;
+  totalSubmissions: number;
+}
