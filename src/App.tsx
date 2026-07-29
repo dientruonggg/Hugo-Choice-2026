@@ -8,7 +8,6 @@ import { AdminLeaderboardModal } from './components/AdminLeaderboardModal';
 import { GoogleAuthModal } from './components/GoogleAuthModal';
 import { subscribeToAuthChanges, logoutGoogle } from './utils/firebase';
 import { saveUserBallot, getSavedBallotForUser } from './utils/ballotStorage';
-import { Agentation } from 'agentation';
 
 import { LandingScreen } from './components/screens/LandingScreen';
 import { ProcessModalScreen } from './components/screens/ProcessModalScreen';
@@ -332,9 +331,6 @@ export default function App() {
           handleUserLogin(user);
         }}
       />
-
-      {/* Visual Annotation & Feedback for UI editing */}
-      <Agentation />
     </BackgroundLandscape>
   );
 }

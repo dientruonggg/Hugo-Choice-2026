@@ -15,6 +15,7 @@ node_modules/
 # Vite / Tooling Cache
 .vite/
 .cache/
+.tools/
 
 # Environment variables (do not commit secrets)
 .env

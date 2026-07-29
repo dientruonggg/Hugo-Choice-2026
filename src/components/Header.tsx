@@ -25,8 +25,40 @@ export const Header: React.FC<HeaderProps> = ({
   onLogout
 }) => {
   const [isMuted, setIsMuted] = React.useState(soundFx.getMuted());
-  const [isBgMusicPlaying, setIsBgMusicPlaying] = React.useState(false);
+  const [isBgMusicPlaying, setIsBgMusicPlaying] = React.useState(true);
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
+
+  React.useEffect(() => {
+    const startAudio = () => {
+      if (audioRef.current && audioRef.current.paused) {
+        audioRef.current.play().then(() => {
+          setIsBgMusicPlaying(true);
+        }).catch(() => {
+          // Autoplay blocked by browser policy until user gesture
+        });
+      }
+    };
+
+    startAudio();
+
+    const handleUserGesture = () => {
+      startAudio();
+      window.removeEventListener('click', handleUserGesture);
+      window.removeEventListener('keydown', handleUserGesture);
+      window.removeEventListener('touchstart', handleUserGesture);
+    };
+
+    window.addEventListener('click', handleUserGesture);
+    window.addEventListener('keydown', handleUserGesture);
+    window.addEventListener('touchstart', handleUserGesture);
+
+    return () => {
+      window.removeEventListener('click', handleUserGesture);
+      window.removeEventListener('keydown', handleUserGesture);
+      window.removeEventListener('touchstart', handleUserGesture);
+    };
+  }, []);
+
   const handleToggleSound = () => {
     const muted = soundFx.toggleMute();
     setIsMuted(muted);
