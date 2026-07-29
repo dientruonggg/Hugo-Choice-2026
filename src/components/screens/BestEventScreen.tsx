@@ -23,19 +23,19 @@ export const BestEventScreen: React.FC<BestEventScreenProps> = ({
   };
 
   return (
-    <div className="relative flex-1 flex flex-col justify-between w-full min-h-[80vh] px-4 py-6">
+    <div className="relative flex-1 flex flex-col justify-between w-full h-full min-h-0 py-2 sm:py-3 px-3 sm:px-6">
       {/* Title Header */}
-      <div className="text-center mb-4">
-        <h2 className="font-cinzel text-4xl sm:text-6xl md:text-7xl font-bold tracking-wider text-white text-stroke-gold drop-shadow-[0_8px_20px_rgba(0,0,0,0.8)] uppercase">
+      <div className="text-center mb-2 sm:mb-3 shrink-0">
+        <h2 className="font-cinzel text-2xl xs:text-3xl sm:text-5xl md:text-6xl font-bold tracking-wider text-white text-stroke-gold drop-shadow-[0_8px_20px_rgba(0,0,0,0.8)] uppercase">
           BEST EVENT
         </h2>
-        <h3 className="font-cinzel text-lg sm:text-2xl font-semibold tracking-widest text-amber-200 mt-1 uppercase">
+        <h3 className="font-cinzel text-xs sm:text-xl font-semibold tracking-widest text-amber-200 mt-1 uppercase">
           VOTING SCREEN
         </h3>
       </div>
 
       {/* Main Interactive Wooden Signboards Multi-Column Grid */}
-      <div className="relative my-auto w-full max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 py-2">
+      <div className="relative flex-1 min-h-0 overflow-y-auto pr-1 w-full max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 py-2 custom-scrollbar">
         {BEST_EVENTS.map((event) => {
           const isSelected = selectedEventId === event.id;
 
@@ -43,10 +43,10 @@ export const BestEventScreen: React.FC<BestEventScreenProps> = ({
             <button
               key={event.id}
               onClick={() => handleSelect(event.id)}
-              className={`w-full p-4 rounded-2xl wood-button transition-all duration-300 flex flex-col justify-between cursor-pointer relative ${
+              className={`w-full p-3.5 rounded-2xl wood-button transition-all duration-300 flex flex-col justify-between cursor-pointer relative text-left ${
                 isSelected
-                  ? 'ring-4 ring-amber-300 scale-105 shadow-[0_0_40px_rgba(251,191,36,0.6)]'
-                  : 'hover:scale-102'
+                  ? 'ring-4 ring-amber-300 scale-102 shadow-[0_0_40px_rgba(251,191,36,0.6)]'
+                  : 'hover:scale-[1.01]'
               }`}
             >
               <div className="flex items-center space-x-3 mb-2 overflow-hidden">
@@ -54,13 +54,13 @@ export const BestEventScreen: React.FC<BestEventScreenProps> = ({
                   <img
                     src={event.avatar}
                     alt={event.name}
-                    className="w-12 h-12 rounded-xl object-cover border-2 border-amber-300 shadow-md shrink-0"
+                    className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl object-cover border-2 border-amber-300 shadow-md shrink-0"
                   />
                 ) : (
-                  <span className="text-3xl drop-shadow">{event.icon}</span>
+                  <span className="text-2xl sm:text-3xl drop-shadow">{event.icon}</span>
                 )}
-                <div className="text-left overflow-hidden">
-                  <span className="font-cinzel font-extrabold text-sm sm:text-base text-amber-100 uppercase tracking-wide block truncate">
+                <div className="text-left overflow-hidden pr-6">
+                  <span className="font-cinzel font-extrabold text-xs sm:text-sm text-amber-100 uppercase tracking-wide block truncate">
                     {event.name}
                   </span>
                   {event.tag && (
@@ -78,7 +78,7 @@ export const BestEventScreen: React.FC<BestEventScreenProps> = ({
               )}
 
               {isSelected && (
-                <div className="absolute top-2 right-2 w-7 h-7 rounded-full bg-amber-400 text-black flex items-center justify-center shrink-0 shadow-lg">
+                <div className="absolute top-2 right-2 w-6.5 h-6.5 rounded-full bg-amber-400 text-black flex items-center justify-center shrink-0 shadow-lg">
                   <Check className="w-4 h-4 stroke-[3]" />
                 </div>
               )}
@@ -88,13 +88,13 @@ export const BestEventScreen: React.FC<BestEventScreenProps> = ({
       </div>
 
       {/* Navigation Controls */}
-      <div className="w-full flex justify-between items-center pt-6 border-t border-white/10">
+      <div className="w-full flex justify-between items-center pt-3 sm:pt-4 border-t border-white/10 shrink-0 mt-auto">
         <button
           onClick={() => {
             soundFx.playClick();
             onBack();
           }}
-          className="px-8 py-2.5 rounded-full border border-white/50 bg-black/30 hover:bg-black/50 text-white font-serif-display text-lg sm:text-xl transition-all shadow-lg"
+          className="px-8 py-2.5 rounded-full border border-white/50 bg-black/30 hover:bg-black/50 text-white font-serif-display text-base sm:text-lg transition-all shadow-lg"
         >
           Back
         </button>
@@ -109,7 +109,7 @@ export const BestEventScreen: React.FC<BestEventScreenProps> = ({
             soundFx.playSelect();
             onNext();
           }}
-          className={`px-8 py-2.5 rounded-full border border-white/80 font-serif-display text-lg sm:text-xl transition-all shadow-lg cursor-pointer ${
+          className={`px-8 py-2.5 rounded-full border border-white/80 font-serif-display text-base sm:text-lg transition-all shadow-lg cursor-pointer ${
             selectedEventId
               ? 'bg-white/90 hover:bg-white text-gray-900 font-medium hover:scale-105'
               : 'bg-white/40 text-gray-800 opacity-60'

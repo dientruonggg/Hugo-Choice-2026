@@ -54,43 +54,59 @@ export const BEST_MEMBER_CANDIDATES: Candidate[] = [
 export const BEST_EVENTS: EventOption[] = [
   {
     id: 'e1',
-    name: 'Hugo Camping 2024: Zenith of Mid-day',
-    icon: '🏕️',
-    avatar: '/assets/profile_image/TheBestEvent/Camping.png',
-    description: 'Under the starry night sky with bonfire acoustic sing-alongs and storytelling.',
-    tag: 'OUTDOOR RETREAT'
+    name: 'Live Stream: ÔN THI TIẾNG ANH ĐẦU VÀO MIỄN PHÍ',
+    icon: '📺',
+    avatar: '/assets/profile_image/TheBestEvent/Workshop.png',
+    description: 'Special online livestream helping members ace English placement exams.',
+    tag: 'ONLINE LIVESTREAM'
   },
   {
     id: 'e2',
-    name: 'Workshop: Angle Of View',
-    icon: '📷',
-    avatar: '/assets/profile_image/TheBestEvent/angel.png',
-    description: 'Perspective sharing and visual storytelling workshop session.',
-    tag: 'SKILL BUILDING'
+    name: '[HUGO 𝐂𝐇𝐑𝐈𝐒𝐓𝐌𝐀𝐒 𝟐𝟎𝟐𝟓] - 𝐓𝐇𝐄 𝐆𝐎𝐋𝐃𝐄𝐍 𝐇𝐎𝐔𝐑 🎄✨',
+    icon: '🎄',
+    avatar: '/assets/profile_image/TheBestEvent/Camping.png',
+    description: 'Magical Christmas party with heartwarming activities and golden memories.',
+    tag: 'HOLIDAY CELEBRATION'
   },
   {
     id: 'e3',
-    name: 'Welcome Newbies Winter 2023: Finding the Epiphany',
-    icon: '❄️',
-    avatar: '/assets/profile_image/TheBestEvent/WN.png',
-    description: 'Warm welcome gathering for new club members with interactive games.',
-    tag: 'NETWORKING'
+    name: '[𝐎𝐍𝐋𝐈𝐍𝐄 𝐓𝐀𝐋𝐊𝐒𝐇𝐎𝐖 - 𝐇𝐔𝐆𝐎 𝐄𝐍𝐆𝐋𝐈𝐒𝐇 𝐂𝐋𝐔𝐁] | TẤM VÉ VIỄN PHƯƠNG',
+    icon: '🎙️',
+    avatar: '/assets/profile_image/TheBestEvent/angel.png',
+    description: 'Inspiring online talkshow sharing valuable overseas and career journeys.',
+    tag: 'TALKSHOW'
   },
   {
     id: 'e4',
-    name: 'Hugo Writing Competition: The Year in Ink',
-    icon: '✒️',
-    avatar: '/assets/profile_image/TheBestEvent/yearinink.png',
-    description: 'Creative writing contest inspiring members to express their stories.',
-    tag: 'COMPETITION'
+    name: '[𝐖𝐄𝐋𝐂𝐎𝐌𝐄 𝐍𝐄𝐖𝐁𝐈𝐄 𝟐𝟎𝟐𝟔] - 𝐄𝐂𝐋𝐈𝐏𝐒𝐄',
+    icon: '🌘',
+    avatar: '/assets/profile_image/TheBestEvent/WN.png',
+    description: 'Grand welcome celebration for the 2026 rookie cohort.',
+    tag: 'WELCOME EVENT'
   },
   {
     id: 'e5',
-    name: "Improv Workshop: Thank God, you're here - Season 2",
-    icon: '🎭',
-    avatar: '/assets/profile_image/TheBestEvent/Workshop.png',
-    description: 'Hilarious and engaging improvisational speaking workshop.',
-    tag: 'IMPROV WORKSHOP'
+    name: '[𝐇𝐔𝐆𝐎 𝐖𝐎𝐑𝐊𝐒𝐇𝐎𝐏] - 𝐈𝐍𝐒𝐈𝐃𝐄𝐑 𝐒𝐄𝐂𝐑𝐄𝐓𝐒 🔥',
+    icon: '🔥',
+    avatar: '/assets/profile_image/TheBestEvent/yearinink.png',
+    description: 'Exclusive skill-building workshop unlocking insider communication secrets.',
+    tag: 'WORKSHOP'
+  },
+  {
+    id: 'e6',
+    name: '📣 [𝐇𝐔𝐆𝐎 𝐂𝐀𝐌𝐏𝐈𝐍𝐆 𝟐𝟎𝟐𝟔 - 𝐄𝐌𝐁𝐄𝐑𝐋𝐈𝐍𝐄] 📣',
+    icon: '🏕️',
+    avatar: '/assets/profile_image/TheBestEvent/Camping.png',
+    description: 'Unforgettable outdoor camping retreat around Emberline campfire.',
+    tag: 'CAMPING RETREAT'
+  },
+  {
+    id: 'e7',
+    name: '[𝐖𝐄𝐋𝐂𝐎𝐌𝐄 𝐍𝐄𝐖𝐁𝐈𝐄 𝟐𝟎𝟐5] - FLAREON',
+    icon: '✨',
+    avatar: '/assets/profile_image/TheBestEvent/WN.png',
+    description: 'Fiery and vibrant welcome gathering for the 2025 club members.',
+    tag: 'WELCOME EVENT'
   }
 ];
 

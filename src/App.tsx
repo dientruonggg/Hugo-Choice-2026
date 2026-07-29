@@ -207,7 +207,7 @@ export default function App() {
       />
 
       {/* Screen Views */}
-      <main className="flex-1 flex flex-col justify-center w-full">
+      <main className="flex-1 flex flex-col justify-between w-full min-h-0">
         {currentStep === 'landing' && (
           <LandingScreen
             userName={votingState.userName}
@@ -226,7 +226,7 @@ export default function App() {
           <NameInputScreen
             initialName={votingState.userName}
             onBack={() => navigateTo('process')}
-            onNext={(name) => {
+            onNext={(name, teamId) => {
               const existingBallot = getSavedBallotForUser(votingState.userEmail, name);
               if (existingBallot) {
                 setVotingState({
@@ -242,7 +242,11 @@ export default function App() {
                   submittedAt: existingBallot.submittedAt
                 });
               } else {
-                setVotingState(prev => ({ ...prev, userName: name }));
+                setVotingState(prev => ({
+                  ...prev,
+                  userName: name,
+                  selectedTeam: teamId || prev.selectedTeam
+                }));
               }
               navigateTo('team_selection');
             }}

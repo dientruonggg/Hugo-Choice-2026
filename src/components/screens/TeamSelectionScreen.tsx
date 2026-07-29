@@ -26,27 +26,22 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
   const currentTeamObj = TEAMS.find(t => t.id === selectedTeam);
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, scale: 0.9, y: 20 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className="relative flex-1 flex flex-col items-center justify-between w-full min-h-[80vh] px-4 py-6"
-    >
+    <div className="relative flex-1 flex flex-col items-center justify-between w-full h-full min-h-0 py-2 sm:py-3 px-3 sm:px-6">
       {/* Title */}
-      <motion.div layout className="text-center my-auto">
+      <div className="text-center my-auto shrink-0">
         <h2 className="font-cinzel text-4xl sm:text-6xl md:text-7xl font-bold tracking-wider text-white text-stroke-gold drop-shadow-[0_8px_20px_rgba(0,0,0,0.8)] uppercase">
           TEAM<br />SELECTION
         </h2>
-      </motion.div>
+      </div>
 
       {/* 4 Team Orbs Selection Row */}
-      <motion.div layout className="relative my-auto w-full max-w-4xl flex flex-wrap items-center justify-center gap-6 sm:gap-10">
+      <div className="relative my-auto w-full max-w-4xl flex flex-wrap items-center justify-center gap-6 sm:gap-10">
         {TEAMS.map((team) => {
           const isSelected = selectedTeam === team.id;
           const imgSrc = isSelected ? (team.activeImage || team.image) : team.image;
 
           return (
-            <motion.div layout key={team.id} className="relative flex flex-col items-center">
+            <div key={team.id} className="relative flex flex-col items-center">
               {/* Floating Butterfly resting on selected team */}
               {isSelected && (
                 <div className="absolute -top-10 -right-4 z-30 animate-float-slow pointer-events-none">
@@ -89,22 +84,21 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
               }`}>
                 {team.name}
               </span>
-            </motion.div>
+            </div>
           );
         })}
-      </motion.div>
+      </div>
 
       {/* Team Description Callout */}
       <AnimatePresence mode="wait">
         {currentTeamObj && (
           <motion.div 
             key={currentTeamObj.id}
-            layout
             initial={{ opacity: 0, scale: 0.8, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.8, y: -20 }}
             transition={{ duration: 0.5, type: 'spring', bounce: 0.4 }}
-            className="text-center my-2 p-3 sm:p-4 rounded-2xl bg-black/40 backdrop-blur-md border border-amber-300/30 max-w-md"
+            className="text-center my-2 p-3 sm:p-4 rounded-2xl bg-black/40 backdrop-blur-md border border-amber-300/30 max-w-md shrink-0"
           >
             <p className="font-serif-display text-sm sm:text-base text-amber-100 italic">
               "{currentTeamObj.description}"
@@ -114,7 +108,7 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
       </AnimatePresence>
 
       {/* Bottom Back & Next Buttons */}
-      <motion.div layout className="w-full flex justify-between items-center pt-4 border-t border-white/10">
+      <div className="w-full flex justify-between items-center pt-3 sm:pt-4 border-t border-white/10 shrink-0 mt-auto">
         <button
           onClick={() => {
             soundFx.playClick();
@@ -143,7 +137,7 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
         >
           Next
         </button>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 };
