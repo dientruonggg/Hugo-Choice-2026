@@ -3,7 +3,7 @@ import { ALL_MEMBERS, filterMembers, ClubMember } from '../../data/membersData';
 import { HugoTeam } from '../../types';
 import { soundFx } from '../../utils/soundEffects';
 import { ButterflyParticle } from '../ButterflyParticle';
-import { Check, Search, UserCheck, Sparkles, Award } from 'lucide-react';
+import { Check, Search, UserCheck, Sparkles, Award, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface BestMemberScreenProps {
   selectedCandidateId: string | null;
@@ -41,7 +41,43 @@ export const BestMemberScreen: React.FC<BestMemberScreenProps> = ({
   };
 
   return (
-    <div className="relative flex-1 flex flex-col justify-between w-full h-full min-h-0 py-2 sm:py-3 px-3 sm:px-6 overflow-hidden">
+    <div className="relative flex-1 flex flex-col justify-between w-full h-full min-h-0 py-2 sm:py-3 px-3 sm:px-6 overflow-y-auto custom-scrollbar pb-64 sm:pb-72">
+      {/* TOP NAVIGATION BAR */}
+      <div className="w-full max-w-5xl mx-auto flex justify-between items-center mb-2 px-1 shrink-0 z-20">
+        <button
+          type="button"
+          onClick={() => {
+            soundFx.playClick();
+            onBack();
+          }}
+          className="px-4 py-1.5 sm:px-6 sm:py-2 rounded-full border-2 border-white/80 bg-black/70 hover:bg-black/90 text-white font-serif-display text-xs sm:text-base flex items-center gap-1 cursor-pointer transition-all shadow-md active:scale-95 select-none"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          <span>Back</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            if (!selectedCandidateId) {
+              soundFx.playClick();
+              alert('Please select a candidate to vote for');
+              return;
+            }
+            soundFx.playSelect();
+            onNext();
+          }}
+          className={`px-4 py-1.5 sm:px-6 sm:py-2 rounded-full border-2 border-white/80 font-serif-display text-xs sm:text-base flex items-center gap-1 cursor-pointer transition-all shadow-md active:scale-95 select-none ${
+            selectedCandidateId
+              ? 'bg-gradient-to-r from-amber-300 via-amber-200 to-white text-gray-950 font-bold hover:scale-105'
+              : 'bg-white/40 text-gray-800 opacity-60'
+          }`}
+        >
+          <span>Next</span>
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
+
       {/* Title Header */}
       <div className="text-center mb-2 sm:mb-3 shrink-0">
         <h2 className="font-cinzel text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-wider text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] uppercase">
@@ -203,6 +239,9 @@ export const BestMemberScreen: React.FC<BestMemberScreenProps> = ({
           Next
         </button>
       </div>
+
+      {/* 200px - 300px Extra Bottom Scroll Space for Mobile Accessibility */}
+      <div className="w-full h-48 sm:h-64 shrink-0 pointer-events-none" />
     </div>
   );
 };

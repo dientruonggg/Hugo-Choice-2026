@@ -49,6 +49,7 @@ export const TEAMS: TeamInfo[] = [
 
 export const INITIAL_TEAM_MOMENTS: TeamMoment[] = [];
 
+
 export const BEST_EVENTS: EventOption[] = [
   {
     id: 'e1',

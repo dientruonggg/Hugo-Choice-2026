@@ -2,7 +2,7 @@ import React from 'react';
 import { BEST_EVENTS } from '../../data/mockData';
 import { soundFx } from '../../utils/soundEffects';
 import { ButterflyParticle } from '../ButterflyParticle';
-import { Check } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface BestEventScreenProps {
   selectedEventId: string | null;
@@ -23,7 +23,43 @@ export const BestEventScreen: React.FC<BestEventScreenProps> = ({
   };
 
   return (
-    <div className="relative flex-1 flex flex-col justify-between w-full h-full min-h-0 py-2 sm:py-3 px-3 sm:px-6">
+    <div className="relative flex-1 flex flex-col justify-between w-full h-full min-h-0 py-2 sm:py-3 px-3 sm:px-6 overflow-y-auto custom-scrollbar pb-64 sm:pb-72">
+      {/* TOP NAVIGATION BAR */}
+      <div className="w-full max-w-5xl mx-auto flex justify-between items-center mb-2 px-1 shrink-0 z-20">
+        <button
+          type="button"
+          onClick={() => {
+            soundFx.playClick();
+            onBack();
+          }}
+          className="px-4 py-1.5 sm:px-6 sm:py-2 rounded-full border-2 border-white/80 bg-black/70 hover:bg-black/90 text-white font-serif-display text-xs sm:text-base flex items-center gap-1 cursor-pointer transition-all shadow-md active:scale-95 select-none"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          <span>Back</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            if (!selectedEventId) {
+              soundFx.playClick();
+              alert('Please select an event option to vote');
+              return;
+            }
+            soundFx.playSelect();
+            onNext();
+          }}
+          className={`px-4 py-1.5 sm:px-6 sm:py-2 rounded-full border-2 border-white/80 font-serif-display text-xs sm:text-base flex items-center gap-1 cursor-pointer transition-all shadow-md active:scale-95 select-none ${
+            selectedEventId
+              ? 'bg-gradient-to-r from-amber-300 via-amber-200 to-white text-gray-950 font-bold hover:scale-105'
+              : 'bg-white/40 text-gray-800 opacity-60'
+          }`}
+        >
+          <span>Next</span>
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
+
       {/* Title Header */}
       <div className="text-center mb-2 sm:mb-3 shrink-0">
         <h2 className="font-cinzel text-2xl xs:text-3xl sm:text-5xl md:text-6xl font-bold tracking-wider text-white text-stroke-gold drop-shadow-[0_8px_20px_rgba(0,0,0,0.8)] uppercase">
@@ -50,15 +86,7 @@ export const BestEventScreen: React.FC<BestEventScreenProps> = ({
               }`}
             >
               <div className="flex items-center space-x-3 mb-2 overflow-hidden">
-                {/* {event.avatar ? (
-                  <img
-                    src={event.avatar}
-                    alt={event.name}
-                    className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl object-cover border-2 border-amber-300 shadow-md shrink-0"
-                  />
-                ) : ( */}
-                  <span className="text-2xl sm:text-3xl drop-shadow">{event.icon}</span>
-                {/* )} */}
+                <span className="text-2xl sm:text-3xl drop-shadow">{event.icon}</span>
                 <div className="text-left overflow-hidden pr-6">
                   <span className="font-cinzel font-extrabold text-xs sm:text-sm text-amber-100 uppercase tracking-wide block truncate">
                     {event.name}
@@ -118,6 +146,9 @@ export const BestEventScreen: React.FC<BestEventScreenProps> = ({
           Next
         </button>
       </div>
+
+      {/* 200px - 300px Extra Bottom Scroll Space for Mobile Accessibility */}
+      <div className="w-full h-48 sm:h-64 shrink-0 pointer-events-none" />
     </div>
   );
 };

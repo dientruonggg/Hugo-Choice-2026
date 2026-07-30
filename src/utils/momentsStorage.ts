@@ -8,7 +8,7 @@ export const getStoredMoments = (): TeamMoment[] => {
     const saved = localStorage.getItem(MOMENTS_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) {
+      if (Array.isArray(parsed)) {
         return parsed;
       }
     }
@@ -48,4 +48,13 @@ export const toggleLikeMoment = (momentId: string): TeamMoment[] => {
   });
   saveStoredMoments(updated);
   return updated;
+};
+
+export const resetStoredMoments = (): TeamMoment[] => {
+  try {
+    localStorage.setItem(MOMENTS_KEY, JSON.stringify([]));
+  } catch {
+    // Ignore
+  }
+  return INITIAL_TEAM_MOMENTS;
 };

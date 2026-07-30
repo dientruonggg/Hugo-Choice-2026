@@ -4,7 +4,7 @@ import html2canvas from 'html2canvas';
 import { VotingState, ScreenStep } from '../../types';
 import { soundFx } from '../../utils/soundEffects';
 import { ButterflyParticle } from '../ButterflyParticle';
-import { Check, Sparkles, Award, RotateCcw, Share2, Printer, Vote, Download, Mail } from 'lucide-react';
+import { Check, Sparkles, Award, RotateCcw, Share2, Printer, Vote, Download, Mail, ChevronLeft } from 'lucide-react';
 import { sendBallotEmailAuto } from '../../utils/emailService';
 import {
   getResolvedTeamName,
@@ -305,7 +305,22 @@ export const SubmissionScreen: React.FC<SubmissionScreenProps> = ({
   ];
 
   return (
-    <div className="relative flex-1 flex flex-col justify-between items-center w-full min-h-[85vh] px-4 py-6 text-center max-w-4xl mx-auto overflow-y-auto">
+    <div className="relative flex-1 flex flex-col justify-between items-center w-full min-h-[85vh] px-4 py-6 text-center max-w-4xl mx-auto overflow-y-auto custom-scrollbar pb-64 sm:pb-72">
+      {/* TOP NAVIGATION BAR */}
+      <div className="w-full flex justify-between items-center mb-2 px-1 shrink-0 z-20">
+        <button
+          type="button"
+          onClick={() => {
+            soundFx.playClick();
+            onNavigate('perfect_duo');
+          }}
+          className="px-4 py-1.5 sm:px-6 sm:py-2 rounded-full border-2 border-white/80 bg-black/70 hover:bg-black/90 text-white font-serif-display text-xs sm:text-base flex items-center gap-1 cursor-pointer transition-all shadow-md active:scale-95 select-none"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          <span>Back to Perfect Duo</span>
+        </button>
+      </div>
+
       {/* Title Header matching Image 7 */}
       <div className="my-2 z-20">
         <h2 
@@ -416,6 +431,9 @@ export const SubmissionScreen: React.FC<SubmissionScreenProps> = ({
           </button>
         </div>
       </div>
+
+      {/* 200px - 300px Extra Bottom Scroll Space for Mobile Accessibility */}
+      <div className="w-full h-48 sm:h-64 shrink-0 pointer-events-none" />
 
       {/* Ballot Submission Receipt Modal */}
       {showReceiptModal && (

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { soundFx } from '../../utils/soundEffects';
 import { ALL_MEMBERS, filterMembers, ClubMember } from '../../data/membersData';
 import { HugoTeam } from '../../types';
-import { Search, UserCheck, ChevronDown, Sparkles, UserPlus, Download, User } from 'lucide-react';
+import { Search, UserCheck, ChevronDown, Sparkles, UserPlus, Download, User, ChevronLeft, ChevronRight } from 'lucide-react';
 import { addGuestName, getGuestEntries, exportGuestListTxt } from '../../utils/guestStorage';
 
 interface NameInputScreenProps {
@@ -86,7 +86,35 @@ export const NameInputScreen: React.FC<NameInputScreenProps> = ({
   };
 
   return (
-    <div className="relative flex-1 flex flex-col justify-between w-full h-full min-h-0 py-2 sm:py-3 px-3 sm:px-6 overflow-y-auto">
+    <div className="relative flex-1 flex flex-col justify-between w-full h-full min-h-0 py-2 sm:py-3 px-3 sm:px-6 overflow-y-auto custom-scrollbar pb-64 sm:pb-72">
+      {/* TOP NAVIGATION BAR */}
+      <div className="w-full max-w-2xl mx-auto flex justify-between items-center mb-2 px-1 shrink-0 z-20">
+        <button
+          type="button"
+          onClick={() => {
+            soundFx.playClick();
+            onBack();
+          }}
+          className="px-4 py-1.5 sm:px-6 sm:py-2 rounded-full border-2 border-white/80 bg-black/70 hover:bg-black/90 text-white font-serif-display text-xs sm:text-base flex items-center gap-1 cursor-pointer transition-all shadow-md active:scale-95 select-none"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          <span>Back</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={handleProceed}
+          className={`px-4 py-1.5 sm:px-6 sm:py-2 rounded-full border-2 border-white/80 font-serif-display text-xs sm:text-base flex items-center gap-1 cursor-pointer transition-all shadow-md active:scale-95 select-none ${
+            name.trim()
+              ? 'bg-gradient-to-r from-amber-300 via-amber-200 to-white text-gray-950 font-bold hover:scale-105'
+              : 'bg-white/40 text-gray-800 opacity-60'
+          }`}
+        >
+          <span>Next</span>
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
+
       {/* Title Header */}
       <div className="text-center mb-2 shrink-0">
         <h2 className="font-cinzel text-3xl sm:text-5xl md:text-6xl font-bold tracking-wider text-white text-stroke-gold drop-shadow-[0_8px_20px_rgba(0,0,0,0.8)] uppercase">
@@ -275,6 +303,9 @@ export const NameInputScreen: React.FC<NameInputScreenProps> = ({
           Next
         </button>
       </div>
+
+      {/* 200px - 300px Extra Bottom Scroll Space for Mobile Accessibility */}
+      <div className="w-full h-48 sm:h-64 shrink-0 pointer-events-none" />
     </div>
   );
 };
