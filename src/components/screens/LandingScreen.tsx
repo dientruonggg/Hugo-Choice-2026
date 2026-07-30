@@ -55,19 +55,19 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ userName, onStart,
       
       {/* Left Typography Block - "WHAT'S NEXT? HUGO AWARD 2026" */}
       <div
-        className="absolute top-4 sm:top-12 md:top-1/2 left-0 right-0 md:right-auto md:left-6 lg:left-16 md:-translate-y-1/2 flex flex-col items-center md:items-start text-center md:text-left z-20 max-w-2xl mx-auto md:mx-0 px-4 md:px-0"
+        className="absolute top-12 sm:top-12 md:top-1/2 left-0 right-0 md:right-auto md:left-6 lg:left-16 md:-translate-y-1/2 flex flex-col items-center md:items-start text-center md:text-left z-20 max-w-2xl mx-auto md:mx-0 px-4 md:px-0"
         data-purpose="hero-typography"
       >
-        <h2 className="font-cinzel text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight text-white tracking-tight drop-shadow-[0_8px_20px_rgba(0,0,0,0.8)] text-stroke-gold uppercase mb-2">
-          WHAT'S<br className="hidden md:block" /> NEXT?
+        <h2 className="font-cinzel text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight text-white tracking-tight drop-shadow-[0_8px_20px_rgba(0,0,0,0.8)] text-stroke-gold uppercase mb-1 sm:mb-2">
+          WHAT'S<br /> NEXT?
         </h2>
-        <h3 className="font-sans-clean text-sm sm:text-lg md:text-xl font-extrabold uppercase tracking-[0.2em] text-amber-200 drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]">
+        <h3 className="font-sans-clean text-xs sm:text-lg md:text-xl font-extrabold uppercase tracking-[0.2em] text-amber-200 drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]">
           HUGO AWARD 2026
         </h3>
       </div>
 
       {/* Center Interactive Orb "Start" Button */}
-      <div className="relative flex flex-col items-center justify-center z-20 mt-32 md:mt-0" data-purpose="interactive-orb">
+      <div className="relative flex flex-col items-center justify-center z-20 mt-16 sm:mt-32 md:mt-0" data-purpose="interactive-orb">
         {/* Floating & Flapping Butterfly assets near Orb */}
         <div className="absolute -top-14 -left-12 z-30 animate-float-slow">
           <img

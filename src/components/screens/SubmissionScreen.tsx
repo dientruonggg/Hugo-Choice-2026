@@ -420,10 +420,11 @@ export const SubmissionScreen: React.FC<SubmissionScreenProps> = ({
       {/* Ballot Submission Receipt Modal */}
       {showReceiptModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
-          <div 
-            ref={receiptRef} 
-            className="w-full max-w-lg border-2 border-amber-400/80 rounded-3xl p-6 sm:p-8 shadow-[0_0_60px_rgba(251,191,36,0.45)] text-white text-left relative overflow-hidden backdrop-blur-2xl bg-[#101b13]"
-          >
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl custom-scrollbar">
+            <div 
+              ref={receiptRef} 
+              className="w-full border-2 border-amber-400/80 rounded-3xl p-6 sm:p-8 shadow-[0_0_60px_rgba(251,191,36,0.45)] text-white text-left relative overflow-hidden backdrop-blur-2xl bg-[#101b13]"
+            >
             {/* Site Background Image (Explicit img tag for 100% html2canvas compatibility) */}
             <img 
               src="/assets/bg.png" 
@@ -557,6 +558,7 @@ export const SubmissionScreen: React.FC<SubmissionScreenProps> = ({
               </div>
             </div>
           </div>
+        </div>
         </div>
       )}
     </div>

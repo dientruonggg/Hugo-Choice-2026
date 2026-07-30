@@ -16,7 +16,7 @@ export const BackgroundLandscape: React.FC<BackgroundLandscapeProps> = ({
   const effectBg = "/assets/effect.png";
 
   return (
-    <div className="relative h-screen max-h-screen w-full overflow-hidden bg-[#101b13] flex flex-col selection:bg-amber-300 selection:text-black">
+    <div className="relative min-h-screen w-full overflow-x-hidden bg-[#101b13] flex flex-col selection:bg-amber-300 selection:text-black">
       {/* Fixed Background Image Layer */}
       <div
         className="fixed inset-0 bg-cover bg-center bg-no-repeat transition-all duration-1000 scale-105 pointer-events-none z-0"
@@ -58,9 +58,9 @@ export const BackgroundLandscape: React.FC<BackgroundLandscapeProps> = ({
         </div>
       </div>
 
-      {/* Main Content Container (Flex constrained to viewport) */}
-      <div className="relative z-10 flex-1 flex flex-col w-full h-full min-h-0 overflow-hidden">
-        <div className="flex-1 flex flex-col justify-between w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2 sm:py-3 h-full min-h-0 overflow-hidden">
+      {/* Main Content Container (Flex constrained to viewport but can grow) */}
+      <div className="relative z-10 flex-1 flex flex-col w-full min-h-screen overflow-x-hidden">
+        <div className="flex-1 flex flex-col justify-between w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2 sm:py-3 min-h-screen overflow-x-hidden">
           {children}
         </div>
       </div>

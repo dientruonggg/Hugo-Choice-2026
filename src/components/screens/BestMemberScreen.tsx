@@ -173,7 +173,7 @@ export const BestMemberScreen: React.FC<BestMemberScreenProps> = ({
       </div>
 
       {/* Fixed Navigation Buttons - Pulled up on portrait screen orientation */}
-      <div className="w-full max-w-6xl flex justify-between items-center pt-3 sm:pt-4 pb-4 sm:pb-8 mb-[22vh] sm:mb-6 border-t border-white/15 shrink-0 px-4 sm:px-8">
+      <div className="w-full max-w-6xl flex justify-between items-center pt-2 sm:pt-3 border-t border-white/15 shrink-0 px-4 sm:px-8">
         <button
           onClick={() => {
             soundFx.playClick();

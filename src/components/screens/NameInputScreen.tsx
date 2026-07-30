@@ -86,7 +86,7 @@ export const NameInputScreen: React.FC<NameInputScreenProps> = ({
   };
 
   return (
-    <div className="relative flex-1 flex flex-col justify-between w-full h-full min-h-0 py-2 sm:py-3 px-3 sm:px-6">
+    <div className="relative flex-1 flex flex-col justify-between w-full h-full min-h-0 py-2 sm:py-3 px-3 sm:px-6 overflow-y-auto">
       {/* Title Header */}
       <div className="text-center mb-2 shrink-0">
         <h2 className="font-cinzel text-3xl sm:text-5xl md:text-6xl font-bold tracking-wider text-white text-stroke-gold drop-shadow-[0_8px_20px_rgba(0,0,0,0.8)] uppercase">
@@ -149,7 +149,7 @@ export const NameInputScreen: React.FC<NameInputScreenProps> = ({
 
           {/* Team Filter Pills inside dropdown header */}
           {isOpenSuggestions && (
-            <div className="absolute top-full left-0 right-0 mt-2 z-50 rounded-2xl bg-gray-950/95 border-2 border-amber-300/60 shadow-2xl backdrop-blur-xl overflow-hidden animate-fade-in">
+            <div className="relative md:absolute md:top-full md:left-0 md:right-0 w-full mt-2 z-50 rounded-2xl bg-gray-950/95 border-2 border-amber-300/60 shadow-2xl backdrop-blur-xl overflow-hidden animate-fade-in">
               <div className="p-2.5 border-b border-white/10 bg-black/40 flex items-center justify-between gap-2 overflow-x-auto">
                 <span className="text-xs text-amber-200/80 font-serif-display shrink-0 font-semibold">Lọc Đội Thành Viên:</span>
                 <div className="flex gap-1">
@@ -253,7 +253,7 @@ export const NameInputScreen: React.FC<NameInputScreenProps> = ({
       </div>
 
       {/* Navigation Buttons - Pulled up on portrait screen orientation */}
-      <div className="w-full max-w-6xl flex justify-between items-center pt-3 sm:pt-4 pb-4 sm:pb-8 mb-[22vh] sm:mb-6 border-t border-white/15 shrink-0 px-4 sm:px-8">
+      <div className="w-full max-w-6xl flex justify-between items-center pt-2 sm:pt-3 border-t border-white/15 shrink-0 px-4 sm:px-8">
         <button
           onClick={() => {
             soundFx.playClick();

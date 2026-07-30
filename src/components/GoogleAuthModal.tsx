@@ -90,8 +90,9 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-      <div className="w-full max-w-md bg-[#132217] border-2 border-amber-400/60 rounded-3xl p-6 sm:p-8 shadow-2xl text-white relative overflow-hidden">
-        {/* Close Button */}
+      <div className="w-full max-w-md max-h-[90vh] overflow-y-auto custom-scrollbar rounded-3xl">
+        <div className="w-full bg-[#132217] border-2 border-amber-400/60 rounded-3xl p-6 sm:p-8 shadow-2xl text-white relative overflow-hidden">
+          {/* Close Button */}
         <button
           onClick={() => {
             soundFx.playClick();
@@ -208,6 +209,7 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
             <span>Bỏ qua (Chưa đăng nhập)</span>
           </button>
         </div>
+      </div>
       </div>
     </div>
   );

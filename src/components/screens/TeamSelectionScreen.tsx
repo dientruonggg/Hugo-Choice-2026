@@ -33,6 +33,18 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
   const [newCaption, setNewCaption] = useState('');
   const [newAuthor, setNewAuthor] = useState('');
   const [newTag, setNewTag] = useState('');
+  const [newImage, setNewImage] = useState('');
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const currentTeamObj = TEAMS.find(t => t.id === activeTeamId) || TEAMS[0];
   const activeMoments = moments.filter(m => m.teamId === activeTeamId);
@@ -64,7 +76,7 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
 
     addTeamMoment({
       teamId: activeTeamId,
-      imageUrl: '',
+      imageUrl: newImage,
       caption: newCaption.trim(),
       author: newAuthor.trim() || 'Thành viên Hugo',
       date: 'Vừa xong',
@@ -77,10 +89,11 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
     setNewCaption('');
     setNewAuthor('');
     setNewTag('');
+    setNewImage('');
   };
 
   return (
-    <div className="relative flex-1 flex flex-col items-center justify-between w-full h-full min-h-0 py-2 sm:py-3 px-3 sm:px-6 overflow-hidden">
+    <div className="relative flex-1 flex flex-col items-center justify-between w-full h-full min-h-0 py-2 sm:py-3 px-3 sm:px-6 overflow-y-auto">
       {/* Top Header - Compact for Mobile */}
       <div className="text-center shrink-0 mb-1.5 sm:mb-3">
         <h2 className="font-cinzel text-xl sm:text-4xl md:text-5xl font-extrabold tracking-wider text-white text-stroke-gold drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] uppercase leading-tight">
@@ -401,7 +414,7 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
       </div>
 
       {/* Footer Navigation Controls - Positioned at 2/3 of screen height */}
-      <div className="w-full max-w-6xl flex justify-between items-center pt-3 sm:pt-4 pb-4 sm:pb-8 mb-[22vh] sm:mb-6 border-t border-amber-300/30 shrink-0 px-4 sm:px-8">
+      <div className="w-full max-w-6xl flex justify-between items-center pt-2 sm:pt-3 border-t border-amber-300/30 shrink-0 px-4 sm:px-8">
         <button
           onClick={() => {
             soundFx.playClick();
@@ -431,6 +444,79 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
           Next
         </button>
       </div>
+
+      {/* Add Moment Modal */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm overflow-y-auto">
+          <div className="min-h-full flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-gray-900 border-2 border-amber-400/50 rounded-2xl w-full max-w-md p-5 shadow-2xl relative"
+            >
+              <button
+                onClick={() => setIsAddModalOpen(false)}
+                className="absolute top-4 right-4 text-white/50 hover:text-white"
+              >
+              <X className="w-6 h-6" />
+            </button>
+            <h3 className="text-xl font-bold text-amber-300 font-cinzel mb-4">Đăng Khoảnh Khắc</h3>
+            <form onSubmit={handleAddMomentSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm text-white/80 mb-1">Cảm nghĩ / Lời chúc *</label>
+                <textarea
+                  value={newCaption}
+                  onChange={e => setNewCaption(e.target.value)}
+                  className="w-full bg-black/50 border border-white/20 rounded-xl p-3 text-white focus:border-amber-400 focus:outline-none h-24"
+                  placeholder="Viết gì đó..."
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-white/80 mb-1">Tên của bạn</label>
+                <input
+                  type="text"
+                  value={newAuthor}
+                  onChange={e => setNewAuthor(e.target.value)}
+                  className="w-full bg-black/50 border border-white/20 rounded-xl p-3 text-white focus:border-amber-400 focus:outline-none"
+                  placeholder="Khách mời"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-white/80 mb-1">Tag (ví dụ: Vui vẻ, Đáng yêu...)</label>
+                <input
+                  type="text"
+                  value={newTag}
+                  onChange={e => setNewTag(e.target.value)}
+                  className="w-full bg-black/50 border border-white/20 rounded-xl p-3 text-white focus:border-amber-400 focus:outline-none"
+                  placeholder="Khoảnh khắc Team"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-white/80 mb-1">Ảnh khoảnh khắc (tùy chọn)</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="w-full text-sm text-white/60 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-amber-400 file:text-black hover:file:bg-amber-300 cursor-pointer"
+                />
+                {newImage && (
+                  <div className="mt-3 w-full h-32 rounded-xl overflow-hidden border border-white/20">
+                    <img src={newImage} alt="Preview" className="w-full h-full object-cover" />
+                  </div>
+                )}
+              </div>
+              <button
+                type="submit"
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 to-amber-200 text-black font-bold mt-2"
+              >
+                Đăng lên
+              </button>
+            </form>
+          </motion.div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
