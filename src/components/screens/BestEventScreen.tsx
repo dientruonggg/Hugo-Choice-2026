@@ -50,15 +50,15 @@ export const BestEventScreen: React.FC<BestEventScreenProps> = ({
               }`}
             >
               <div className="flex items-center space-x-3 mb-2 overflow-hidden">
-                {event.avatar ? (
+                {/* {event.avatar ? (
                   <img
                     src={event.avatar}
                     alt={event.name}
                     className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl object-cover border-2 border-amber-300 shadow-md shrink-0"
                   />
-                ) : (
+                ) : ( */}
                   <span className="text-2xl sm:text-3xl drop-shadow">{event.icon}</span>
-                )}
+                {/* )} */}
                 <div className="text-left overflow-hidden pr-6">
                   <span className="font-cinzel font-extrabold text-xs sm:text-sm text-amber-100 uppercase tracking-wide block truncate">
                     {event.name}
@@ -87,14 +87,14 @@ export const BestEventScreen: React.FC<BestEventScreenProps> = ({
         })}
       </div>
 
-      {/* Navigation Controls */}
-      <div className="w-full flex justify-between items-center pt-3 sm:pt-4 border-t border-white/10 shrink-0 mt-auto">
+      {/* Navigation Controls - Pulled up on portrait screen orientation */}
+      <div className="w-full max-w-6xl flex justify-between items-center pt-3 sm:pt-4 pb-4 sm:pb-8 mb-[22vh] sm:mb-6 border-t border-white/15 shrink-0 px-4 sm:px-8">
         <button
           onClick={() => {
             soundFx.playClick();
             onBack();
           }}
-          className="px-8 py-2.5 rounded-full border border-white/50 bg-black/30 hover:bg-black/50 text-white font-serif-display text-base sm:text-lg transition-all shadow-lg"
+          className="px-6 py-2 sm:px-9 sm:py-2.5 min-w-[95px] sm:min-w-[130px] rounded-full border-2 border-white/90 bg-black/60 hover:bg-black/80 text-white font-serif-display text-base sm:text-xl transition-all shadow-[0_4px_20px_rgba(0,0,0,0.6)] cursor-pointer"
         >
           Back
         </button>
@@ -109,7 +109,7 @@ export const BestEventScreen: React.FC<BestEventScreenProps> = ({
             soundFx.playSelect();
             onNext();
           }}
-          className={`px-8 py-2.5 rounded-full border border-white/80 font-serif-display text-base sm:text-lg transition-all shadow-lg cursor-pointer ${
+          className={`px-6 py-2 sm:px-9 sm:py-2.5 min-w-[95px] sm:min-w-[130px] rounded-full border-2 border-white/90 font-serif-display text-base sm:text-xl transition-all shadow-[0_4px_20px_rgba(0,0,0,0.6)] cursor-pointer ${
             selectedEventId
               ? 'bg-white/90 hover:bg-white text-gray-900 font-medium hover:scale-105'
               : 'bg-white/40 text-gray-800 opacity-60'

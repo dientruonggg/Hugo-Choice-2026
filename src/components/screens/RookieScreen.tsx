@@ -54,7 +54,7 @@ export const RookieScreen: React.FC<RookieScreenProps> = ({
       {/* Main Content Layout */}
       <div className="relative flex-1 flex flex-col min-h-0 max-w-5xl mx-auto w-full py-1">
         {/* Search & Team Filter Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 mb-3 bg-black/60 p-2.5 sm:p-3 rounded-2xl backdrop-blur-md border border-amber-300/50 shadow-2xl w-full shrink-0">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 mb-3 bg-black/60 p-2.5 sm:p-3 rounded-2xl backdrop-blur-md border border-amber-300/50 shadow-2xl w-full min-w-0 max-w-full shrink-0">
           {/* Search Box */}
           <div className="relative w-full sm:w-56 md:w-64 shrink-0">
             <input
@@ -68,7 +68,7 @@ export const RookieScreen: React.FC<RookieScreenProps> = ({
           </div>
 
           {/* Team Filter Pills (Order: All -> Power Rangers -> Heroes Company -> Banana -> Nifflers) */}
-          <div className="flex flex-row items-center justify-between sm:justify-end gap-1 sm:gap-1.5 w-full sm:w-auto max-w-full">
+          <div className="flex flex-row items-center justify-start sm:justify-end gap-1.5 w-full min-w-0 max-w-full overflow-x-auto custom-scrollbar pb-1.5 pt-0.5 px-1">
             <button
               type="button"
               onClick={() => {
@@ -171,14 +171,14 @@ export const RookieScreen: React.FC<RookieScreenProps> = ({
         </div>
       </div>
 
-      {/* Fixed Navigation Buttons */}
-      <div className="w-full flex justify-between items-center pt-3 sm:pt-4 border-t border-white/10 shrink-0 mt-auto">
+      {/* Fixed Navigation Buttons - Pulled up on portrait screen orientation */}
+      <div className="w-full max-w-6xl flex justify-between items-center pt-3 sm:pt-4 pb-4 sm:pb-8 mb-[22vh] sm:mb-6 border-t border-white/15 shrink-0 px-4 sm:px-8">
         <button
           onClick={() => {
             soundFx.playClick();
             onBack();
           }}
-          className="px-8 py-2.5 rounded-full border border-white/50 bg-black/30 hover:bg-black/50 text-white font-serif-display text-lg sm:text-xl transition-all shadow-lg"
+          className="px-6 py-2 sm:px-9 sm:py-2.5 min-w-[95px] sm:min-w-[130px] rounded-full border-2 border-white/90 bg-black/60 hover:bg-black/80 text-white font-serif-display text-base sm:text-xl transition-all shadow-[0_4px_20px_rgba(0,0,0,0.6)] cursor-pointer"
         >
           Back
         </button>
@@ -193,7 +193,7 @@ export const RookieScreen: React.FC<RookieScreenProps> = ({
             soundFx.playSelect();
             onNext();
           }}
-          className={`px-8 py-2.5 rounded-full border border-white/80 font-serif-display text-lg sm:text-xl transition-all shadow-lg cursor-pointer ${
+          className={`px-6 py-2 sm:px-9 sm:py-2.5 min-w-[95px] sm:min-w-[130px] rounded-full border-2 border-white/90 font-serif-display text-base sm:text-xl transition-all shadow-[0_4px_20px_rgba(0,0,0,0.6)] cursor-pointer ${
             selectedRookieId
               ? 'bg-white/90 hover:bg-white text-gray-900 font-medium hover:scale-105'
               : 'bg-white/40 text-gray-800 opacity-60'

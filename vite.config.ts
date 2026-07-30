@@ -66,8 +66,6 @@ function emailApiPlugin(): Plugin {
 
             const sender = process.env.SMTP_FROM || '"Hugo Award 2026" <no-reply@hugoenglishclub.com>';
             const name = userName || 'Voter';
-            const submittedAt = ballot?.submittedAt ? new Date(ballot.submittedAt).toLocaleString('vi-VN') : new Date().toLocaleString('vi-VN');
-
             const htmlContent = generateBallotEmailHtml({ userEmail, userName, ballot });
 
             const info = await transporter.sendMail({
@@ -79,9 +77,6 @@ function emailApiPlugin(): Plugin {
 
             const previewUrl = nodemailer.getTestMessageUrl(info);
             console.log(`[Hugo Email API] Direct system email dispatched to: ${userEmail}. Message ID: ${info.messageId}`);
-            if (previewUrl) {
-              console.log(`[Hugo Email API] Test Email Preview Link: ${previewUrl}`);
-            }
 
             res.statusCode = 200;
             res.setHeader('Content-Type', 'application/json');
@@ -114,15 +109,17 @@ export default defineConfig(() => {
     build: {
       rollupOptions: {
         output: {
-          entryFileNames: 'assets/[name].js',
-          chunkFileNames: 'assets/[name].js',
-          assetFileNames: 'assets/[name].[ext]',
+          entryFileNames: 'assets/[name]-[hash].js',
+          chunkFileNames: 'assets/[name]-[hash].js',
+          assetFileNames: 'assets/[name]-[hash].[ext]',
         },
       },
     },
     server: {
       hmr: process.env.DISABLE_HMR !== 'true',
-      watch: process.env.DISABLE_HMR === 'true' ? null : {},
+      watch: process.env.DISABLE_HMR === 'true' ? null : {
+        ignored: ['**/dist/**'],
+      },
     },
   };
 });

@@ -545,7 +545,7 @@ export const SubmissionScreen: React.FC<SubmissionScreenProps> = ({
                     className="py-2.5 px-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-sans-clean text-xs font-bold flex items-center justify-center space-x-1 transition-colors cursor-pointer border border-white/20"
                   >
                     <RotateCcw className="w-4 h-4 text-amber-300 shrink-0" />
-                    <span>New Ballot</span>
+                    <span>Revote</span>
                   </button>
                 </div>
 

@@ -44,7 +44,7 @@ export function getResolvedRookieName(val: string | null, fallback = 'N/A'): str
 
 export function getResolvedDuoName(val: string | null, fallback = 'N/A'): string {
   if (!val) return fallback;
-  const parts = val.split(/\s*[-&]\s*/);
+  const parts = val.split(/\s*&\s*/);
   if (parts.length >= 2) {
     const memA = getMemberByIdOrName(parts[0]);
     const memB = getMemberByIdOrName(parts[1]);

@@ -25,7 +25,7 @@ export const PerfectDuoScreen: React.FC<PerfectDuoScreenProps> = ({
   onNext
 }) => {
   // Parse existing duo selection if available
-  const initialParts = selectedDuoId ? selectedDuoId.split(/\s*[-&]\s*/) : [];
+  const initialParts = selectedDuoId ? selectedDuoId.split(/\s*&\s*/) : [];
   const [personA, setPersonA] = useState<string>(initialParts[0] || '');
   const [personB, setPersonB] = useState<string>(initialParts[1] || '');
 
@@ -252,14 +252,14 @@ export const PerfectDuoScreen: React.FC<PerfectDuoScreenProps> = ({
         </div>
       </div>
 
-      {/* Navigation Controls */}
-      <div className="w-full flex justify-between items-center pt-3 sm:pt-4 border-t border-white/10 shrink-0 mt-auto">
+      {/* Navigation Controls - Pulled up on portrait screen orientation */}
+      <div className="w-full max-w-6xl flex justify-between items-center pt-3 sm:pt-4 pb-4 sm:pb-8 mb-[22vh] sm:mb-6 border-t border-white/15 shrink-0 px-4 sm:px-8">
         <button
           onClick={() => {
             soundFx.playClick();
             onBack();
           }}
-          className="px-8 py-2.5 rounded-full border border-white/50 bg-black/30 hover:bg-black/50 text-white font-serif-display text-lg sm:text-xl transition-all shadow-lg"
+          className="px-6 py-2 sm:px-9 sm:py-2.5 min-w-[95px] sm:min-w-[130px] rounded-full border-2 border-white/90 bg-black/60 hover:bg-black/80 text-white font-serif-display text-base sm:text-xl transition-all shadow-[0_4px_20px_rgba(0,0,0,0.6)] cursor-pointer"
         >
           Back
         </button>
@@ -274,7 +274,7 @@ export const PerfectDuoScreen: React.FC<PerfectDuoScreenProps> = ({
             soundFx.playSelect();
             onNext();
           }}
-          className={`px-8 py-2.5 rounded-full border border-white/80 font-serif-display text-lg sm:text-xl transition-all shadow-lg cursor-pointer ${
+          className={`px-6 py-2 sm:px-9 sm:py-2.5 min-w-[95px] sm:min-w-[130px] rounded-full border-2 border-white/90 font-serif-display text-base sm:text-xl transition-all shadow-[0_4px_20px_rgba(0,0,0,0.6)] cursor-pointer ${
             personA && personB
               ? 'bg-white/90 hover:bg-white text-gray-900 font-medium hover:scale-105'
               : 'bg-white/40 text-gray-800 opacity-60'

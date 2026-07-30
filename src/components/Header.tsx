@@ -1,7 +1,20 @@
 import React from 'react';
 import { ScreenStep, VotingState } from '../types';
 import { soundFx } from '../utils/soundEffects';
-import { Volume2, VolumeX, Vote, BarChart2, RotateCcw, Music } from 'lucide-react';
+import { 
+  Volume2, 
+  VolumeX, 
+  Vote, 
+  BarChart2, 
+  Music, 
+  Menu, 
+  X, 
+  Home, 
+  FileText, 
+  LogOut, 
+  Sparkles,
+  ChevronRight
+} from 'lucide-react';
 
 interface HeaderProps {
   currentStep: ScreenStep;
@@ -26,6 +39,7 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const [isMuted, setIsMuted] = React.useState(soundFx.getMuted());
   const [isBgMusicPlaying, setIsBgMusicPlaying] = React.useState(true);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
 
   React.useEffect(() => {
@@ -87,7 +101,7 @@ export const Header: React.FC<HeaderProps> = ({
   ].filter(Boolean).length;
 
   return (
-    <header className="sticky top-2 z-40 flex items-center justify-between w-[96%] max-w-6xl mx-auto px-4 sm:px-6 py-2 sm:py-2.5 bg-transparent bg-opacity-0 transition-all duration-300" data-purpose="site-header">
+    <header className="sticky top-0 z-40 w-full lg:max-w-6xl lg:mx-auto lg:px-6 lg:py-2.5 transition-all duration-300" data-purpose="site-header">
       {/* Background Audio */}
       <audio 
         ref={audioRef} 
@@ -97,166 +111,412 @@ export const Header: React.FC<HeaderProps> = ({
         onPlay={() => setIsBgMusicPlaying(true)}
         onPause={() => setIsBgMusicPlaying(false)}
       />
-      
-      {/* Brand Title & Hugo Logo */}
-      <div
-        onClick={() => onNavigate('landing')}
-        className="flex items-center space-x-3 cursor-pointer group"
-        data-purpose="brand-logo"
-      >
-        {/* Prominent Hugo Logo Icon with Glowing Golden Aura */}
-        <div className="relative w-[4.5rem] h-[4.5rem] sm:w-[5.25rem] sm:h-[5.25rem] md:w-24 md:h-24 flex items-center justify-center rounded-full bg-white shadow-[0_0_20px_rgba(255,255,255,0.5)] group-hover:scale-105 transition-transform duration-300 animate-float-slow overflow-hidden border-2 border-amber-300">
-          <img
-            src="/assets/logo.png"
-            alt="Hugo English Club Logo"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = '/assets/hugo_award_2024.png';
-            }}
-            className="w-full h-full object-cover scale-[1.5] bg-white"
-          />
+
+      {/* Top Header Bar - Transparent background */}
+      <div className="flex items-center justify-between w-full bg-transparent p-0 border-none shadow-none">
+        
+        {/* Brand Title & Hugo Logo */}
+        <div
+          onClick={() => {
+            soundFx.playClick();
+            onNavigate('landing');
+          }}
+          className="flex items-center space-x-2.5 sm:space-x-3 cursor-pointer group"
+          data-purpose="brand-logo"
+        >
+          {/* Prominent Hugo Logo Icon with Glowing Golden Aura */}
+          <div className="relative w-9 h-9 sm:w-11 sm:h-11 lg:w-16 lg:h-16 flex items-center justify-center rounded-full bg-white shadow-[0_0_15px_rgba(251,191,36,0.5)] group-hover:scale-105 transition-transform duration-300 overflow-hidden border-2 border-amber-400 shrink-0">
+            <img
+              src="/assets/logo.png"
+              alt="Hugo English Club Logo"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/assets/hugo_award_2024.png';
+              }}
+              className="w-full h-full object-cover scale-[1.4] bg-white"
+            />
+          </div>
+
+          <div className="flex flex-col">
+            <h1 className="font-cinzel text-xs sm:text-sm lg:text-xl font-extrabold tracking-wider text-amber-200 lg:text-white text-shadow-elegant drop-shadow-md group-hover:text-amber-300 transition-colors leading-tight">
+              HUGO ENGLISH CLUB
+            </h1>
+            <p className="font-serif-display italic text-[0.6rem] sm:text-xs text-amber-300/80 tracking-wide hidden sm:block">
+              Light up your fire
+            </p>
+          </div>
         </div>
 
-        <div className="flex flex-col">
-          <h1 className="font-cinzel text-base sm:text-xl md:text-2xl font-extrabold tracking-wider text-white text-shadow-elegant drop-shadow-md group-hover:text-amber-300 transition-colors">
-            HUGO ENGLISH CLUB
-          </h1>
-          <p className="font-serif-display italic text-[0.65rem] sm:text-xs text-amber-200/90 tracking-wide hidden sm:block">
-            Light up your fire
-          </p>
+        {/* Mobile Hamburger Menu Toggle (< lg) */}
+        <div className="lg:hidden flex items-center shrink-0">
+          <button
+            onClick={() => {
+              soundFx.playClick();
+              setIsMobileMenuOpen(!isMobileMenuOpen);
+            }}
+            className="relative px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500/30 via-amber-400/20 to-amber-500/30 hover:bg-amber-400/40 border-2 border-amber-400/60 text-amber-200 shadow-[0_0_15px_rgba(251,191,36,0.4)] active:scale-95 transition-all flex items-center space-x-1.5 cursor-pointer"
+            aria-label="Toggle Navigation Menu"
+          >
+            {isMobileMenuOpen ? (
+              <X className="w-5 h-5 text-amber-300" />
+            ) : (
+              <Menu className="w-5 h-5 text-amber-300" />
+            )}
+            <span className="font-sans-clean font-black text-xs uppercase tracking-wider text-amber-200">
+              Menu
+            </span>
+            {votesCount > 0 && !isMobileMenuOpen && (
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping absolute -top-1 -right-1" />
+            )}
+          </button>
+        </div>
+
+        {/* Desktop Top Right Actions Container (>= lg) */}
+        <div className="hidden lg:flex items-center space-x-3">
+          {/* Sound FX Toggle */}
+          <button
+            onClick={handleToggleSound}
+            className="p-2 rounded-full bg-black/40 hover:bg-black/60 border border-white/20 text-white/90 hover:text-amber-300 transition-all duration-200 flex items-center justify-center shrink-0"
+            title={isMuted ? "Unmute sound" : "Mute sound"}
+          >
+            {isMuted ? <VolumeX className="w-4 h-4 text-red-300" /> : <Volume2 className="w-4 h-4 text-amber-300" />}
+          </button>
+
+          {/* BG Music Toggle */}
+          <button
+            onClick={handleToggleBgMusic}
+            className={`relative p-2 rounded-full border transition-all duration-300 flex items-center justify-center shrink-0 ${
+              isBgMusicPlaying 
+                ? 'bg-fuchsia-900/40 border-fuchsia-400/60 text-fuchsia-200 hover:bg-fuchsia-800/50 shadow-[0_0_15px_rgba(232,121,249,0.5)]' 
+                : 'bg-black/40 hover:bg-black/60 border-white/20 text-white/90 hover:text-fuchsia-300'
+            }`}
+            title={isBgMusicPlaying ? "Pause ambient vibes 🌸" : "Play chill flower vibes 🌸"}
+          >
+            {isBgMusicPlaying && (
+              <div className="absolute inset-0 rounded-full border border-fuchsia-400 animate-ping opacity-50 pointer-events-none" />
+            )}
+            <Music className={`w-4 h-4 ${isBgMusicPlaying ? 'text-fuchsia-300 animate-pulse' : 'text-fuchsia-200'}`} />
+          </button>
+
+          {/* Live Ballot Summary Drawer Button */}
+          {votingState.userName && (
+            <button
+              onClick={() => {
+                soundFx.playClick();
+                onOpenBallotDrawer();
+              }}
+              className="px-3 py-1.5 rounded-full bg-emerald-900/60 hover:bg-emerald-800/80 border border-emerald-400/40 text-emerald-100 text-xs font-sans-clean font-medium flex items-center space-x-2 shadow-md backdrop-blur-md transition-all duration-200"
+              title="View my ballot summary"
+            >
+              <Vote className="w-4 h-4 text-amber-300 shrink-0" />
+              <span>My Ballot</span>
+              <span className="bg-amber-400 text-black text-[0.65rem] font-bold px-1.5 rounded-full shrink-0">
+                {votesCount}/5
+              </span>
+            </button>
+          )}
+
+          {/* Live Results Leaderboard Button */}
+          <button
+            onClick={() => {
+              soundFx.playClick();
+              onOpenAdminLeaderboard();
+            }}
+            className="px-3 py-1.5 rounded-full bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 text-amber-200 text-xs font-sans-clean font-medium flex items-center space-x-2 shadow-md backdrop-blur-md transition-all duration-200 shrink-0"
+            title="View Live Leaderboard"
+          >
+            <BarChart2 className="w-4 h-4 text-amber-300 shrink-0" />
+            <span>Live Stats</span>
+          </button>
+
+          {/* Google Auth / Profile Card */}
+          {!votingState.userName ? (
+            <div className="relative group shrink-0">
+              <button
+                id="header-login-button"
+                onClick={() => {
+                  soundFx.playClick();
+                  onOpenGoogleLogin();
+                }}
+                className="relative px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-300 via-amber-200 to-white hover:from-amber-400 hover:to-amber-100 text-gray-950 font-sans-clean font-black text-xs tracking-wider shadow-[0_0_15px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 transition-all duration-200 flex items-center space-x-1.5 cursor-pointer border border-amber-400 shrink-0"
+              >
+                <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24">
+                  <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.3 9 5 12 5z" />
+                  <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z" />
+                  <path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.9 7.3C.7 9.7 0 10.8 0 12s.7 2.3 1.9 4.7l3.7-2.9z" />
+                  <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.3-6.4-5.2L1.9 16C3.7 19.7 7.5 23 12 23z" />
+                </svg>
+                <span className="font-extrabold uppercase">Log in</span>
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center space-x-2 shrink-0">
+              {votingState.userAvatar && (
+                <img
+                  src={votingState.userAvatar}
+                  alt={votingState.userName}
+                  className="w-7 h-7 rounded-full border border-amber-400/80 object-cover shadow-sm shrink-0"
+                />
+              )}
+              <span 
+                className="font-sans-clean text-xs font-bold text-amber-200 truncate max-w-[120px]"
+                title={votingState.userEmail || votingState.userName}
+              >
+                {votingState.userName}
+              </span>
+              <button
+                onClick={() => {
+                  soundFx.playClick();
+                  if (confirm("Log out of your account?")) {
+                    if (onLogout) {
+                      onLogout();
+                    } else {
+                      onReset();
+                    }
+                  }
+                }}
+                className="px-2.5 py-1 rounded-full bg-white/10 hover:bg-red-500/20 text-white/90 hover:text-red-300 font-sans-clean text-xs transition-all border border-white/20"
+                title="Log out"
+              >
+                Sign out
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Top Right Actions */}
-      <div className="flex items-center space-x-2 md:space-x-4">
-        {/* Sound FX Toggle */}
-        <button
-          onClick={handleToggleSound}
-          className="p-2 rounded-full bg-black/30 hover:bg-black/50 border border-white/20 text-white/90 hover:text-amber-300 transition-all duration-200 text-xs md:text-sm flex items-center space-x-1"
-          title={isMuted ? "Unmute sound" : "Mute sound"}
-        >
-          {isMuted ? <VolumeX className="w-4 h-4 text-red-300" /> : <Volume2 className="w-4 h-4 text-amber-300" />}
-        </button>
+      {/* Mobile Drawer Overlay Backdrop (< lg) */}
+      <div 
+        className={`fixed inset-0 bg-black/80 backdrop-blur-md z-40 lg:hidden transition-opacity duration-300 ${
+          isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={() => setIsMobileMenuOpen(false)}
+      />
 
-        {/* BG Music Toggle */}
-        <button
-          onClick={handleToggleBgMusic}
-          className={`relative p-2 rounded-full border transition-all duration-300 text-xs md:text-sm flex items-center justify-center ${
-            isBgMusicPlaying 
-              ? 'bg-fuchsia-900/40 border-fuchsia-400/60 text-fuchsia-200 hover:bg-fuchsia-800/50 shadow-[0_0_15px_rgba(232,121,249,0.5)]' 
-              : 'bg-black/30 hover:bg-black/50 border-white/20 text-white/90 hover:text-fuchsia-300'
-          }`}
-          title={isBgMusicPlaying ? "Pause ambient vibes 🌸" : "Play chill flower vibes 🌸"}
-        >
-          {isBgMusicPlaying && (
-            <div className="absolute inset-0 rounded-full border border-fuchsia-400 animate-ping opacity-50 pointer-events-none" />
-          )}
-          <Music className={`w-4 h-4 ${isBgMusicPlaying ? 'text-fuchsia-300 animate-pulse' : 'text-fuchsia-200'}`} />
-        </button>
+      {/* Mobile Sidebar Drawer Panel (< lg) */}
+      <aside 
+        className={`fixed top-0 right-0 bottom-0 h-full w-[310px] sm:w-[360px] z-50 bg-gradient-to-b from-slate-950 via-gray-900 to-slate-950 border-l border-amber-500/30 shadow-[0_0_50px_rgba(0,0,0,0.9)] flex flex-col justify-between p-5 sm:p-6 lg:hidden transform transition-transform duration-300 ease-out overflow-y-auto ${
+          isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
+        {/* Drawer Header */}
+        <div className="flex items-center justify-between pb-4 border-b border-amber-500/20">
+          <div className="flex items-center space-x-2.5">
+            <div className="w-8 h-8 rounded-full bg-white border border-amber-300 overflow-hidden flex items-center justify-center shrink-0 shadow-[0_0_10px_rgba(251,191,36,0.4)]">
+              <img src="/assets/logo.png" alt="Hugo" className="w-full h-full object-cover scale-125" />
+            </div>
+            <div>
+              <h2 className="font-cinzel text-xs font-bold text-amber-300 tracking-wider">HUGO CHOICE 2026</h2>
+              <p className="text-[0.65rem] text-gray-400 font-serif-display italic">Mobile Navigation</p>
+            </div>
+          </div>
 
-        {/* Live Ballot Summary Drawer Button */}
-        {votingState.userName && (
           <button
-            onClick={onOpenBallotDrawer}
-            className="px-3 py-1.5 rounded-full bg-emerald-900/60 hover:bg-emerald-800/80 border border-emerald-400/40 text-emerald-100 text-xs md:text-sm font-sans-clean font-medium flex items-center space-x-1.5 shadow-md backdrop-blur-md transition-all duration-200"
-            title="View my ballot summary"
+            onClick={() => {
+              soundFx.playClick();
+              setIsMobileMenuOpen(false);
+            }}
+            className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white transition-colors border border-white/10"
+            aria-label="Close menu"
           >
-            <Vote className="w-4 h-4 text-amber-300" />
-            <span className="hidden md:inline">My Ballot</span>
-            <span className="bg-amber-400 text-black text-[0.65rem] font-bold px-1.5 py-0.5 rounded-full">
-              {votesCount}/5
-            </span>
+            <X className="w-5 h-5" />
           </button>
-        )}
+        </div>
 
-        {/* Live Results Leaderboard Button */}
-        <button
-          onClick={onOpenAdminLeaderboard}
-          className="px-3 py-1.5 rounded-full bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 text-amber-200 text-xs md:text-sm font-sans-clean font-medium flex items-center space-x-1 shadow-md backdrop-blur-md transition-all duration-200"
-          title="View Live Leaderboard"
-        >
-          <BarChart2 className="w-4 h-4 text-amber-300" />
-          <span className="hidden md:inline">Live Stats</span>
-        </button>
+        {/* User Account / Login Section */}
+        <div className="my-5">
+          {!votingState.userName ? (
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-950/40 via-black/50 to-amber-900/30 border border-amber-500/30 shadow-lg relative overflow-hidden">
+              <div className="flex items-center space-x-2 mb-2">
+                <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
+                <span className="text-xs font-bold text-amber-200 uppercase tracking-wider font-sans-clean">
+                  Tài khoản của bạn
+                </span>
+              </div>
+              <p className="text-[0.75rem] text-gray-300 mb-3 leading-relaxed">
+                Đăng nhập bằng Google để lưu chính xác các lựa chọn bình chọn của bạn.
+              </p>
 
-        {/* Google Authentication Button with Butterfly & Golden Ripple Wave */}
-        {!votingState.userName ? (
-          <div className="relative group">
-            {/* Radiating Golden Wave Ripple Ring */}
-            <div className="absolute -inset-1 rounded-full border-2 border-amber-300/80 animate-ping pointer-events-none opacity-75" />
-            <div className="absolute -inset-2 rounded-full border border-amber-400/40 animate-pulse pointer-events-none opacity-60" />
+              <button
+                onClick={() => {
+                  soundFx.playClick();
+                  onOpenGoogleLogin();
+                  setIsMobileMenuOpen(false);
+                }}
+                className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-400 via-amber-300 to-amber-200 hover:from-amber-300 hover:to-white text-gray-950 font-bold text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(251,191,36,0.5)] flex items-center justify-center space-x-2 active:scale-98 transition-all border border-amber-300 cursor-pointer"
+              >
+                <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                  <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.3 9 5 12 5z" />
+                  <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z" />
+                  <path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.9 7.3C.7 9.7 0 10.8 0 12s.7 2.3 1.9 4.7l3.7-2.9z" />
+                  <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.3-6.4-5.2L1.9 16C3.7 19.7 7.5 23 12 23z" />
+                </svg>
+                <span>Đăng nhập ngay</span>
+              </button>
+            </div>
+          ) : (
+            <div className="p-4 rounded-2xl bg-slate-900/80 border border-amber-400/40 shadow-lg">
+              <div className="flex items-center space-x-3 mb-3">
+                {votingState.userAvatar ? (
+                  <img 
+                    src={votingState.userAvatar} 
+                    alt={votingState.userName} 
+                    className="w-10 h-10 rounded-full border-2 border-amber-400 object-cover shadow-md shrink-0" 
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-amber-500/20 border-2 border-amber-400 flex items-center justify-center font-bold text-amber-300">
+                    {votingState.userName.charAt(0)}
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-sm text-amber-200 truncate">{votingState.userName}</h3>
+                  <p className="text-[0.7rem] text-gray-400 truncate">{votingState.userEmail || 'Thành viên Hugo'}</p>
+                </div>
+              </div>
 
-            {/* Diagonal Butterfly resting on Log in Button */}
-            <div className="absolute -top-5 -left-4 z-30 animate-float-slow pointer-events-none">
-              <img
-                src="/assets/butterfly.png"
-                alt="Butterfly on Login"
-                className="w-7 h-7 sm:w-8 sm:h-8 object-contain drop-shadow-[0_0_10px_rgba(251,191,36,0.9)] animate-flutter -rotate-12"
-              />
+              <button
+                onClick={() => {
+                  soundFx.playClick();
+                  if (confirm("Đăng xuất khỏi tài khoản?")) {
+                    if (onLogout) onLogout();
+                    else onReset();
+                    setIsMobileMenuOpen(false);
+                  }
+                }}
+                className="w-full py-1.5 px-3 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-300 border border-red-500/30 text-xs font-medium flex items-center justify-center space-x-1.5 transition-colors cursor-pointer"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Đăng xuất</span>
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Drawer Navigation Links */}
+        <div className="flex-1 space-y-4 my-2">
+          <div className="text-[0.65rem] font-bold text-amber-400/80 uppercase tracking-widest px-1">
+            Danh mục & Đề mục
+          </div>
+
+          <div className="space-y-1.5">
+            {/* Landing Navigation */}
+            <button
+              onClick={() => {
+                soundFx.playClick();
+                onNavigate('landing');
+                setIsMobileMenuOpen(false);
+              }}
+              className={`w-full p-3 rounded-xl flex items-center justify-between text-xs font-semibold transition-all border cursor-pointer ${
+                currentStep === 'landing'
+                  ? 'bg-amber-500/20 text-amber-200 border-amber-400/50 shadow-md'
+                  : 'bg-white/5 hover:bg-white/10 text-gray-200 border-white/10'
+              }`}
+            >
+              <div className="flex items-center space-x-2.5">
+                <Home className="w-4 h-4 text-amber-400" />
+                <span>Trang chủ</span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-gray-500" />
+            </button>
+
+            {/* Voting Rules / Process */}
+            <button
+              onClick={() => {
+                soundFx.playClick();
+                onNavigate('process');
+                setIsMobileMenuOpen(false);
+              }}
+              className={`w-full p-3 rounded-xl flex items-center justify-between text-xs font-semibold transition-all border cursor-pointer ${
+                currentStep === 'process'
+                  ? 'bg-amber-500/20 text-amber-200 border-amber-400/50 shadow-md'
+                  : 'bg-white/5 hover:bg-white/10 text-gray-200 border-white/10'
+              }`}
+            >
+              <div className="flex items-center space-x-2.5">
+                <FileText className="w-4 h-4 text-amber-400" />
+                <span>Thể lệ bình chọn</span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-gray-500" />
+            </button>
+
+            {/* My Ballot Button */}
+            <button
+              onClick={() => {
+                soundFx.playClick();
+                onOpenBallotDrawer();
+                setIsMobileMenuOpen(false);
+              }}
+              className="w-full p-3 rounded-xl bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-400/40 text-emerald-200 flex items-center justify-between text-xs font-semibold transition-all shadow-sm cursor-pointer"
+            >
+              <div className="flex items-center space-x-2.5">
+                <Vote className="w-4 h-4 text-amber-300" />
+                <span>Phiếu bầu của tôi</span>
+              </div>
+              <span className="bg-amber-400 text-black text-[0.65rem] font-bold px-2 py-0.5 rounded-full">
+                {votesCount}/5
+              </span>
+            </button>
+
+            {/* Live Stats Leaderboard */}
+            <button
+              onClick={() => {
+                soundFx.playClick();
+                onOpenAdminLeaderboard();
+                setIsMobileMenuOpen(false);
+              }}
+              className="w-full p-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-400/40 text-amber-200 flex items-center justify-between text-xs font-semibold transition-all shadow-sm cursor-pointer"
+            >
+              <div className="flex items-center space-x-2.5">
+                <BarChart2 className="w-4 h-4 text-amber-300" />
+                <span>Bảng xếp hạng Trực tiếp</span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-amber-400/60" />
+            </button>
+          </div>
+
+          {/* Sound Controls Header & Buttons */}
+          <div className="pt-3 border-t border-white/10 space-y-2">
+            <div className="text-[0.65rem] font-bold text-amber-400/80 uppercase tracking-widest px-1">
+              Cài đặt Âm thanh
             </div>
 
-            <button
-              id="header-login-button"
-              onClick={() => {
-                soundFx.playClick();
-                onOpenGoogleLogin();
-              }}
-              className="relative px-4 py-2 rounded-full bg-gradient-to-r from-amber-300 via-amber-200 to-white hover:from-amber-400 hover:to-amber-100 text-gray-950 font-sans-clean font-black text-xs md:text-sm tracking-wider shadow-[0_0_20px_rgba(251,191,36,0.7)] hover:scale-105 active:scale-95 transition-all duration-200 flex items-center space-x-2 cursor-pointer border-2 border-amber-400"
-            >
-              <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-                <path
-                  fill="#EA4335"
-                  d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.3 9 5 12 5z"
-                />
-                <path
-                  fill="#4285F4"
-                  d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"
-                />
-                <path
-                  fill="#FBBC05"
-                  d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.9 7.3C.7 9.7 0 10.8 0 12s.7 2.3 1.9 4.7l3.7-2.9z"
-                />
-                <path
-                  fill="#34A853"
-                  d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.3-6.4-5.2L1.9 16C3.7 19.7 7.5 23 12 23z"
-                />
-              </svg>
-              <span className="font-extrabold uppercase">Log in</span>
-            </button>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={handleToggleSound}
+                className={`p-2.5 rounded-xl border flex flex-col items-center justify-center space-y-1 transition-all cursor-pointer ${
+                  isMuted 
+                    ? 'bg-red-950/30 border-red-500/30 text-red-300' 
+                    : 'bg-amber-500/10 border-amber-400/30 text-amber-200'
+                }`}
+              >
+                {isMuted ? <VolumeX className="w-4 h-4 text-red-300" /> : <Volume2 className="w-4 h-4 text-amber-300" />}
+                <span className="text-[0.7rem] font-medium">{isMuted ? 'Tắt FX' : 'Bật FX'}</span>
+              </button>
+
+              <button
+                onClick={handleToggleBgMusic}
+                className={`p-2.5 rounded-xl border flex flex-col items-center justify-center space-y-1 transition-all cursor-pointer ${
+                  isBgMusicPlaying 
+                    ? 'bg-fuchsia-950/40 border-fuchsia-400/50 text-fuchsia-200 shadow-[0_0_12px_rgba(232,121,249,0.3)]' 
+                    : 'bg-white/5 border-white/10 text-gray-400'
+                }`}
+              >
+                <Music className={`w-4 h-4 ${isBgMusicPlaying ? 'text-fuchsia-300 animate-pulse' : ''}`} />
+                <span className="text-[0.7rem] font-medium">{isBgMusicPlaying ? 'Nhạc nền: Bật' : 'Nhạc nền: Tắt'}</span>
+              </button>
+            </div>
           </div>
-        ) : (
-          <div className="flex items-center space-x-2">
-            {votingState.userAvatar && (
-              <img
-                src={votingState.userAvatar}
-                alt={votingState.userName}
-                className="w-7 h-7 md:w-8 md:h-8 rounded-full border border-amber-400/80 object-cover shadow-sm"
-              />
-            )}
-            <span 
-              className="font-sans-clean text-xs md:text-sm font-bold text-amber-200 truncate max-w-[90px] sm:max-w-[140px]"
-              title={votingState.userEmail || votingState.userName}
-            >
-              {votingState.userName}
-            </span>
-            <button
-              onClick={() => {
-                soundFx.playClick();
-                if (confirm("Log out of your account?")) {
-                  if (onLogout) {
-                    onLogout();
-                  } else {
-                    onReset();
-                  }
-                }
-              }}
-              className="px-2.5 py-1 rounded-full bg-white/10 hover:bg-red-500/20 text-white/90 hover:text-red-300 font-sans-clean text-[0.7rem] md:text-xs transition-all border border-white/20"
-              title="Log out"
-            >
-              Sign out
-            </button>
-          </div>
-        )}
-      </div>
+        </div>
+
+        {/* Drawer Footer */}
+        <div className="pt-4 border-t border-amber-500/20 text-center">
+          <p className="font-serif-display italic text-xs text-amber-200/90 mb-1">
+            "Light up your fire ✨"
+          </p>
+          <p className="text-[0.65rem] text-gray-500 font-sans-clean">
+            Hugo English Club Choice Awards 2026
+          </p>
+        </div>
+      </aside>
     </header>
   );
 };

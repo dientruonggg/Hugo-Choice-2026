@@ -8,6 +8,7 @@ import { AdminLeaderboardModal } from './components/AdminLeaderboardModal';
 import { GoogleAuthModal } from './components/GoogleAuthModal';
 import { subscribeToAuthChanges, logoutGoogle } from './utils/firebase';
 import { saveUserBallot, getSavedBallotForUser } from './utils/ballotStorage';
+import { Agentation } from 'agentation';
 
 import { LandingScreen } from './components/screens/LandingScreen';
 import { ProcessModalScreen } from './components/screens/ProcessModalScreen';
@@ -19,8 +20,8 @@ import { RookieScreen } from './components/screens/RookieScreen';
 import { PerfectDuoScreen } from './components/screens/PerfectDuoScreen';
 import { SubmissionScreen } from './components/screens/SubmissionScreen';
 
-const STORAGE_KEY_VOTE = 'hugo_award_2024_user_state';
-const STORAGE_KEY_RESULTS = 'hugo_award_2024_live_results';
+const STORAGE_KEY_VOTE = 'hugo_award_2026_user_state';
+const STORAGE_KEY_RESULTS = 'hugo_award_2026_live_results';
 
 export default function App() {
   const [currentStep, setCurrentStep] = useState<ScreenStep>('landing');
@@ -109,6 +110,18 @@ export default function App() {
     const unsubscribe = subscribeToAuthChanges((firebaseUser) => {
       if (firebaseUser) {
         handleUserLogin(firebaseUser);
+      } else {
+        // If unauthenticated or login closed/failed, ensure state reflects NOT logged in
+        setVotingState(prev => {
+          if (prev.userEmail || prev.userAvatar) {
+            return {
+              ...prev,
+              userEmail: undefined,
+              userAvatar: undefined
+            };
+          }
+          return prev;
+        });
       }
     });
     return () => unsubscribe();
@@ -167,6 +180,62 @@ export default function App() {
 
       return next;
     });
+  };
+
+  // Clear Current User's Ballot (Revote)
+  const handleClearMyBallot = () => {
+    if (!votingState.isSubmitted) {
+      // If not submitted yet, just clear the local choices and go back to start
+      setVotingState(prev => ({
+        ...prev,
+        selectedTeam: null,
+        selectedBestMember: null,
+        selectedBestEvent: null,
+        selectedRookie: null,
+        selectedDuo: null
+      }));
+      navigateTo('team_selection');
+      setIsAdminModalOpen(false);
+      return;
+    }
+
+    // Decrement live results
+    setLiveResults(prev => {
+      const next = { ...prev, totalSubmissions: Math.max(0, prev.totalSubmissions - 1) };
+
+      if (votingState.selectedTeam && next.teams[votingState.selectedTeam]) {
+        next.teams = { ...next.teams, [votingState.selectedTeam]: next.teams[votingState.selectedTeam] - 1 };
+      }
+      if (votingState.selectedBestMember && next.bestMember[votingState.selectedBestMember]) {
+        next.bestMember = { ...next.bestMember, [votingState.selectedBestMember]: next.bestMember[votingState.selectedBestMember] - 1 };
+      }
+      if (votingState.selectedBestEvent && next.bestEvent[votingState.selectedBestEvent]) {
+        next.bestEvent = { ...next.bestEvent, [votingState.selectedBestEvent]: next.bestEvent[votingState.selectedBestEvent] - 1 };
+      }
+      if (votingState.selectedRookie && next.rookie[votingState.selectedRookie]) {
+        next.rookie = { ...next.rookie, [votingState.selectedRookie]: next.rookie[votingState.selectedRookie] - 1 };
+      }
+      if (votingState.selectedDuo && next.perfectDuo[votingState.selectedDuo]) {
+        next.perfectDuo = { ...next.perfectDuo, [votingState.selectedDuo]: next.perfectDuo[votingState.selectedDuo] - 1 };
+      }
+
+      return next;
+    });
+
+    // Reset user state to allow re-voting but keep identity
+    setVotingState(prev => ({
+      ...prev,
+      selectedTeam: null,
+      selectedBestMember: null,
+      selectedBestEvent: null,
+      selectedRookie: null,
+      selectedDuo: null,
+      isSubmitted: false,
+      submittedAt: undefined
+    }));
+    
+    navigateTo('team_selection');
+    setIsAdminModalOpen(false);
   };
 
   // Reset & Logout Ballot Handler
@@ -302,7 +371,7 @@ export default function App() {
             votingState={votingState}
             onSubmitBallot={handleSubmitBallot}
             onNavigate={navigateTo}
-            onReset={handleReset}
+            onReset={handleClearMyBallot}
             onOpenLeaderboard={() => setIsAdminModalOpen(true)}
           />
         )}
@@ -321,6 +390,7 @@ export default function App() {
         isOpen={isAdminModalOpen}
         onClose={() => setIsAdminModalOpen(false)}
         results={liveResults}
+        onClearMyBallot={handleClearMyBallot}
       />
 
       {/* Modal: Google Authentication */}
@@ -331,6 +401,8 @@ export default function App() {
           handleUserLogin(user);
         }}
       />
+      
+      <Agentation />
     </BackgroundLandscape>
   );
 }

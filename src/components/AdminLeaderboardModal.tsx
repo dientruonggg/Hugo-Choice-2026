@@ -9,12 +9,14 @@ interface AdminLeaderboardModalProps {
   isOpen: boolean;
   onClose: () => void;
   results: LiveResultsData;
+  onClearMyBallot?: () => void;
 }
 
 export const AdminLeaderboardModal: React.FC<AdminLeaderboardModalProps> = ({
   isOpen,
   onClose,
-  results
+  results,
+  onClearMyBallot
 }) => {
   if (!isOpen) return null;
 
@@ -198,7 +200,19 @@ export const AdminLeaderboardModal: React.FC<AdminLeaderboardModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="p-4 bg-black/40 border-t border-white/10 text-center">
+        <div className="p-4 bg-black/40 border-t border-white/10 flex items-center justify-between">
+          <button
+            onClick={() => {
+              soundFx.playClick();
+              if (window.confirm("Are you sure you want to clear your ballot and vote again? Your previous votes will be removed from the live tally.")) {
+                if (onClearMyBallot) onClearMyBallot();
+              }
+            }}
+            className="px-4 py-2 rounded-full border border-red-500/50 bg-red-500/10 hover:bg-red-500/30 text-red-400 font-cinzel font-bold text-xs transition-colors"
+          >
+            Clear My Ballot & Revote
+          </button>
+          
           <button
             onClick={() => {
               soundFx.playClick();

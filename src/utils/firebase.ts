@@ -25,7 +25,7 @@ export const isFirebaseConfigured = Boolean(
 
 let app: FirebaseApp | null = null;
 let auth: Auth | null = null;
-let db: Firestore | null = null;
+export let db: Firestore | null = null;
 
 const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({
