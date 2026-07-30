@@ -207,7 +207,7 @@ export default function App() {
       />
 
       {/* Screen Views */}
-      <main className="flex-1 flex flex-col justify-between w-full min-h-0">
+      <main className="flex-1 flex flex-col justify-between w-full min-h-0 overflow-hidden">
         {currentStep === 'landing' && (
           <LandingScreen
             userName={votingState.userName}

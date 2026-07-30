@@ -21,6 +21,19 @@ export interface TeamInfo {
   description: string;
   color: string;
   glow: string;
+  heroLogo?: string;
+}
+
+export interface TeamMoment {
+  id: string;
+  teamId: HugoTeam;
+  imageUrl: string;
+  caption: string;
+  author: string;
+  authorAvatar?: string;
+  likes: number;
+  date: string;
+  tag?: string;
 }
 
 export interface Candidate {

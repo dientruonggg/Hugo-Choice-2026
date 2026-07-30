@@ -37,11 +37,11 @@ export const BestMemberScreen: React.FC<BestMemberScreenProps> = ({
 
   const handleSelectMember = (member: ClubMember) => {
     soundFx.playSelect();
-    onSelectCandidate(member.name);
+    onSelectCandidate(member.id);
   };
 
   return (
-    <div className="relative flex-1 flex flex-col justify-between w-full h-full min-h-0 py-2 sm:py-3 px-3 sm:px-6">
+    <div className="relative flex-1 flex flex-col justify-between w-full h-full min-h-0 py-2 sm:py-3 px-3 sm:px-6 overflow-hidden">
       {/* Title Header */}
       <div className="text-center mb-2 sm:mb-3 shrink-0">
         <h2 className="font-cinzel text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-wider text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] uppercase">
@@ -53,7 +53,7 @@ export const BestMemberScreen: React.FC<BestMemberScreenProps> = ({
       </div>
 
       {/* Main Content Layout */}
-      <div className="relative flex-1 flex flex-col min-h-0 max-w-5xl mx-auto w-full py-1">
+      <div className="relative flex-1 flex flex-col min-h-0 max-w-5xl mx-auto w-full py-1 overflow-hidden">
         {/* Search & Team Filter Bar */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 mb-3 bg-black/60 p-2.5 sm:p-3 rounded-2xl backdrop-blur-md border border-amber-300/50 shadow-2xl w-full shrink-0">
           {/* Search Box */}

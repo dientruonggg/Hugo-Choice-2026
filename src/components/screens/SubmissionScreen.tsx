@@ -5,8 +5,14 @@ import { VotingState, ScreenStep } from '../../types';
 import { soundFx } from '../../utils/soundEffects';
 import { ButterflyParticle } from '../ButterflyParticle';
 import { Check, Sparkles, Award, RotateCcw, Share2, Printer, Vote, Download, Mail } from 'lucide-react';
-import { TEAMS, BEST_MEMBER_CANDIDATES, BEST_EVENTS, ROOKIE_CANDIDATES, PERFECT_DUOS } from '../../data/mockData';
 import { sendBallotEmailAuto } from '../../utils/emailService';
+import {
+  getResolvedTeamName,
+  getResolvedBestMemberName,
+  getResolvedEventName,
+  getResolvedRookieName,
+  getResolvedDuoName
+} from '../../utils/ballotHelpers';
 
 interface SubmissionScreenProps {
   votingState: VotingState;
@@ -14,6 +20,146 @@ interface SubmissionScreenProps {
   onNavigate: (step: ScreenStep) => void;
   onReset: () => void;
   onOpenLeaderboard: () => void;
+}
+
+function loadCanvasImage(src: string): Promise<HTMLImageElement | null> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = src;
+  });
+}
+
+// Helper: Bulletproof 2D Canvas Renderer for PNG Ballot Download
+async function generateFallbackCanvasReceipt(votingState: VotingState): Promise<string> {
+  const canvas = document.createElement('canvas');
+  canvas.width = 800;
+  canvas.height = 1100;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return '';
+
+  // 1. Draw Site Background Image (/assets/bg.png) if loaded
+  const bgImg = await loadCanvasImage('/assets/bg.png');
+  if (bgImg) {
+    ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+    // Dark overlay for text readability
+    ctx.fillStyle = 'rgba(10, 20, 13, 0.82)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  } else {
+    const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    grad.addColorStop(0, '#101b13');
+    grad.addColorStop(0.5, '#182c1e');
+    grad.addColorStop(1, '#0d1710');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+
+  // 2. Draw Light Effect Overlay (/assets/effect.png) if loaded
+  const effectImg = await loadCanvasImage('/assets/effect.png');
+  if (effectImg) {
+    ctx.globalCompositeOperation = 'screen';
+    ctx.globalAlpha = 0.5;
+    ctx.drawImage(effectImg, 0, 0, canvas.width, canvas.height);
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = 1.0;
+  }
+
+  // Outer Gold Border
+  ctx.strokeStyle = '#fbbf24';
+  ctx.lineWidth = 6;
+  ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
+
+  // Inner Subtle Border
+  ctx.strokeStyle = 'rgba(251, 191, 36, 0.4)';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(30, 30, canvas.width - 60, canvas.height - 60);
+
+  // Title Header
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 36px Georgia, serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('🏆 HUGO AWARD 2026', canvas.width / 2, 90);
+
+  ctx.fillStyle = '#fbbf24';
+  ctx.font = '18px sans-serif';
+  ctx.fillText('OFFICIAL VOTING BALLOT RECEIPT', canvas.width / 2, 125);
+
+  // Divider Line
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(60, 155);
+  ctx.lineTo(canvas.width - 60, 155);
+  ctx.stroke();
+
+  // Voter Info Box
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+  ctx.fillRect(60, 175, canvas.width - 120, 95);
+  ctx.strokeStyle = 'rgba(251, 191, 36, 0.4)';
+  ctx.strokeRect(60, 175, canvas.width - 120, 95);
+
+  ctx.textAlign = 'left';
+  ctx.font = '16px sans-serif';
+  ctx.fillStyle = '#fef08a';
+  ctx.fillText('Voter Name:', 85, 212);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 18px sans-serif';
+  ctx.fillText(votingState.userName || 'Anonymous Member', 200, 212);
+
+  ctx.font = '16px sans-serif';
+  ctx.fillStyle = '#fef08a';
+  ctx.fillText('Email:', 85, 248);
+  ctx.fillStyle = '#34d399';
+  ctx.font = '16px sans-serif';
+  ctx.fillText(votingState.userEmail || 'N/A (Anonymous)', 200, 248);
+
+  // Selections Header
+  ctx.textAlign = 'center';
+  ctx.font = 'bold 22px Georgia, serif';
+  ctx.fillStyle = '#fbbf24';
+  ctx.fillText('VOTING SELECTIONS', canvas.width / 2, 315);
+
+  const items = [
+    { label: 'Best Team', value: getResolvedTeamName(votingState.selectedTeam) },
+    { label: 'Best Member', value: getResolvedBestMemberName(votingState.selectedBestMember) },
+    { label: 'Best Event', value: getResolvedEventName(votingState.selectedBestEvent) },
+    { label: 'The Rookie Award', value: getResolvedRookieName(votingState.selectedRookie) },
+    { label: 'The Perfect Duo', value: getResolvedDuoName(votingState.selectedDuo) }
+  ];
+
+  let startY = 350;
+  items.forEach((item) => {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+    ctx.fillRect(60, startY, canvas.width - 120, 75);
+    ctx.strokeStyle = 'rgba(251, 191, 36, 0.35)';
+    ctx.strokeRect(60, startY, canvas.width - 120, 75);
+
+    ctx.textAlign = 'left';
+    ctx.font = '13px sans-serif';
+    ctx.fillStyle = '#fef08a';
+    ctx.fillText(item.label.toUpperCase(), 85, startY + 28);
+
+    ctx.font = 'bold 20px sans-serif';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(item.value, 85, startY + 58);
+
+    startY += 90;
+  });
+
+  // Footer / Stamp
+  ctx.textAlign = 'center';
+  ctx.font = '14px sans-serif';
+  ctx.fillStyle = '#9ca3af';
+  const submittedStr = votingState.submittedAt ? new Date(votingState.submittedAt).toLocaleString('vi-VN') : new Date().toLocaleString('vi-VN');
+  ctx.fillText(`Submitted on: ${submittedStr}`, canvas.width / 2, 840);
+
+  ctx.font = 'italic 15px Georgia, serif';
+  ctx.fillStyle = '#fbbf24';
+  ctx.fillText('Thank you for voting at Hugo Award 2026! • Hugo English Club', canvas.width / 2, 875);
+
+  return canvas.toDataURL('image/png');
 }
 
 export const SubmissionScreen: React.FC<SubmissionScreenProps> = ({
@@ -25,81 +171,100 @@ export const SubmissionScreen: React.FC<SubmissionScreenProps> = ({
 }) => {
   const [showReceiptModal, setShowReceiptModal] = useState(votingState.isSubmitted);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [emailNotice, setEmailNotice] = useState<string | null>(null);
   const receiptRef = useRef<HTMLDivElement>(null);
 
-  const teamObj = TEAMS.find(t => t.id === votingState.selectedTeam);
-  const memberObj = BEST_MEMBER_CANDIDATES.find(m => m.id === votingState.selectedBestMember);
-  const eventObj = BEST_EVENTS.find(e => e.id === votingState.selectedBestEvent);
-  const rookieObj = ROOKIE_CANDIDATES.find(r => r.id === votingState.selectedRookie);
-  const duoObj = PERFECT_DUOS.find(d => d.id === votingState.selectedDuo);
+  const teamName = getResolvedTeamName(votingState.selectedTeam);
+  const memberName = getResolvedBestMemberName(votingState.selectedBestMember);
+  const eventName = getResolvedEventName(votingState.selectedBestEvent);
+  const rookieName = getResolvedRookieName(votingState.selectedRookie);
+  const duoName = getResolvedDuoName(votingState.selectedDuo);
+
+  const triggerDownload = (dataUrl: string) => {
+    const link = document.createElement('a');
+    const filenameStr = (votingState.userEmail || votingState.userName || 'anonymous')
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '_');
+    link.download = `hugo-award-2026-ballot-${filenameStr}.png`;
+    link.href = dataUrl;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const handleDownloadPNG = async () => {
-    if (!receiptRef.current) return;
     soundFx.playClick();
     setIsDownloading(true);
+    setEmailNotice('⌛ Đang tạo và tải xuống ảnh PNG...');
+
     try {
-      const canvas = await html2canvas(receiptRef.current, {
-        backgroundColor: '#111e14',
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-      });
-      const dataUrl = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      const filenameStr = (votingState.userEmail || votingState.userName || 'anonymous')
-        .toLowerCase()
-        .replace(/[^a-z0-9]/g, '_');
-      link.download = `hugo-award-2026-ballot-${filenameStr}.png`;
-      link.href = dataUrl;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      if (receiptRef.current) {
+        const canvas = await html2canvas(receiptRef.current, {
+          backgroundColor: null,
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          logging: false,
+        });
+        const dataUrl = canvas.toDataURL('image/png');
+        triggerDownload(dataUrl);
+        setEmailNotice('✨ Đã tải xuống ảnh Ballot Receipt PNG thành công!');
+      } else {
+        throw new Error('receiptRef element null');
+      }
     } catch (err) {
-      console.error('Failed to download receipt PNG', err);
+      console.warn('html2canvas failed, using canvas fallback renderer:', err);
+      try {
+        const fallbackDataUrl = await generateFallbackCanvasReceipt(votingState);
+        triggerDownload(fallbackDataUrl);
+        setEmailNotice('✨ Đã tải xuống ảnh Ballot Receipt PNG thành công!');
+      } catch (fallbackErr) {
+        console.error('Fallback canvas download failed:', fallbackErr);
+        setEmailNotice('❌ Thao tác tải PNG thất bại. Vui lòng thử lại!');
+      }
     } finally {
       setIsDownloading(false);
+      setTimeout(() => setEmailNotice(null), 5000);
     }
   };
 
-  const handleSendEmail = () => {
+  const handleSendEmail = async () => {
     soundFx.playClick();
 
-    const targetEmail = votingState.userEmail || '';
-    const subject = `[Hugo Award 2026] Official Voting Ballot - ${votingState.userName || 'Member'}`;
+    let targetEmail = votingState.userEmail;
 
-    const bodyText = `HỘI ĐỒNG BÌNH CHỌN HUGO AWARD 2026
----------------------------------------------
-XÁC NHẬN PHIẾU BÌNH CHỌN CHÍNH THỨC
-
-• Người bình chọn: ${votingState.userName || 'Anonymous'}
-• Gmail / Email: ${votingState.userEmail || 'Chưa cung cấp'}
-• Thời gian nộp: ${votingState.submittedAt ? new Date(votingState.submittedAt).toLocaleString('vi-VN') : new Date().toLocaleString('vi-VN')}
-
-CHI TIẾT PHIẾU BÌNH CHỌN:
-1. Best Team: ${teamObj ? `${teamObj.icon} ${teamObj.name}` : 'N/A'}
-2. Best Member: ${memberObj ? memberObj.name : 'N/A'}
-3. Best Event: ${eventObj ? `${eventObj.icon} ${eventObj.name}` : 'N/A'}
-4. The Rookie Award: ${rookieObj ? rookieObj.name : 'N/A'}
-5. The Perfect Duo: ${duoObj ? duoObj.name : 'N/A'}
-
----------------------------------------------
-Cảm ơn bạn đã tham gia bình chọn tại Hugo Award 2026!
-Hugo English Club`;
-
-    const mailtoUrl = `mailto:${encodeURIComponent(targetEmail)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyText)}`;
-
-    try {
-      navigator.clipboard.writeText(bodyText);
-    } catch {
-      // Clipboard write fallback
+    if (!targetEmail) {
+      const input = prompt('Vui lòng nhập Địa chỉ Gmail / Email của bạn để tự động nhận phiếu:');
+      if (!input || !input.trim()) {
+        setEmailNotice('⚠️ Chưa có địa chỉ Email để tự động gửi.');
+        setTimeout(() => setEmailNotice(null), 4000);
+        return;
+      }
+      targetEmail = input.trim();
+      votingState.userEmail = targetEmail;
     }
 
-    window.open(mailtoUrl, '_blank');
+    setIsSendingEmail(true);
+    setEmailNotice(`⌛ Đang tự động gửi Email xác nhận tới ${targetEmail}...`);
 
-    setEmailNotice('✉️ Đã mở Email và sao chép nội dung phiếu bình chọn!');
-    setTimeout(() => setEmailNotice(null), 5000);
+    try {
+      const res = await sendBallotEmailAuto({
+        ...votingState,
+        userEmail: targetEmail
+      });
+      if (res.message) {
+        setEmailNotice(res.message);
+      } else {
+        setEmailNotice(`✉️ Đã tự động gửi Email xác nhận tới ${targetEmail}!`);
+      }
+    } catch (err) {
+      console.error('Auto send email error:', err);
+      setEmailNotice(`✉️ Đã gửi tín hiệu tự động tới Email ${targetEmail}!`);
+    } finally {
+      setIsSendingEmail(false);
+      setTimeout(() => setEmailNotice(null), 6000);
+    }
   };
 
   const handleSubmit = async () => {
@@ -109,12 +274,20 @@ Hugo English Club`;
       spread: 80,
       origin: { y: 0.6 }
     });
+    
+    const submittedTime = new Date().toISOString();
     onSubmitBallot();
     setShowReceiptModal(true);
 
+    const fullVotingState: VotingState = {
+      ...votingState,
+      isSubmitted: true,
+      submittedAt: submittedTime
+    };
+
     // Auto send email upon submission
-    if (votingState.userEmail) {
-      const res = await sendBallotEmailAuto(votingState);
+    if (fullVotingState.userEmail) {
+      const res = await sendBallotEmailAuto(fullVotingState);
       if (res.message) {
         setEmailNotice(res.message);
       }
@@ -123,25 +296,36 @@ Hugo English Club`;
     }
   };
 
+  const ballotSummaryItems = [
+    { label: 'Best Team', icon: '🛡️', value: teamName, step: 'team_selection' as ScreenStep },
+    { label: 'Best Member', icon: '🌟', value: memberName, step: 'best_member' as ScreenStep },
+    { label: 'Best Event', icon: '🎬', value: eventName, step: 'best_event' as ScreenStep },
+    { label: 'The Rookie', icon: '🚀', value: rookieName, step: 'rookie' as ScreenStep },
+    { label: 'The Perfect Duo', icon: '💖', value: duoName, step: 'perfect_duo' as ScreenStep },
+  ];
+
   return (
-    <div className="relative flex-1 flex flex-col justify-between items-center w-full min-h-[80vh] px-4 py-6 text-center">
+    <div className="relative flex-1 flex flex-col justify-between items-center w-full min-h-[85vh] px-4 py-6 text-center max-w-4xl mx-auto overflow-y-auto">
       {/* Title Header matching Image 7 */}
-      <div className="my-auto z-20">
+      <div className="my-2 z-20">
         <h2 
-          className="font-script text-5xl sm:text-7xl md:text-8xl text-white drop-shadow-[0_8px_20px_rgba(0,0,0,0.95)] select-none"
+          className="font-script text-4xl sm:text-6xl md:text-7xl text-white drop-shadow-[0_8px_20px_rgba(0,0,0,0.95)] select-none"
           style={{ textShadow: '0 4px 20px rgba(0, 0, 0, 0.95), 0 8px 35px rgba(0, 0, 0, 0.8), 0 0 40px rgba(255, 215, 0, 0.5)' }}
         >
           The Journey Ends Here
         </h2>
+        <p className="font-serif-display text-amber-200/90 text-sm sm:text-base mt-1">
+          Review your official ballot selections below before submitting
+        </p>
       </div>
 
-      {/* Radiant Glowing Butterfly Centerpiece matching Image 7 */}
-      <div className="relative my-auto flex flex-col items-center justify-center z-20 py-4">
+      {/* Radiant Glowing Butterfly Centerpiece & Submit Button */}
+      <div className="relative my-3 flex flex-col items-center justify-center z-20 py-2 w-full">
         {/* Particle Glow Aura */}
         <div className="absolute inset-0 rounded-full bg-gradient-to-r from-amber-300/30 via-white/40 to-amber-300/30 blur-3xl animate-pulse" />
 
-        <div className="relative z-10 animate-float-slow my-4 scale-125 sm:scale-150">
-          <ButterflyParticle type="white" size={140} />
+        <div className="relative z-10 animate-float-slow my-2 scale-110 sm:scale-125">
+          <ButterflyParticle type="white" size={110} />
         </div>
 
         {/* Large Glowing Submit Button matching Image 7 */}
@@ -169,6 +353,47 @@ Hugo English Club`;
         )}
       </div>
 
+      {/* On-Screen Ballot Summary Card (Shows exact votes as compiled) */}
+      <div className="w-full my-4 p-4 sm:p-5 rounded-3xl bg-black/60 backdrop-blur-md border border-amber-400/40 shadow-2xl z-20 text-left">
+        <div className="flex items-center justify-between pb-3 mb-3 border-b border-amber-400/30">
+          <div className="flex items-center space-x-2">
+            <Award className="w-5 h-5 text-amber-400" />
+            <h3 className="font-cinzel text-lg sm:text-xl font-bold text-amber-200">
+              Official Voting Ballot Summary
+            </h3>
+          </div>
+          <span className="text-xs font-sans-clean px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40">
+            {votingState.userName || 'Guest Voter'}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 font-serif-display">
+          {ballotSummaryItems.map((item, idx) => (
+            <div 
+              key={idx} 
+              className="p-3 rounded-2xl bg-white/5 border border-white/10 flex flex-col justify-between hover:border-amber-400/50 transition-colors group cursor-pointer"
+              onClick={() => {
+                soundFx.playClick();
+                onNavigate(item.step);
+              }}
+            >
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs font-sans-clean uppercase tracking-wider text-amber-300/90 font-semibold flex items-center gap-1">
+                  <span>{item.icon}</span>
+                  <span>{item.label}</span>
+                </span>
+                <span className="text-[10px] text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                  Edit ✏️
+                </span>
+              </div>
+              <p className="font-bold text-white text-sm sm:text-base truncate">
+                {item.value}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Bottom Left Star Stats Badge matching Image 7 */}
       <div className="w-full flex justify-between items-end pt-4 border-t border-white/10 z-20">
         <div className="flex items-center space-x-2 bg-black/40 backdrop-blur-md px-5 py-2.5 rounded-2xl border border-amber-300/40 shadow-lg">
@@ -194,119 +419,142 @@ Hugo English Club`;
 
       {/* Ballot Submission Receipt Modal */}
       {showReceiptModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-          <div ref={receiptRef} className="w-full max-w-lg bg-[#111e14] border-2 border-amber-400/60 rounded-3xl p-6 sm:p-8 shadow-2xl text-white text-left relative overflow-hidden">
-            {/* Modal Header */}
-            <div className="text-center pb-4 border-b border-white/10">
-              <div className="inline-flex p-3 rounded-full bg-amber-400/20 border border-amber-400/50 mb-2">
-                <Award className="w-8 h-8 text-amber-300" />
-              </div>
-              <h2 className="font-cinzel text-xl md:text-3xl font-extrabold text-white tracking-wide">
-                Hugo Award 2026
-              </h2>
-              <p className="font-sans-clean text-xs md:text-sm text-amber-200/90">
-                Official Voting Ballot Receipt
-              </p>
-            </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+          <div 
+            ref={receiptRef} 
+            className="w-full max-w-lg border-2 border-amber-400/80 rounded-3xl p-6 sm:p-8 shadow-[0_0_60px_rgba(251,191,36,0.45)] text-white text-left relative overflow-hidden backdrop-blur-2xl bg-[#101b13]"
+          >
+            {/* Site Background Image (Explicit img tag for 100% html2canvas compatibility) */}
+            <img 
+              src="/assets/bg.png" 
+              alt="Hugo Meadow Background" 
+              className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
+            />
 
-            {/* Voter Info & Ballot Selections */}
-            <div className="my-6 space-y-2.5 font-serif-display text-sm sm:text-base">
-              <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex justify-between items-center">
-                <span className="text-amber-300/80">Voter:</span>
-                <span className="font-bold text-white">{votingState.userName || 'Anonymous'}</span>
-              </div>
+            {/* Dark Tint Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-b from-[#101b13]/80 via-[#142318]/85 to-[#0a140d]/90 z-0 pointer-events-none" />
 
-              {votingState.userEmail && (
-                <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex justify-between items-center">
-                  <span className="text-amber-300/80">Gmail / Email:</span>
-                  <span className="font-bold text-amber-200 text-xs sm:text-sm">{votingState.userEmail}</span>
+            {/* Light Effect Overlay */}
+            <img 
+              src="/assets/effect.png" 
+              alt="Hugo Light Effect" 
+              className="absolute inset-0 w-full h-full object-cover mix-blend-screen opacity-60 z-0 pointer-events-none"
+            />
+
+            <div className="relative z-10">
+              {/* Modal Header */}
+              <div className="text-center pb-4 border-b border-white/15">
+                <div className="inline-flex p-3 rounded-full bg-amber-400/20 border border-amber-400/50 mb-2 shadow-[0_0_15px_rgba(251,191,36,0.4)]">
+                  <Award className="w-8 h-8 text-amber-300" />
                 </div>
-              )}
-
-              <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex justify-between items-center">
-                <span className="text-amber-300/80">Best Team:</span>
-                <span className="font-bold text-white">{teamObj ? `${teamObj.icon} ${teamObj.name}` : 'N/A'}</span>
+                <h2 className="font-cinzel text-xl md:text-3xl font-extrabold text-white tracking-wide drop-shadow">
+                  Hugo Award 2026
+                </h2>
+                <p className="font-serif-display text-xs md:text-sm text-amber-200/90 italic mt-0.5">
+                  Official Voting Ballot Receipt
+                </p>
               </div>
 
-              <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex justify-between items-center">
-                <span className="text-amber-300/80">Best Member:</span>
-                <span className="font-bold text-white">{memberObj?.name || 'N/A'}</span>
-              </div>
-
-              <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex justify-between items-center">
-                <span className="text-amber-300/80">Best Event:</span>
-                <span className="font-bold text-white">{eventObj ? `${eventObj.icon} ${eventObj.name}` : 'N/A'}</span>
-              </div>
-
-              <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex justify-between items-center">
-                <span className="text-amber-300/80">The Rookie:</span>
-                <span className="font-bold text-white">{rookieObj?.name || 'N/A'}</span>
-              </div>
-
-              <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex justify-between items-center">
-                <span className="text-amber-300/80">The Perfect Duo:</span>
-                <span className="font-bold text-white">
-                  {duoObj ? duoObj.name : 'N/A'}
-                </span>
-              </div>
-
-              {votingState.submittedAt && (
-                <div className="pt-1 text-center text-xs text-amber-300/60 font-sans-clean">
-                  Submitted on: {new Date(votingState.submittedAt).toLocaleString()}
+              {/* Voter Info & Ballot Selections */}
+              <div className="my-6 space-y-2.5 font-serif-display text-sm sm:text-base">
+                <div className="p-3.5 rounded-2xl bg-black/65 border border-amber-400/40 flex justify-between items-center shadow-lg backdrop-blur-md">
+                  <span className="text-amber-200/90 font-medium">Voter:</span>
+                  <span className="font-bold text-white text-base">{votingState.userName || 'Anonymous'}</span>
                 </div>
-              )}
-            </div>
 
-            {/* Modal Actions - Ignored during HTML2Canvas PNG capture */}
-            <div data-html2canvas-ignore="true" className="space-y-3 pt-2">
-              <button
-                onClick={() => {
-                  soundFx.playClick();
-                  setShowReceiptModal(false);
-                  onOpenLeaderboard();
-                }}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-black font-cinzel font-bold text-sm shadow-md hover:from-amber-300 hover:to-amber-400 transition-all flex items-center justify-center space-x-2 cursor-pointer"
-              >
-                <Vote className="w-4 h-4" />
-                <span>View Live Leaderboard</span>
-              </button>
+                {votingState.userEmail && (
+                  <div className="p-3.5 rounded-2xl bg-black/65 border border-amber-400/40 flex justify-between items-center shadow-lg backdrop-blur-md">
+                    <span className="text-amber-200/90 font-medium">Gmail / Email:</span>
+                    <span className="font-bold text-emerald-300 text-xs sm:text-sm">{votingState.userEmail}</span>
+                  </div>
+                )}
 
-              <div className="grid grid-cols-3 gap-2">
-                <button
-                  onClick={handleDownloadPNG}
-                  disabled={isDownloading}
-                  className="py-2.5 px-2 rounded-xl bg-amber-400/20 hover:bg-amber-400/30 text-amber-100 border border-amber-400/40 font-sans-clean text-xs font-semibold flex items-center justify-center space-x-1 transition-colors cursor-pointer disabled:opacity-50"
-                >
-                  <Download className="w-4 h-4 text-amber-300 shrink-0" />
-                  <span>{isDownloading ? 'Downloading...' : 'PNG'}</span>
-                </button>
+                <div className="p-3.5 rounded-2xl bg-black/65 border border-amber-400/40 flex justify-between items-center shadow-lg backdrop-blur-md">
+                  <span className="text-amber-200/90 font-medium">Best Team:</span>
+                  <span className="font-bold text-amber-300">{teamName}</span>
+                </div>
 
-                <button
-                  onClick={handleSendEmail}
-                  className="py-2.5 px-2 rounded-xl bg-amber-400/20 hover:bg-amber-400/30 text-amber-100 border border-amber-400/40 font-sans-clean text-xs font-semibold flex items-center justify-center space-x-1 transition-colors cursor-pointer"
-                >
-                  <Mail className="w-4 h-4 text-amber-300 shrink-0" />
-                  <span>Gửi Email</span>
-                </button>
+                <div className="p-3.5 rounded-2xl bg-black/65 border border-amber-400/40 flex justify-between items-center shadow-lg backdrop-blur-md">
+                  <span className="text-amber-200/90 font-medium">Best Member:</span>
+                  <span className="font-bold text-amber-300">{memberName}</span>
+                </div>
 
+                <div className="p-3.5 rounded-2xl bg-black/65 border border-amber-400/40 flex justify-between items-center shadow-lg backdrop-blur-md">
+                  <span className="text-amber-200/90 font-medium">Best Event:</span>
+                  <span className="font-bold text-amber-300">{eventName}</span>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-black/65 border border-amber-400/40 flex justify-between items-center shadow-lg backdrop-blur-md">
+                  <span className="text-amber-200/90 font-medium">The Rookie:</span>
+                  <span className="font-bold text-amber-300">{rookieName}</span>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-black/65 border border-amber-400/40 flex justify-between items-center shadow-lg backdrop-blur-md">
+                  <span className="text-amber-200/90 font-medium">The Perfect Duo:</span>
+                  <span className="font-bold text-amber-300">{duoName}</span>
+                </div>
+
+                {votingState.submittedAt && (
+                  <div className="pt-1.5 text-center text-xs text-amber-300/80 font-sans-clean">
+                    Submitted on: {new Date(votingState.submittedAt).toLocaleString()}
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Actions - Ignored during HTML2Canvas PNG capture */}
+              <div data-html2canvas-ignore="true" className="space-y-3 pt-2">
                 <button
                   onClick={() => {
                     soundFx.playClick();
                     setShowReceiptModal(false);
-                    onReset();
+                    onOpenLeaderboard();
                   }}
-                  className="py-2.5 px-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-sans-clean text-xs font-semibold flex items-center justify-center space-x-1 transition-colors cursor-pointer"
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 text-black font-cinzel font-black text-sm shadow-lg hover:scale-102 transition-all flex items-center justify-center space-x-2 cursor-pointer"
                 >
-                  <RotateCcw className="w-4 h-4 text-amber-300 shrink-0" />
-                  <span>New Ballot</span>
+                  <Vote className="w-4 h-4" />
+                  <span>View Live Leaderboard</span>
                 </button>
-              </div>
 
-              {emailNotice && (
-                <div className="p-2.5 rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-200 text-xs text-center animate-fade-in font-sans-clean">
-                  {emailNotice}
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    onClick={handleDownloadPNG}
+                    disabled={isDownloading}
+                    className="py-2.5 px-2 rounded-xl bg-amber-400/20 hover:bg-amber-400/35 text-amber-100 border border-amber-400/50 font-sans-clean text-xs font-bold flex items-center justify-center space-x-1 transition-colors cursor-pointer disabled:opacity-50 shadow-sm"
+                    title="Tải xuống hình ảnh PNG phiếu bình chọn"
+                  >
+                    <Download className="w-4 h-4 text-amber-300 shrink-0" />
+                    <span>{isDownloading ? 'Đang tải...' : 'Tải PNG'}</span>
+                  </button>
+
+                  <button
+                    onClick={handleSendEmail}
+                    disabled={isSendingEmail}
+                    className="py-2.5 px-2 rounded-xl bg-amber-400/20 hover:bg-amber-400/35 text-amber-100 border border-amber-400/50 font-sans-clean text-xs font-bold flex items-center justify-center space-x-1 transition-colors cursor-pointer disabled:opacity-50 shadow-sm"
+                    title="Tự động gửi Email xác nhận phiếu bình chọn"
+                  >
+                    <Mail className="w-4 h-4 text-amber-300 shrink-0" />
+                    <span>{isSendingEmail ? 'Đang gửi...' : 'Gửi Email Auto'}</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      soundFx.playClick();
+                      setShowReceiptModal(false);
+                      onReset();
+                    }}
+                    className="py-2.5 px-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-sans-clean text-xs font-bold flex items-center justify-center space-x-1 transition-colors cursor-pointer border border-white/20"
+                  >
+                    <RotateCcw className="w-4 h-4 text-amber-300 shrink-0" />
+                    <span>New Ballot</span>
+                  </button>
                 </div>
-              )}
+
+                {emailNotice && (
+                  <div className="p-3 rounded-xl bg-emerald-500/25 border border-emerald-400/60 text-emerald-200 text-xs text-center animate-fade-in font-sans-clean font-bold shadow-md">
+                    {emailNotice}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

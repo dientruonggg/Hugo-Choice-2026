@@ -224,29 +224,27 @@ const rawNifflerMembers = [
   'Nguyễn Anh Bão'
 ];
 
-let globalIdCounter = 1;
-
 export const ALL_MEMBERS: ClubMember[] = [
-  ...rawBananaMembers.map((name) => ({
-    id: `mem-${globalIdCounter++}`,
+  ...rawBananaMembers.map((name, idx) => ({
+    id: `bnn-${idx + 1}`,
     name: name.trim().replace(/\.$/, ''),
     teamId: 'bnn' as HugoTeam,
     teamName: 'Banana'
   })),
-  ...rawPowerRangersMembers.map((name) => ({
-    id: `mem-${globalIdCounter++}`,
+  ...rawPowerRangersMembers.map((name, idx) => ({
+    id: `prs-${idx + 1}`,
     name: name.trim().replace(/\.$/, ''),
     teamId: 'prs' as HugoTeam,
     teamName: 'Power Rangers'
   })),
-  ...rawHeroesCompanyMembers.map((name) => ({
-    id: `mem-${globalIdCounter++}`,
+  ...rawHeroesCompanyMembers.map((name, idx) => ({
+    id: `hc-${idx + 1}`,
     name: name.trim().replace(/\.$/, ''),
     teamId: 'hc' as HugoTeam,
     teamName: 'Heroes Company'
   })),
-  ...rawNifflerMembers.map((name) => ({
-    id: `mem-${globalIdCounter++}`,
+  ...rawNifflerMembers.map((name, idx) => ({
+    id: `niff-${idx + 1}`,
     name: name.trim().replace(/\.$/, ''),
     teamId: 'niff' as HugoTeam,
     teamName: 'Nifflers'

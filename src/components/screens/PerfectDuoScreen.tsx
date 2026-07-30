@@ -50,13 +50,16 @@ export const PerfectDuoScreen: React.FC<PerfectDuoScreenProps> = ({
 
   const handleSelectPersonA = (member: ClubMember) => {
     soundFx.playSelect();
-    setPersonA(member.name);
+    setPersonA(member.id);
   };
 
   const handleSelectPersonB = (member: ClubMember) => {
     soundFx.playSelect();
-    setPersonB(member.name);
+    setPersonB(member.id);
   };
+
+  const memberAObj = ALL_MEMBERS.find(m => m.id === personA || m.name === personA);
+  const memberBObj = ALL_MEMBERS.find(m => m.id === personB || m.name === personB);
 
   return (
     <div className="relative flex-1 flex flex-col justify-between w-full h-full min-h-0 py-2 sm:py-3 px-3 sm:px-6">
@@ -77,7 +80,7 @@ export const PerfectDuoScreen: React.FC<PerfectDuoScreenProps> = ({
           <div className="px-4 py-1.5 rounded-xl bg-white/10 border border-white/20 min-w-[140px] sm:min-w-[180px]">
             <div className="text-[0.65rem] text-pink-300 uppercase font-bold tracking-wider">Partner #1</div>
             <div className="font-serif-display text-sm sm:text-lg font-bold text-amber-200 truncate">
-              {personA || 'Select Member 1'}
+              {memberAObj?.name || personA || 'Select Member 1'}
             </div>
           </div>
 
@@ -90,7 +93,7 @@ export const PerfectDuoScreen: React.FC<PerfectDuoScreenProps> = ({
           <div className="px-4 py-1.5 rounded-xl bg-white/10 border border-white/20 min-w-[140px] sm:min-w-[180px]">
             <div className="text-[0.65rem] text-pink-300 uppercase font-bold tracking-wider">Partner #2</div>
             <div className="font-serif-display text-sm sm:text-lg font-bold text-amber-200 truncate">
-              {personB || 'Select Member 2'}
+              {memberBObj?.name || personB || 'Select Member 2'}
             </div>
           </div>
         </div>
@@ -150,7 +153,7 @@ export const PerfectDuoScreen: React.FC<PerfectDuoScreenProps> = ({
           {/* Scrollable Members List A */}
           <div className="flex-1 min-h-0 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar">
             {listA.map(member => {
-              const isSelected = personA === member.name;
+              const isSelected = personA === member.id || personA === member.name;
               const badge = TEAM_BADGES[member.teamId];
               return (
                 <button
@@ -225,7 +228,7 @@ export const PerfectDuoScreen: React.FC<PerfectDuoScreenProps> = ({
           {/* Scrollable Members List B */}
           <div className="flex-1 min-h-0 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar">
             {listB.map(member => {
-              const isSelected = personB === member.name;
+              const isSelected = personB === member.id || personB === member.name;
               const badge = TEAM_BADGES[member.teamId];
               return (
                 <button

@@ -1,6 +1,7 @@
 import React from 'react';
 import { LiveResultsData } from '../types';
-import { BEST_MEMBER_CANDIDATES, BEST_EVENTS, ROOKIE_CANDIDATES, PERFECT_DUOS, TEAMS } from '../data/mockData';
+import { BEST_EVENTS, TEAMS } from '../data/mockData';
+import { getResolvedBestMemberName, getResolvedRookieName, getResolvedDuoName } from '../utils/ballotHelpers';
 import { X, Award, Flame, Users, Calendar, Sparkles } from 'lucide-react';
 import { soundFx } from '../utils/soundEffects';
 
@@ -86,15 +87,15 @@ export const AdminLeaderboardModal: React.FC<AdminLeaderboardModalProps> = ({
               <Sparkles className="w-4 h-4 mr-2" /> Best Member
             </h3>
             <div className="space-y-2">
-              {BEST_MEMBER_CANDIDATES.map(m => {
-                const count = results.bestMember[m.id] || 0;
+              {Object.entries(results.bestMember).map(([idOrName, count]) => {
+                const name = getResolvedBestMemberName(idOrName);
                 const percent = results.totalSubmissions ? Math.round((count / results.totalSubmissions) * 100) : 0;
 
                 return (
-                  <div key={m.id} className="p-3 rounded-lg bg-emerald-950/40 border border-emerald-500/20 flex items-center justify-between">
+                  <div key={idOrName} className="p-3 rounded-lg bg-emerald-950/40 border border-emerald-500/20 flex items-center justify-between">
                     <div className="flex-1 pr-4">
                       <div className="flex justify-between text-sm mb-1">
-                        <span className="font-serif-display font-medium text-white">{m.name}</span>
+                        <span className="font-serif-display font-medium text-white">{name}</span>
                         <span className="text-amber-300 font-bold">{count} ({percent}%)</span>
                       </div>
                       <div className="w-full bg-black/40 h-2 rounded-full overflow-hidden">
@@ -147,15 +148,15 @@ export const AdminLeaderboardModal: React.FC<AdminLeaderboardModalProps> = ({
               🌱 The Rookie Award
             </h3>
             <div className="space-y-2">
-              {ROOKIE_CANDIDATES.map(r => {
-                const count = results.rookie[r.id] || 0;
+              {Object.entries(results.rookie).map(([idOrName, count]) => {
+                const name = getResolvedRookieName(idOrName);
                 const percent = results.totalSubmissions ? Math.round((count / results.totalSubmissions) * 100) : 0;
 
                 return (
-                  <div key={r.id} className="p-3 rounded-lg bg-white/5 border border-white/10 flex items-center justify-between">
+                  <div key={idOrName} className="p-3 rounded-lg bg-white/5 border border-white/10 flex items-center justify-between">
                     <div className="flex-1 pr-4">
                       <div className="flex justify-between text-sm mb-1">
-                        <span className="font-serif-display font-medium text-white">{r.name}</span>
+                        <span className="font-serif-display font-medium text-white">{name}</span>
                         <span className="text-emerald-300 font-bold">{count} ({percent}%)</span>
                       </div>
                       <div className="w-full bg-black/40 h-2 rounded-full overflow-hidden">
@@ -177,15 +178,15 @@ export const AdminLeaderboardModal: React.FC<AdminLeaderboardModalProps> = ({
               🦋 The Perfect Duo
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {PERFECT_DUOS.map(d => {
-                const count = results.perfectDuo[d.id] || 0;
+              {Object.entries(results.perfectDuo).map(([idOrName, count]) => {
+                const name = getResolvedDuoName(idOrName);
                 const percent = results.totalSubmissions ? Math.round((count / results.totalSubmissions) * 100) : 0;
 
                 return (
-                  <div key={d.id} className="p-3 rounded-lg bg-purple-950/20 border border-purple-400/30 flex justify-between items-center">
+                  <div key={idOrName} className="p-3 rounded-lg bg-purple-950/20 border border-purple-400/30 flex justify-between items-center">
                     <div>
                       <span className="font-serif-display text-sm font-semibold text-white block">
-                        {d.personA1} & {d.personA2} / {d.personB1} & {d.personB2}
+                        {name}
                       </span>
                       <span className="text-xs text-purple-200">{count} votes ({percent}%)</span>
                     </div>

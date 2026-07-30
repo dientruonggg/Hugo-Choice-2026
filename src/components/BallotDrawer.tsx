@@ -1,8 +1,14 @@
 import React from 'react';
 import { VotingState, ScreenStep } from '../types';
-import { BEST_MEMBER_CANDIDATES, BEST_EVENTS, ROOKIE_CANDIDATES, PERFECT_DUOS, TEAMS } from '../data/mockData';
 import { X, CheckCircle2, AlertCircle, Edit2 } from 'lucide-react';
 import { soundFx } from '../utils/soundEffects';
+import {
+  getResolvedTeamName,
+  getResolvedBestMemberName,
+  getResolvedEventName,
+  getResolvedRookieName,
+  getResolvedDuoName
+} from '../utils/ballotHelpers';
 
 interface BallotDrawerProps {
   isOpen: boolean;
@@ -19,12 +25,6 @@ export const BallotDrawer: React.FC<BallotDrawerProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  const teamObj = TEAMS.find(t => t.id === votingState.selectedTeam);
-  const memberObj = BEST_MEMBER_CANDIDATES.find(m => m.id === votingState.selectedBestMember);
-  const eventObj = BEST_EVENTS.find(e => e.id === votingState.selectedBestEvent);
-  const rookieObj = ROOKIE_CANDIDATES.find(r => r.id === votingState.selectedRookie);
-  const duoObj = PERFECT_DUOS.find(d => d.id === votingState.selectedDuo);
-
   const categories = [
     {
       title: 'Voter Profile',
@@ -34,33 +34,33 @@ export const BallotDrawer: React.FC<BallotDrawerProps> = ({
     },
     {
       title: 'Best Team',
-      value: teamObj ? `${teamObj.icon} ${teamObj.name}` : 'No team selected',
+      value: getResolvedTeamName(votingState.selectedTeam, 'No team selected'),
       step: 'team_selection' as ScreenStep,
-      filled: Boolean(teamObj)
+      filled: Boolean(votingState.selectedTeam)
     },
     {
       title: 'Best Member',
-      value: memberObj ? memberObj.name : 'No candidate selected',
+      value: getResolvedBestMemberName(votingState.selectedBestMember, 'No candidate selected'),
       step: 'best_member' as ScreenStep,
-      filled: Boolean(memberObj)
+      filled: Boolean(votingState.selectedBestMember)
     },
     {
       title: 'Best Event',
-      value: eventObj ? `${eventObj.icon} ${eventObj.name}` : 'No event selected',
+      value: getResolvedEventName(votingState.selectedBestEvent, 'No event selected'),
       step: 'best_event' as ScreenStep,
-      filled: Boolean(eventObj)
+      filled: Boolean(votingState.selectedBestEvent)
     },
     {
       title: 'The Rookie',
-      value: rookieObj ? rookieObj.name : 'No candidate selected',
+      value: getResolvedRookieName(votingState.selectedRookie, 'No candidate selected'),
       step: 'rookie' as ScreenStep,
-      filled: Boolean(rookieObj)
+      filled: Boolean(votingState.selectedRookie)
     },
     {
       title: 'The Perfect Duo',
-      value: duoObj ? duoObj.name : 'No duo selected',
+      value: getResolvedDuoName(votingState.selectedDuo, 'No duo selected'),
       step: 'perfect_duo' as ScreenStep,
-      filled: Boolean(duoObj)
+      filled: Boolean(votingState.selectedDuo)
     }
   ];
 

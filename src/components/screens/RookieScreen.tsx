@@ -36,7 +36,7 @@ export const RookieScreen: React.FC<RookieScreenProps> = ({
 
   const handleSelectMember = (member: ClubMember) => {
     soundFx.playSelect();
-    onSelectRookie(member.name);
+    onSelectRookie(member.id);
   };
 
   return (

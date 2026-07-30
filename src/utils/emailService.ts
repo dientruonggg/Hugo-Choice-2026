@@ -1,6 +1,13 @@
 import emailjs from '@emailjs/browser';
 import { VotingState } from '../types';
-import { TEAMS, BEST_MEMBER_CANDIDATES, BEST_EVENTS, ROOKIE_CANDIDATES, PERFECT_DUOS } from '../data/mockData';
+import { EMAIL_TEMPLATE_CONFIG } from '../config/emailTemplateConfig';
+import {
+  getResolvedTeamName,
+  getResolvedBestMemberName,
+  getResolvedEventName,
+  getResolvedRookieName,
+  getResolvedDuoName
+} from './ballotHelpers';
 
 const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID || '';
 const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || '';
@@ -22,12 +29,6 @@ export async function sendBallotEmailAuto(votingState: VotingState): Promise<Aut
     };
   }
 
-  const teamObj = TEAMS.find(t => t.id === votingState.selectedTeam);
-  const memberObj = BEST_MEMBER_CANDIDATES.find(m => m.id === votingState.selectedBestMember);
-  const eventObj = BEST_EVENTS.find(e => e.id === votingState.selectedBestEvent);
-  const rookieObj = ROOKIE_CANDIDATES.find(r => r.id === votingState.selectedRookie);
-  const duoObj = PERFECT_DUOS.find(d => d.id === votingState.selectedDuo);
-
   const submittedDate = votingState.submittedAt
     ? new Date(votingState.submittedAt).toLocaleString('vi-VN')
     : new Date().toLocaleString('vi-VN');
@@ -35,12 +36,13 @@ export async function sendBallotEmailAuto(votingState: VotingState): Promise<Aut
   const ballotPayload = {
     userEmail: targetEmail,
     userName: userName,
+    emailConfig: EMAIL_TEMPLATE_CONFIG,
     ballot: {
-      team: teamObj ? `${teamObj.icon} ${teamObj.name}` : 'N/A',
-      member: memberObj ? memberObj.name : 'N/A',
-      event: eventObj ? `${eventObj.icon} ${eventObj.name}` : 'N/A',
-      rookie: rookieObj ? rookieObj.name : 'N/A',
-      duo: duoObj ? duoObj.name : 'N/A',
+      team: getResolvedTeamName(votingState.selectedTeam),
+      member: getResolvedBestMemberName(votingState.selectedBestMember),
+      event: getResolvedEventName(votingState.selectedBestEvent),
+      rookie: getResolvedRookieName(votingState.selectedRookie),
+      duo: getResolvedDuoName(votingState.selectedDuo),
       submittedAt: votingState.submittedAt || new Date().toISOString()
     }
   };
@@ -79,6 +81,10 @@ export async function sendBallotEmailAuto(votingState: VotingState): Promise<Aut
         user_name: userName,
         user_email: targetEmail,
         submitted_at: submittedDate,
+        intro_heading: EMAIL_TEMPLATE_CONFIG.introHeading,
+        intro_message: EMAIL_TEMPLATE_CONFIG.introMessage,
+        footer_note: EMAIL_TEMPLATE_CONFIG.footerNote,
+        club_signature: EMAIL_TEMPLATE_CONFIG.clubSignature,
         selected_team: ballotPayload.ballot.team,
         selected_member: ballotPayload.ballot.member,
         selected_event: ballotPayload.ballot.event,
