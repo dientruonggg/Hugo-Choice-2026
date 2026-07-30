@@ -1,3 +1,8 @@
+# Firebase
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+
 # Dependencies
 node_modules/
 /.pnp
@@ -12,10 +17,12 @@ node_modules/
 /build
 *.tsbuildinfo
 
-# Vite / Tooling Cache
+# Vite & Local Tooling Caches
 .vite/
 .cache/
 .tools/
+.agents/
+.antigravity/
 
 # Environment variables (do not commit secrets)
 .env
