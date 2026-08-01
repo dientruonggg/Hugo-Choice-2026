@@ -9,9 +9,13 @@ import { sendBallotEmailAuto } from '../../utils/emailService';
 import {
   getResolvedTeamName,
   getResolvedBestMemberName,
+  getResolvedBestMemberArray,
   getResolvedEventName,
+  getResolvedEventArray,
   getResolvedRookieName,
-  getResolvedDuoName
+  getResolvedRookieArray,
+  getResolvedDuoName,
+  getResolvedDuoArray
 } from '../../utils/ballotHelpers';
 
 interface SubmissionScreenProps {
@@ -122,7 +126,6 @@ async function generateFallbackCanvasReceipt(votingState: VotingState): Promise<
   ctx.fillText('VOTING SELECTIONS', canvas.width / 2, 315);
 
   const items = [
-    { label: 'Best Team', value: getResolvedTeamName(votingState.selectedTeam) },
     { label: 'Best Member', value: getResolvedBestMemberName(votingState.selectedBestMember) },
     { label: 'Best Event', value: getResolvedEventName(votingState.selectedBestEvent) },
     { label: 'The Rookie Award', value: getResolvedRookieName(votingState.selectedRookie) },
@@ -297,31 +300,15 @@ export const SubmissionScreen: React.FC<SubmissionScreenProps> = ({
   };
 
   const ballotSummaryItems = [
-    { label: 'Best Team', icon: '🛡️', value: teamName, step: 'team_selection' as ScreenStep },
-    { label: 'Best Member', icon: '🌟', value: memberName, step: 'best_member' as ScreenStep },
-    { label: 'Best Event', icon: '🎬', value: eventName, step: 'best_event' as ScreenStep },
-    { label: 'The Rookie', icon: '🚀', value: rookieName, step: 'rookie' as ScreenStep },
-    { label: 'The Perfect Duo', icon: '💖', value: duoName, step: 'perfect_duo' as ScreenStep },
+    { label: 'Best Member', icon: '🌟', values: getResolvedBestMemberArray(votingState.selectedBestMember), step: 'best_member' as ScreenStep },
+    { label: 'Best Event', icon: '🎬', values: getResolvedEventArray(votingState.selectedBestEvent), step: 'best_event' as ScreenStep },
+    { label: 'The Rookie', icon: '🚀', values: getResolvedRookieArray(votingState.selectedRookie), step: 'rookie' as ScreenStep },
+    { label: 'The Perfect Duo', icon: '💖', values: getResolvedDuoArray(votingState.selectedDuo), step: 'perfect_duo' as ScreenStep },
   ];
 
   return (
     <div className="relative flex-1 flex flex-col justify-between items-center w-full min-h-[85vh] px-4 py-6 text-center max-w-4xl mx-auto overflow-y-auto custom-scrollbar pb-64 sm:pb-72">
-      {/* TOP NAVIGATION BAR */}
-      <div className="w-full flex justify-between items-center mb-2 px-1 shrink-0 z-20">
-        <button
-          type="button"
-          onClick={() => {
-            soundFx.playClick();
-            onNavigate('perfect_duo');
-          }}
-          className="px-4 py-1.5 sm:px-6 sm:py-2 rounded-full border-2 border-white/80 bg-black/70 hover:bg-black/90 text-white font-serif-display text-xs sm:text-base flex items-center gap-1 cursor-pointer transition-all shadow-md active:scale-95 select-none"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          <span>Back to Perfect Duo</span>
-        </button>
-      </div>
-
-      {/* Title Header matching Image 7 */}
+      {/* Title Header */}
       <div className="my-2 z-20">
         <h2
           className="font-script text-4xl sm:text-6xl md:text-7xl text-white drop-shadow-[0_8px_20px_rgba(0,0,0,0.95)] select-none"
@@ -368,68 +355,77 @@ export const SubmissionScreen: React.FC<SubmissionScreenProps> = ({
         )}
       </div>
 
-      {/* On-Screen Ballot Summary Card (Shows exact votes as compiled) */}
-      <div className="w-full my-4 p-4 sm:p-5 rounded-3xl bg-black/60 backdrop-blur-md border border-amber-400/40 shadow-2xl z-20 text-left">
-        <div className="flex items-center justify-between pb-3 mb-3 border-b border-amber-400/30">
+      {/* On-Screen Ballot Summary Card */}
+      <div className="w-full my-4 p-4 sm:p-5 rounded-3xl bg-black/85 backdrop-blur-2xl border border-amber-300/60 shadow-2xl z-20 text-left">
+        <div className="flex items-center justify-between pb-3 mb-3 border-b border-amber-300/40">
           <div className="flex items-center space-x-2">
             <Award className="w-5 h-5 text-amber-400" />
             <h3 className="font-serif-display text-lg sm:text-xl font-bold text-amber-200">
               Official Voting Ballot Summary
             </h3>
           </div>
-          <span className="text-xs font-sans-clean px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40">
-            {votingState.userName || 'Guest Voter'}
-          </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 font-serif-display">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 font-sans-clean">
           {ballotSummaryItems.map((item, idx) => (
             <div
               key={idx}
-              className="p-3 rounded-2xl bg-white/5 border border-white/10 flex flex-col justify-between hover:border-amber-400/50 transition-colors group cursor-pointer"
+              className="p-3.5 rounded-2xl bg-white/5 border border-amber-300/30 flex flex-col justify-between hover:border-amber-300 transition-colors group cursor-pointer"
               onClick={() => {
                 soundFx.playClick();
                 onNavigate(item.step);
               }}
             >
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-xs font-sans-clean uppercase tracking-wider text-amber-300/90 font-semibold flex items-center gap-1">
+              <div className="flex justify-between items-center mb-2 pb-1 border-b border-white/10">
+                <span className="text-xs uppercase tracking-wider text-amber-300 font-extrabold flex items-center gap-1.5">
                   <span>{item.icon}</span>
                   <span>{item.label}</span>
                 </span>
-                <span className="text-[10px] text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="text-[11px] text-amber-400 font-bold opacity-70 group-hover:opacity-100 transition-opacity">
                   Edit ✏️
                 </span>
               </div>
-              <p className="font-bold text-white text-sm sm:text-base truncate">
-                {item.value}
-              </p>
+              
+              <div className="space-y-1.5">
+                {item.values.length > 0 ? (
+                  item.values.map((valStr, valIdx) => (
+                    <div key={valIdx} className="flex items-center gap-2 text-xs sm:text-sm font-bold text-white bg-black/40 px-2.5 py-1.5 rounded-xl border border-white/10">
+                      <span className="w-4 h-4 rounded-full bg-amber-400 text-slate-950 text-[0.65rem] flex items-center justify-center font-black shrink-0">
+                        {valIdx + 1}
+                      </span>
+                      <span className="truncate">{valStr}</span>
+                    </div>
+                  ))
+                ) : (
+                  <span className="text-xs text-amber-200/50 italic">Incomplete (3 required)</span>
+                )}
+              </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Bottom Left Star Stats Badge matching Image 7 */}
-      <div className="w-full flex justify-between items-end pt-4 border-t border-white/10 z-20">
-        <div className="flex items-center space-x-2 bg-black/40 backdrop-blur-md px-5 py-2.5 rounded-2xl border border-amber-300/40 shadow-lg">
-          <span className="font-sora font-extrabold text-3xl sm:text-4xl text-amber-300">
-            16
-          </span>
-          <span className="text-2xl sm:text-3xl">⭐</span>
-        </div>
+      {/* Action Navigation Footer */}
+      <div className="w-full flex justify-between items-center pt-4 border-t border-amber-300/30 z-20">
+        <button
+          onClick={() => {
+            soundFx.playClick();
+            onNavigate('perfect_duo');
+          }}
+          className="px-6 py-2.5 rounded-full border-2 border-white/90 bg-black/60 hover:bg-black/80 text-white font-serif-display text-sm sm:text-base font-bold transition-all shadow-md cursor-pointer"
+        >
+          Back to Perfect Duo
+        </button>
 
-        {/* Action Buttons */}
-        <div className="flex items-center space-x-3">
-          <button
-            onClick={() => {
-              soundFx.playClick();
-              onNavigate('team_selection');
-            }}
-            className="px-6 py-2.5 rounded-full border border-white/50 bg-black/30 hover:bg-black/50 text-white font-serif-display text-base transition-all"
-          >
-            Review Selections
-          </button>
-        </div>
+        <button
+          onClick={() => {
+            soundFx.playClick();
+            onNavigate('team_selection');
+          }}
+          className="px-6 py-2.5 rounded-full border-2 border-amber-300 bg-amber-400/20 hover:bg-amber-400/30 text-amber-200 font-serif-display text-sm sm:text-base font-bold transition-all shadow-md cursor-pointer"
+        >
+          Review Selections
+        </button>
       </div>
 
       {/* 200px - 300px Extra Bottom Scroll Space for Mobile Accessibility */}
@@ -487,11 +483,6 @@ export const SubmissionScreen: React.FC<SubmissionScreenProps> = ({
                       <span className="font-bold text-emerald-300 text-xs sm:text-sm">{votingState.userEmail}</span>
                     </div>
                   )}
-
-                  <div className="p-3.5 rounded-2xl bg-black/65 border border-amber-400/40 flex justify-between items-center shadow-lg backdrop-blur-md">
-                    <span className="text-amber-200/90 font-medium">Best Team:</span>
-                    <span className="font-bold text-amber-300">{teamName}</span>
-                  </div>
 
                   <div className="p-3.5 rounded-2xl bg-black/65 border border-amber-400/40 flex justify-between items-center shadow-lg backdrop-blur-md">
                     <span className="text-amber-200/90 font-medium">Best Member:</span>

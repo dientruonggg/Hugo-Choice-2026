@@ -340,7 +340,7 @@ export default function App() {
           <NameInputScreen
             initialName={votingState.userName}
             onBack={() => navigateTo('process')}
-            onNext={(name, teamId) => {
+            onNext={(name) => {
               const existingBallot = getSavedBallotForUser(votingState.userEmail, name);
               if (existingBallot) {
                 setVotingState({
@@ -358,11 +358,10 @@ export default function App() {
               } else {
                 setVotingState(prev => ({
                   ...prev,
-                  userName: name,
-                  selectedTeam: teamId || prev.selectedTeam
+                  userName: name
                 }));
               }
-              navigateTo('team_selection');
+              navigateTo('best_member');
             }}
           />
         )}
@@ -382,8 +381,9 @@ export default function App() {
             selectedCandidateIds={votingState.selectedBestMember}
             userTeam={votingState.selectedTeam}
             onSelectCandidates={(ids) => setVotingState(prev => ({ ...prev, selectedBestMember: ids }))}
-            onBack={() => navigateTo('team_selection')}
+            onBack={() => navigateTo('name_input')}
             onNext={() => navigateTo('best_event')}
+            onNavigate={navigateTo}
           />
         )}
 
@@ -393,6 +393,7 @@ export default function App() {
             onSelectEvents={(ids) => setVotingState(prev => ({ ...prev, selectedBestEvent: ids }))}
             onBack={() => navigateTo('best_member')}
             onNext={() => navigateTo('rookie')}
+            onNavigate={navigateTo}
           />
         )}
 
@@ -403,6 +404,7 @@ export default function App() {
             onSelectRookies={(ids) => setVotingState(prev => ({ ...prev, selectedRookie: ids }))}
             onBack={() => navigateTo('best_event')}
             onNext={() => navigateTo('perfect_duo')}
+            onNavigate={navigateTo}
           />
         )}
 
@@ -412,6 +414,7 @@ export default function App() {
             onSelectDuos={(duos) => setVotingState(prev => ({ ...prev, selectedDuo: duos }))}
             onBack={() => navigateTo('rookie')}
             onNext={() => navigateTo('submission')}
+            onNavigate={navigateTo}
           />
         )}
 

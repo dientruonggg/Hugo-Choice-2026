@@ -196,23 +196,7 @@ export const Header: React.FC<HeaderProps> = ({
             <Music className={`w-4 h-4 ${isBgMusicPlaying ? 'text-fuchsia-300 animate-pulse' : 'text-fuchsia-200'}`} />
           </button>
 
-          {/* Live Ballot Summary Drawer Button */}
-          {votingState.userName && (
-            <button
-              onClick={() => {
-                soundFx.playClick();
-                onOpenBallotDrawer();
-              }}
-              className="px-3 py-1.5 rounded-full bg-emerald-900/60 hover:bg-emerald-800/80 border border-emerald-400/40 text-emerald-100 text-xs font-sans-clean font-medium flex items-center space-x-2 shadow-md backdrop-blur-md transition-all duration-200"
-              title="View my ballot summary"
-            >
-              <Vote className="w-4 h-4 text-amber-300 shrink-0" />
-              <span>My Ballot</span>
-              <span className="bg-amber-400 text-black text-[0.65rem] font-bold px-1.5 rounded-full shrink-0">
-                {votesCount}/5
-              </span>
-            </button>
-          )}
+
 
           {/* Live Results Leaderboard Button */}
           <button
@@ -433,23 +417,7 @@ export const Header: React.FC<HeaderProps> = ({
               <ChevronRight className="w-4 h-4 text-gray-500" />
             </button>
 
-            {/* My Ballot Button */}
-            <button
-              onClick={() => {
-                soundFx.playClick();
-                onOpenBallotDrawer();
-                setIsMobileMenuOpen(false);
-              }}
-              className="w-full p-3 rounded-xl bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-400/40 text-emerald-200 flex items-center justify-between text-xs font-semibold transition-all shadow-sm cursor-pointer"
-            >
-              <div className="flex items-center space-x-2.5">
-                <Vote className="w-4 h-4 text-amber-300" />
-                <span>Phiếu bầu của tôi</span>
-              </div>
-              <span className="bg-amber-400 text-black text-[0.65rem] font-bold px-2 py-0.5 rounded-full">
-                {votesCount}/5
-              </span>
-            </button>
+
 
             {/* Live Stats Leaderboard */}
             <button

@@ -40,25 +40,25 @@ export const BallotDrawer: React.FC<BallotDrawerProps> = ({
     },
     {
       title: 'Best Member',
-      value: getResolvedBestMemberName(votingState.selectedBestMember, 'Chưa chọn đủ 3 người'),
+      value: getResolvedBestMemberName(votingState.selectedBestMember, 'Incomplete (3 required)'),
       step: 'best_member' as ScreenStep,
       filled: Array.isArray(votingState.selectedBestMember) && votingState.selectedBestMember.length === 3
     },
     {
       title: 'Best Event',
-      value: getResolvedEventName(votingState.selectedBestEvent, 'Chưa chọn đủ 3 sự kiện'),
+      value: getResolvedEventName(votingState.selectedBestEvent, 'Incomplete (3 required)'),
       step: 'best_event' as ScreenStep,
       filled: Array.isArray(votingState.selectedBestEvent) && votingState.selectedBestEvent.length === 3
     },
     {
       title: 'The Rookie',
-      value: getResolvedRookieName(votingState.selectedRookie, 'Chưa chọn đủ 3 tân binh'),
+      value: getResolvedRookieName(votingState.selectedRookie, 'Incomplete (3 required)'),
       step: 'rookie' as ScreenStep,
       filled: Array.isArray(votingState.selectedRookie) && votingState.selectedRookie.length === 3
     },
     {
       title: 'The Perfect Duo',
-      value: getResolvedDuoName(votingState.selectedDuo, 'Chưa chọn đủ 3 cặp'),
+      value: getResolvedDuoName(votingState.selectedDuo, 'Incomplete (3 required)'),
       step: 'perfect_duo' as ScreenStep,
       filled: Array.isArray(votingState.selectedDuo) && votingState.selectedDuo.length === 3
     }

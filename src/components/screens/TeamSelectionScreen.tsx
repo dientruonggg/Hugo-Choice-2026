@@ -238,41 +238,6 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
 
   return (
     <div className="relative flex-1 flex flex-col items-center justify-between w-full h-full min-h-0 py-2 sm:py-3 px-3 sm:px-6 overflow-y-auto custom-scrollbar pb-64 sm:pb-72">
-      {/* TOP NAVIGATION BAR (For quick access on mobile & desktop without scrolling down) */}
-      <div className="w-full max-w-6xl flex justify-between items-center mb-2 px-1 shrink-0 z-20">
-        <button
-          type="button"
-          onClick={() => {
-            soundFx.playClick();
-            onBack();
-          }}
-          className="px-4 py-1.5 sm:px-6 sm:py-2 rounded-full border-2 border-white/80 bg-black/70 hover:bg-black/90 text-white font-serif-display text-xs sm:text-base flex items-center gap-1 cursor-pointer transition-all shadow-md active:scale-95 select-none"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          <span>Back</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            if (!selectedTeam) {
-              soundFx.playClick();
-              alert('Vui lòng chọn 1 Team để tiếp tục!');
-              return;
-            }
-            soundFx.playSelect();
-            onNext();
-          }}
-          className={`px-4 py-1.5 sm:px-6 sm:py-2 rounded-full border-2 border-white/80 font-serif-display text-xs sm:text-base flex items-center gap-1 cursor-pointer transition-all shadow-md active:scale-95 select-none ${selectedTeam
-              ? 'bg-gradient-to-r from-amber-300 via-amber-200 to-white text-gray-950 font-bold hover:scale-105'
-              : 'bg-white/40 text-gray-800 opacity-60'
-            }`}
-        >
-          <span>Next</span>
-          <ChevronRight className="w-4 h-4" />
-        </button>
-      </div>
-
       {/* Top Header - Compact for Mobile */}
       <div className="text-center shrink-0 mb-1.5 sm:mb-3">
         <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-400/20 border border-amber-400/40 text-amber-300 text-[0.65rem] sm:text-xs font-bold mb-1 shadow-md">

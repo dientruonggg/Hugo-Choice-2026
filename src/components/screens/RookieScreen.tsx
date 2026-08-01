@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { ALL_MEMBERS, filterMembers, getAvailableGivenNameInitials, ClubMember } from '../../data/membersData';
+import { filterMembers, addCustomMember, ClubMember, getAllMembers } from '../../data/membersData';
 import { HugoTeam } from '../../types';
 import { soundFx } from '../../utils/soundEffects';
-import { ButterflyParticle } from '../ButterflyParticle';
-import { Check, Search, UserCheck, Sparkles, Award, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, UserCheck, Plus, ChevronLeft, ChevronRight, CheckCircle2, UserPlus } from 'lucide-react';
+import { PaginationFooter } from '../PaginationFooter';
+import { SelectedTray } from '../SelectedTray';
 
 interface RookieScreenProps {
   selectedRookieIds: string[];
@@ -11,13 +12,14 @@ interface RookieScreenProps {
   onSelectRookies: (ids: string[]) => void;
   onBack: () => void;
   onNext: () => void;
+  onNavigate?: (step: any) => void;
 }
 
 const TEAM_BADGES: Record<HugoTeam, { name: string; shortName: string; bg: string; text: string; image: string }> = {
-  prs: { name: 'Power Rangers', shortName: 'P.Rangers', bg: 'bg-red-500/35 border-red-300/80', text: 'text-red-300 font-bold', image: '/team_logo/POWER RANGERS.png' },
-  hc: { name: 'Heroes Company', shortName: 'Heroes Co.', bg: 'bg-blue-500/35 border-blue-300/80', text: 'text-blue-300 font-bold', image: '/team_logo/Heroes.png' },
-  bnn: { name: 'Banana', shortName: 'Banana', bg: 'bg-yellow-500/35 border-yellow-300/80', text: 'text-yellow-300 font-bold', image: '/team_logo/BANANA.png' },
-  niff: { name: 'Nifflers', shortName: 'Nifflers', bg: 'bg-purple-500/35 border-purple-300/80', text: 'text-purple-300 font-bold', image: '/team_logo/NIFFLER.png' }
+  prs: { name: 'Power Rangers', shortName: 'P.Rangers', bg: 'bg-red-500/30 border-red-400/60', text: 'text-red-200 font-bold', image: '/team_logo/POWER RANGERS.png' },
+  hc: { name: 'Heroes Company', shortName: 'Heroes Co.', bg: 'bg-blue-500/30 border-blue-400/60', text: 'text-blue-200 font-bold', image: '/team_logo/Heroes.png' },
+  bnn: { name: 'Banana', shortName: 'Banana', bg: 'bg-amber-500/30 border-amber-400/60', text: 'text-amber-200 font-bold', image: '/team_logo/BANANA.png' },
+  niff: { name: 'Nifflers', shortName: 'Nifflers', bg: 'bg-purple-500/30 border-purple-400/60', text: 'text-purple-200 font-bold', image: '/team_logo/NIFFLER.png' }
 };
 
 export const RookieScreen: React.FC<RookieScreenProps> = ({
@@ -25,21 +27,15 @@ export const RookieScreen: React.FC<RookieScreenProps> = ({
   userTeam = null,
   onSelectRookies,
   onBack,
-  onNext
+  onNext,
+  onNavigate
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const targetTeam: HugoTeam | 'all' = userTeam || 'all';
-  const [selectedLetterFilter, setSelectedLetterFilter] = useState<string>('all');
 
   const selectedList = Array.isArray(selectedRookieIds) ? selectedRookieIds : (selectedRookieIds ? [selectedRookieIds] : []);
-
-  const teamMembersPool = targetTeam !== 'all'
-    ? ALL_MEMBERS.filter(m => m.teamId === targetTeam)
-    : ALL_MEMBERS;
-
-  const availableInitials = getAvailableGivenNameInitials(teamMembersPool);
-  const hasActiveFilter = searchQuery.trim() !== '' || selectedLetterFilter !== 'all';
-  const filteredList = hasActiveFilter ? filterMembers(searchQuery, targetTeam, selectedLetterFilter) : [];
+  const allMembers = getAllMembers();
+  const filteredList = filterMembers(searchQuery, targetTeam);
 
   const handleSelectMember = (member: ClubMember) => {
     soundFx.playSelect();
@@ -48,186 +44,65 @@ export const RookieScreen: React.FC<RookieScreenProps> = ({
       onSelectRookies(nextList);
     } else {
       if (selectedList.length >= 3) {
-        alert('Bạn chỉ được chọn tối đa 3 tân binh cho hạng mục The Rookie! Vui lòng bỏ chọn 1 tân binh trước nếu muốn thay đổi.');
         return;
       }
       onSelectRookies([...selectedList, member.id]);
     }
   };
 
+  const handleAddCustom = () => {
+    if (!searchQuery.trim()) return;
+    const added = addCustomMember(searchQuery.trim(), userTeam || 'prs');
+    soundFx.playSelect();
+    if (!selectedList.includes(added.id) && selectedList.length < 3) {
+      onSelectRookies([...selectedList, added.id]);
+    }
+    setSearchQuery('');
+  };
+
   const isComplete = selectedList.length === 3;
+  const isSearchEmptyAndNoCustom = searchQuery.trim() && !filteredList.some(m => m.name.toLowerCase() === searchQuery.trim().toLowerCase());
 
   return (
-    <div className="relative flex-1 flex flex-col justify-between w-full h-full min-h-0 py-2 sm:py-3 px-3 sm:px-6 overflow-y-auto custom-scrollbar pb-64 sm:pb-72">
-      {/* TOP NAVIGATION BAR */}
-      <div className="w-full max-w-5xl mx-auto flex justify-between items-center mb-2 px-1 shrink-0 z-20">
-        <button
-          type="button"
-          onClick={() => {
-            soundFx.playClick();
-            onBack();
-          }}
-          className="px-4 py-1.5 sm:px-6 sm:py-2 rounded-full border-2 border-white/80 bg-black/70 hover:bg-black/90 text-white font-serif-display text-xs sm:text-base flex items-center gap-1 cursor-pointer transition-all shadow-md active:scale-95 select-none"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          <span>Back</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            if (selectedList.length < 3) {
-              soundFx.playClick();
-              alert(`Yêu cầu phải vote đủ 3 tân binh mới qua được! (Hiện tại bạn mới chọn ${selectedList.length}/3 tân binh)`);
-              return;
-            }
-            soundFx.playSelect();
-            onNext();
-          }}
-          className={`px-4 py-1.5 sm:px-6 sm:py-2 rounded-full border-2 border-white/80 font-serif-display text-xs sm:text-base flex items-center gap-1 cursor-pointer transition-all shadow-md active:scale-95 select-none ${isComplete
-              ? 'bg-gradient-to-r from-amber-300 via-amber-200 to-white text-gray-950 font-bold hover:scale-105 shadow-[0_0_20px_rgba(251,191,36,0.6)]'
-              : 'bg-white/40 text-gray-800 opacity-60'
-            }`}
-        >
-          <span>Next ({selectedList.length}/3)</span>
-          <ChevronRight className="w-4 h-4" />
-        </button>
-      </div>
-
-      {/* Title Header */}
-      <div className="text-center mb-2 sm:mb-3 shrink-0">
-        <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-400/20 border border-amber-400/40 text-amber-300 text-[0.65rem] sm:text-xs font-bold mb-1 shadow-md">
-          <span>⏱️ VÒNG 1 (01/08 - 03/08)</span>
-          <span className="opacity-50">•</span>
-          <span>VÒNG 2 (05/08 - 09/08)</span>
-          <span className="opacity-50">•</span>
-          <span>BẮT BUỘC CHỌN ĐỦ 3 TÂN BINH</span>
+    <div className="relative flex-1 flex flex-col justify-between w-full h-full min-h-0 py-3 sm:py-4 px-3 sm:px-6 overflow-y-auto custom-scrollbar pb-32 select-none">
+      {/* Title & Header Description */}
+      <div className="text-center mb-3 shrink-0 max-w-3xl mx-auto">
+        <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-black/70 border border-amber-300/60 text-amber-300 text-xs sm:text-sm font-bold mb-1.5 shadow-lg backdrop-blur-md">
+          <span>CATEGORY 3</span>
         </div>
-        <h2 className="font-serif-display text-2xl sm:text-4xl md:text-5xl font-black tracking-wider text-white text-stroke-gold drop-shadow-[0_8px_20px_rgba(0,0,0,0.8)] uppercase">
-          THE ROOKIE
+        <h2 className="font-serif-display text-3xl sm:text-5xl font-black tracking-tight text-white uppercase drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]">
+          The Rookie
         </h2>
-        <p className="font-serif-display text-[0.7rem] sm:text-sm text-amber-300 font-bold mt-0.5 max-w-2xl mx-auto drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)]">
-          🎗 Vinh danh tân binh xuất sắc nhất (Gen mới) • <span className="text-white underline">Yêu cầu chọn đủ 3 tân binh</span> mới qua được!
+        <p className="font-sans-clean text-xs sm:text-sm text-amber-200 font-bold mt-1 leading-relaxed drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+          Honoring outstanding newcomers joined this term. Exactly 3 selections required.
         </p>
       </div>
 
-      {/* Main Content Layout */}
-      <div className="relative flex-1 flex flex-col min-h-0 max-w-5xl mx-auto w-full py-1 overflow-hidden">
-        {/* Search & Team Filter Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 mb-2 bg-black/60 p-2 sm:p-3 rounded-2xl backdrop-blur-md border border-amber-300/50 shadow-2xl w-full min-w-0 max-w-full shrink-0">
-          {/* Search Box */}
-          <div className="relative w-full sm:w-56 md:w-64 shrink-0">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={userTeam ? `Tìm tân binh ${TEAM_BADGES[userTeam].name}...` : "Search newbie/member by name..."}
-              className="w-full py-2 sm:py-2.5 pl-9 pr-3 rounded-full bg-white/95 text-gray-900 placeholder-gray-500 font-serif-display text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-300"
-            />
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
-          </div>
-
-          {/* Selection counter status */}
-          <div className="flex items-center gap-2">
-            <div className={`px-3 py-1.5 rounded-full text-xs font-bold font-serif-display border flex items-center gap-1.5 shadow ${isComplete ? 'bg-emerald-500/30 border-emerald-400 text-emerald-200' : 'bg-amber-500/20 border-amber-400 text-amber-200'}`}>
-              <span>{isComplete ? '✓ Đã chọn đủ 3/3 tân binh' : `Đang chọn: ${selectedList.length}/3 tân binh (Cần thêm ${3 - selectedList.length})`}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Alphabet Letter Quick Filter Bar */}
-        <div className="mb-2.5 bg-black/60 px-3 py-1.5 rounded-xl backdrop-blur-md border border-amber-300/40 flex items-center gap-1 overflow-x-auto custom-scrollbar shrink-0">
-          <span className="text-[0.7rem] sm:text-xs text-amber-300 font-serif-display shrink-0 font-bold mr-1">Tên A-Z:</span>
-          <button
-            type="button"
-            onClick={() => {
-              setSelectedLetterFilter('all');
-              soundFx.playClick();
-            }}
-            className={`px-2 py-0.5 rounded-full text-[0.7rem] sm:text-xs font-serif-display transition-all cursor-pointer shrink-0 ${selectedLetterFilter === 'all'
-                ? 'bg-amber-400 text-black font-extrabold shadow'
-                : 'bg-white/10 text-white/70 hover:bg-white/20'
-              }`}
-          >
-            Tất cả
-          </button>
-          {availableInitials.map(letter => (
+      {/* Main Container */}
+      <div className="relative flex-1 flex flex-col min-h-0 max-w-4xl mx-auto w-full py-1">
+        {/* Full-width Standalone Search Bar */}
+        <div className="relative w-full mb-3 shrink-0">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Type rookie name to search..."
+            className="w-full py-3.5 pl-12 pr-10 rounded-2xl bg-black/85 text-white placeholder-slate-400 font-sans-clean text-sm sm:text-base font-bold focus:outline-none focus:ring-2 focus:ring-amber-300 border border-amber-300/50 shadow-2xl backdrop-blur-xl"
+          />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-amber-300 pointer-events-none" />
+          {searchQuery && (
             <button
-              key={letter}
-              type="button"
-              onClick={() => {
-                setSelectedLetterFilter(letter);
-                soundFx.playClick();
-              }}
-              className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full text-[0.7rem] sm:text-xs font-serif-display transition-all flex items-center justify-center cursor-pointer shrink-0 ${selectedLetterFilter === letter
-                  ? 'bg-amber-400 text-black font-extrabold shadow-[0_0_12px_rgba(251,191,36,0.9)] scale-110'
-                  : 'bg-white/10 text-white/70 hover:bg-white/20'
-                }`}
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs font-bold bg-white/10 rounded-full w-5 h-5 flex items-center justify-center"
             >
-              {letter}
+              ×
             </button>
-          ))}
+          )}
         </div>
 
-        {/* Currently Selected 3 Rookies Pills Bar */}
-        <div className="mb-2.5 p-2.5 sm:p-3 rounded-2xl bg-black/70 border-2 border-amber-400/60 backdrop-blur-md text-white shadow-xl shrink-0">
-          <div className="text-[0.65rem] sm:text-xs text-amber-300 font-bold uppercase tracking-wider mb-1.5 flex items-center justify-between">
-            <span>Danh sách 3 tân binh The Rookie đã chọn ({selectedList.length}/3):</span>
-            {!isComplete && <span className="text-amber-200 italic animate-pulse">Vui lòng chọn thêm {3 - selectedList.length} tân binh</span>}
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {[0, 1, 2].map((idx) => {
-              const selectedId = selectedList[idx];
-              const memObj = selectedId ? ALL_MEMBERS.find(m => m.id === selectedId || m.name === selectedId) : null;
-
-              return memObj ? (
-                <div
-                  key={memObj.id}
-                  className="px-3 py-1.5 rounded-full bg-amber-400 text-black font-bold font-serif-display text-xs sm:text-sm flex items-center gap-2 shadow-md animate-fade-in"
-                >
-                  <span className="w-5 h-5 rounded-full bg-black text-amber-300 text-[0.65rem] flex items-center justify-center font-black">
-                    #{idx + 1}
-                  </span>
-                  <span>{memObj.name}</span>
-                  <button
-                    type="button"
-                    onClick={() => handleSelectMember(memObj)}
-                    className="w-4 h-4 rounded-full bg-black/30 hover:bg-black/70 text-white flex items-center justify-center text-xs font-bold cursor-pointer"
-                    title="Bỏ chọn"
-                  >
-                    ×
-                  </button>
-                </div>
-              ) : (
-                <div
-                  key={idx}
-                  className="px-3 py-1.5 rounded-full bg-white/10 border border-dashed border-white/30 text-white/50 font-serif-display text-xs sm:text-sm flex items-center gap-1.5"
-                >
-                  <span className="w-5 h-5 rounded-full bg-white/10 text-white/50 text-[0.65rem] flex items-center justify-center">
-                    #{idx + 1}
-                  </span>
-                  <span>Chưa chọn tân binh #{idx + 1}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Scrollable Grid of Members */}
-        <div className="relative flex-1 min-h-0 overflow-y-auto pr-1 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3 custom-scrollbar">
-          {!hasActiveFilter ? (
-            <div className="col-span-full py-12 px-4 rounded-2xl bg-black/40 border border-dashed border-amber-300/40 text-center flex flex-col items-center justify-center my-auto">
-              <Search className="w-10 h-10 text-amber-300 mb-2 animate-bounce" />
-              <p className="font-serif-display text-white text-sm sm:text-base font-bold mb-1">
-                {userTeam
-                  ? `Gõ tên tân binh Đội ${TEAM_BADGES[userTeam].name} vào ô tìm kiếm hoặc chọn chữ cái`
-                  : 'Gõ tên tân binh vào ô tìm kiếm hoặc chọn chữ cái để hiển thị danh sách ứng viên'}
-              </p>
-              <p className="text-xs text-amber-200/80 italic">
-                (Hãy chọn đúng 3 người để hoàn tất The Rookie)
-              </p>
-            </div>
-          ) : filteredList.length > 0 ? (
+        {/* Member Search Results Grid */}
+        <div className="relative shrink-0 max-h-[320px] overflow-y-auto pr-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 items-start content-start custom-scrollbar mb-0">
+          {filteredList.length > 0 ? (
             filteredList.map((member) => {
               const isSelected = selectedList.includes(member.id) || selectedList.includes(member.name);
               const badge = TEAM_BADGES[member.teamId];
@@ -236,70 +111,96 @@ export const RookieScreen: React.FC<RookieScreenProps> = ({
                 <button
                   key={member.id}
                   onClick={() => handleSelectMember(member)}
-                  className={`p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl font-serif-display transition-all duration-200 flex items-center justify-between cursor-pointer border text-left ${isSelected
-                      ? 'bg-amber-400 border-amber-300 text-gray-950 font-black shadow-[0_0_24px_rgba(251,191,36,0.85)] scale-[1.02]'
-                      : 'bg-black/55 hover:bg-amber-950/60 border-amber-300/40 text-white hover:scale-[1.01]'
+                  className={`p-3.5 rounded-xl font-sans-clean transition-all duration-200 flex items-center justify-between cursor-pointer border text-left ${isSelected
+                    ? 'bg-amber-400 border-amber-300 text-slate-950 font-black shadow-[0_0_20px_rgba(251,191,36,0.8)] scale-[1.02]'
+                    : 'bg-black/75 hover:bg-black/90 border-amber-300/40 text-white hover:border-amber-300/80 shadow-lg'
                     }`}
                 >
-                  <div className="flex items-center gap-2 overflow-hidden min-w-0">
-                    <UserCheck className={`w-4 h-4 sm:w-5 sm:h-5 shrink-0 ${isSelected ? 'text-gray-950' : 'text-amber-300'}`} />
+                  <div className="flex items-center gap-2.5 overflow-hidden min-w-0">
+                    <UserCheck className={`w-4 h-4 sm:w-5 sm:h-5 shrink-0 ${isSelected ? 'text-slate-950' : 'text-amber-300'}`} />
                     <div className="truncate min-w-0">
-                      <div className="text-xs sm:text-base font-bold truncate leading-tight">{member.name}</div>
-                      <div className={`text-[0.65rem] sm:text-xs inline-flex items-center gap-1 opacity-95 ${isSelected ? 'text-gray-950 font-bold' : badge.text}`}>
-                        <img src={badge.image} alt={badge.name} className="w-3.5 h-3.5 sm:w-4 sm:h-4 object-contain rounded-full shrink-0" />
+                      <div className="text-xs sm:text-sm font-bold truncate leading-snug">{member.name}</div>
+                      <div className={`text-[0.65rem] sm:text-xs inline-flex items-center gap-1 ${isSelected ? 'text-slate-900 font-extrabold' : badge.text}`}>
+                        <img src={badge.image} alt={badge.name} className="w-3.5 h-3.5 object-contain rounded-full shrink-0" />
                         <span className="truncate">{badge.shortName}</span>
                       </div>
                     </div>
                   </div>
                   {isSelected && (
-                    <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gray-950 text-amber-300 flex items-center justify-center shrink-0 ml-1 shadow font-bold text-xs">
+                    <span className="w-5 h-5 rounded-full bg-slate-950 text-amber-300 flex items-center justify-center shrink-0 ml-1 font-black text-xs">
                       ✓
                     </span>
                   )}
                 </button>
               );
             })
+          ) : isSearchEmptyAndNoCustom ? (
+            <button
+              type="button"
+              onClick={handleAddCustom}
+              className="col-span-full py-8 px-4 text-center font-bold bg-amber-400/20 hover:bg-amber-400/30 border-2 border-dashed border-amber-300 rounded-xl text-amber-200 text-sm flex flex-col items-center justify-center gap-2 transition-all cursor-pointer shadow-lg active:scale-98"
+            >
+              <UserPlus className="w-8 h-8 text-amber-300 animate-bounce" />
+              <span>Add rookie "{searchQuery.trim()}" to database and select</span>
+            </button>
           ) : (
-            <div className="col-span-full py-10 text-center text-amber-200/90 font-serif-display text-base drop-shadow">
-              Không tìm thấy tân binh phù hợp với từ khóa "{searchQuery}"
+            <div className="col-span-full py-10 text-center text-amber-200 font-bold bg-black/60 rounded-xl border border-amber-300/30 text-xs sm:text-sm">
+              No matching rookie found.
             </div>
           )}
         </div>
+
+        {/* Selected Candidates Placement Bar at Bottom (Reusable Light Glass Tray) */}
+        <SelectedTray
+          title="Selected Rookies"
+          items={[0, 1, 2].map(idx => {
+            const selectedId = selectedList[idx];
+            const memObj = selectedId ? allMembers.find(m => m.id === selectedId || m.name === selectedId) : null;
+            return memObj ? { id: memObj.id, name: memObj.name } : null;
+          })}
+          onRemove={(item) => {
+            const memObj = allMembers.find(m => m.id === item.id || m.name === item.name);
+            if (memObj) handleSelectMember(memObj);
+          }}
+        />
       </div>
 
-      {/* Fixed Navigation Buttons */}
-      <div className="w-full max-w-6xl flex justify-between items-center pt-2 sm:pt-3 border-t border-white/15 shrink-0 px-4 sm:px-8">
+      {/* Navigation Footer */}
+      <div className="w-full max-w-4xl mx-auto flex justify-between items-center pt-3 border-t border-amber-300/40 shrink-0 mt-3">
         <button
+          type="button"
           onClick={() => {
             soundFx.playClick();
             onBack();
           }}
-          className="px-6 py-2 sm:px-9 sm:py-2.5 min-w-[95px] sm:min-w-[130px] rounded-full border-2 border-white/90 bg-black/60 hover:bg-black/80 text-white font-serif-display text-base sm:text-xl transition-all shadow-[0_4px_20px_rgba(0,0,0,0.6)] cursor-pointer"
+          className="px-6 py-2.5 sm:px-8 sm:py-3 rounded-full border-2 border-white/90 bg-black/70 hover:bg-black/90 text-white font-serif-display text-sm sm:text-base font-bold flex items-center gap-1 cursor-pointer transition-all shadow-lg active:scale-95"
         >
-          Back
+          <ChevronLeft className="w-4 h-4" />
+          <span>Back</span>
         </button>
 
+        <PaginationFooter currentStep="rookie" onNavigate={onNavigate || (() => {})} />
+
         <button
+          type="button"
           onClick={() => {
             if (selectedList.length < 3) {
               soundFx.playClick();
-              alert(`Yêu cầu phải vote đủ 3 tân binh mới qua được! (Hiện tại bạn mới chọn ${selectedList.length}/3 tân binh)`);
+              alert(`Please select 3 rookies before proceeding (${selectedList.length}/3 selected)`);
               return;
             }
             soundFx.playSelect();
             onNext();
           }}
-          className={`px-6 py-2 sm:px-9 sm:py-2.5 min-w-[95px] sm:min-w-[130px] rounded-full border-2 border-white/90 font-serif-display text-base sm:text-xl transition-all shadow-[0_4px_20px_rgba(0,0,0,0.6)] cursor-pointer ${isComplete
-              ? 'bg-white/90 hover:bg-white text-gray-900 font-medium hover:scale-105'
-              : 'bg-white/40 text-gray-800 opacity-60'
+          className={`px-6 py-2.5 sm:px-8 sm:py-3 rounded-full border-2 border-white/90 font-serif-display text-sm sm:text-base font-black flex items-center gap-1 cursor-pointer transition-all shadow-lg active:scale-95 ${isComplete
+            ? 'bg-amber-300 hover:bg-amber-200 border-amber-300 text-slate-950 shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105'
+            : 'bg-white/40 border-white/30 text-gray-800 opacity-60'
             }`}
         >
-          Next ({selectedList.length}/3)
+          <span>Next ({selectedList.length}/3)</span>
+          <ChevronRight className="w-4 h-4" />
         </button>
       </div>
-
-      {/* Extra Bottom Scroll Space */}
-      <div className="w-full h-48 sm:h-64 shrink-0 pointer-events-none" />
     </div>
   );
 };

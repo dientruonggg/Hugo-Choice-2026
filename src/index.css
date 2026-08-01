@@ -261,3 +261,57 @@ body,
   border-color: #ffd89b;
   box-shadow: inset 0 2px 6px rgba(255, 255, 255, 0.5), inset 0 -2px 6px rgba(0, 0, 0, 0.6), 0 10px 30px rgba(212, 175, 55, 0.4);
 }
+
+/* ==========================================================================
+   CUSTOM SOPHISTICATED SCROLLBAR STYLES (THANH CUỘN ĐỒNG BỘ)
+   ========================================================================== */
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(251, 191, 36, 0.5) rgba(0, 0, 0, 0.4);
+}
+
+/* WebKit (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(251, 191, 36, 0.7), rgba(245, 158, 11, 0.5));
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.2s ease-in-out;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(251, 191, 36, 1), rgba(245, 158, 11, 0.9));
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.8);
+}
+
+/* Custom Scrollbar utility class */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(251, 191, 36, 0.75), rgba(217, 119, 6, 0.6));
+  border-radius: 9999px;
+  border: 1px solid rgba(251, 191, 36, 0.4);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #fbbf24, #f59e0b);
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.9);
+}

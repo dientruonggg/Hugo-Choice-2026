@@ -251,6 +251,44 @@ export const ALL_MEMBERS: ClubMember[] = [
   }))
 ];
 
+const CUSTOM_MEMBERS_KEY = 'hugo_award_2026_custom_members';
+
+function getCustomMembers(): ClubMember[] {
+  try {
+    const saved = localStorage.getItem(CUSTOM_MEMBERS_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch {
+    // Ignore
+  }
+  return [];
+}
+
+export function addCustomMember(name: string, teamId: HugoTeam = 'prs'): ClubMember {
+  const trimmed = name.trim();
+  const existing = getAllMembers().find(m => removeVietnameseTones(m.name) === removeVietnameseTones(trimmed));
+  if (existing) return existing;
+
+  const customMembers = getCustomMembers();
+  const newMember: ClubMember = {
+    id: `custom-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+    name: trimmed,
+    teamId,
+    teamName: teamId === 'prs' ? 'Power Rangers' : teamId === 'hc' ? 'Heroes Company' : teamId === 'bnn' ? 'Banana' : 'Nifflers'
+  };
+
+  customMembers.push(newMember);
+  try {
+    localStorage.setItem(CUSTOM_MEMBERS_KEY, JSON.stringify(customMembers));
+  } catch {
+    // Ignore
+  }
+  return newMember;
+}
+
+export function getAllMembers(): ClubMember[] {
+  return [...ALL_MEMBERS, ...getCustomMembers()];
+}
+
 export function getAvailableGivenNameInitials(members: ClubMember[] = ALL_MEMBERS): string[] {
   const lettersSet = new Set<string>();
   members.forEach(m => {
@@ -265,24 +303,14 @@ export function getAvailableGivenNameInitials(members: ClubMember[] = ALL_MEMBER
 
 export function filterMembers(
   query: string,
-  teamFilter: HugoTeam | 'all' = 'all',
-  letterFilter: string = 'all'
+  teamFilter: HugoTeam | 'all' = 'all'
 ): ClubMember[] {
   const normalizedQuery = removeVietnameseTones(query.trim());
-  const normalizedLetter = letterFilter !== 'all' ? removeVietnameseTones(letterFilter).toUpperCase() : '';
+  const all = getAllMembers();
 
-  const list = ALL_MEMBERS.filter((member) => {
+  const list = all.filter((member) => {
     const matchesTeam = teamFilter === 'all' || member.teamId === teamFilter;
     if (!matchesTeam) return false;
-
-    if (normalizedLetter) {
-      const given = getGivenName(member.name);
-      const normGiven = removeVietnameseTones(given).toUpperCase();
-      const normFull = removeVietnameseTones(member.name).toUpperCase();
-      const matchesGivenLetter = normGiven.startsWith(normalizedLetter);
-      const matchesFullLetter = normFull.startsWith(normalizedLetter);
-      if (!matchesGivenLetter && !matchesFullLetter) return false;
-    }
 
     if (!normalizedQuery) return true;
     const normalizedName = removeVietnameseTones(member.name);
@@ -295,11 +323,10 @@ export function filterMembers(
     const normA = removeVietnameseTones(givenA);
     const normB = removeVietnameseTones(givenB);
 
-    const comp = normA.localeCompare(normB, 'vi');
+    const comp = normA.localeCompare(normB, 'en');
     if (comp !== 0) return comp;
 
-    // Tie breaker: compare full name
-    return removeVietnameseTones(a.name).localeCompare(removeVietnameseTones(b.name), 'vi');
+    return removeVietnameseTones(a.name).localeCompare(removeVietnameseTones(b.name), 'en');
   });
 }
 
