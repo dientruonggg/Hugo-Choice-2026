@@ -1,49 +1,103 @@
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Great+Vibes&family=Story+Script&family=Texturina:ital,opsz,wght@0,12..72,100..900;1,12..72,100..900&display=swap');
 @import "tailwindcss";
 
-html, body, #root {
+@theme {
+  --font-primary: 'Garet', 'Be Vietnam Pro', sans-serif;
+  --font-script: 'Story Script', 'Great Vibes', cursive, sans-serif;
+  --font-texturina: 'Texturina', serif;
+}
+
+/* ==========================================================================
+   CENTRAL FONT MANAGEMENT (QUẢN LÝ FONT PHÔNG CHỮ TẬP TRUNG)
+   ========================================================================== */
+:root {
+  --font-primary: 'Garet', 'Be Vietnam Pro', sans-serif;
+  --font-script: 'Story Script', 'Great Vibes', cursive, sans-serif;
+  --font-texturina: 'Texturina', serif;
+}
+
+html,
+body,
+#root {
   min-height: 100%;
   overflow-x: hidden;
   margin: 0;
   padding: 0;
-}
-
-/* Prevent accidental mobile text selection on buttons and interactive elements */
-button, a, [role="button"], input[type="submit"], input[type="button"] {
-  user-select: none;
-  -webkit-user-select: none;
-  -webkit-touch-callout: none;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
+  font-family: var(--font-primary);
 }
 
 @layer utilities {
+  /* 1. Script / Story Script Decorative Font */
+  .font-script,
+  .story-script-regular,
+  .font-story-script {
+    font-family: 'Story Script', 'Great Vibes', cursive, sans-serif !important;
+    font-weight: 400 !important;
+    font-style: normal !important;
+  }
+
+  /* 2. Texturina Serif Font */
+  .font-texturina,
+  .texturina-regular {
+    font-family: 'Texturina', serif !important;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+  }
+
+  /* 3. Display Headings (Texturina Serif 800) */
   .font-serif-display {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Texturina', serif !important;
+    font-optical-sizing: auto;
+    font-weight: 800;
   }
-  .font-cinzel {
-    font-family: 'Cinzel', serif;
-  }
-  .font-script {
-    font-family: 'Great Vibes', cursive;
-  }
+
+  /* 4. Clean Body & Labels (Garet / Primary 500) */
   .font-sans-clean {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-primary);
+    font-weight: 500;
   }
+
+  /* 5. Bold UI Weight (Garet / Primary 700) */
   .font-sora {
-    font-family: 'Sora', sans-serif;
+    font-family: var(--font-primary);
+    font-weight: 700;
   }
 }
 
+
+
+
 @keyframes floatSlow {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-12px) rotate(2deg); }
+
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-12px) rotate(2deg);
+  }
 }
 
 @keyframes flutter {
-  0%, 100% { transform: scaleX(1) translateY(0); }
-  25% { transform: scaleX(0.4) translateY(-4px) rotate(-5deg); }
-  50% { transform: scaleX(1) translateY(-8px) rotate(2deg); }
-  75% { transform: scaleX(0.3) translateY(-3px) rotate(5deg); }
+
+  0%,
+  100% {
+    transform: scaleX(1) translateY(0);
+  }
+
+  25% {
+    transform: scaleX(0.4) translateY(-4px) rotate(-5deg);
+  }
+
+  50% {
+    transform: scaleX(1) translateY(-8px) rotate(2deg);
+  }
+
+  75% {
+    transform: scaleX(0.3) translateY(-3px) rotate(5deg);
+  }
 }
 
 @keyframes flyToLoginDynamic {
@@ -55,6 +109,7 @@ button, a, [role="button"], input[type="submit"], input[type="button"] {
     transform: translate(-50%, -50%) rotate(0deg);
     opacity: 1;
   }
+
   40% {
     top: calc(50% + (var(--target-y, 24px) - 50%) * 0.4);
     left: calc(50% + (var(--target-x, 100%) - 50%) * 0.4 + 100px);
@@ -63,6 +118,7 @@ button, a, [role="button"], input[type="submit"], input[type="button"] {
     transform: translate(-50%, -50%) rotate(-20deg);
     opacity: 0.95;
   }
+
   100% {
     top: var(--target-y, 24px);
     left: var(--target-x, calc(100% - 90px));
@@ -81,10 +137,23 @@ button, a, [role="button"], input[type="submit"], input[type="button"] {
 }
 
 @keyframes flutterFast {
-  0%, 100% { transform: scaleX(1) translateY(0); }
-  25% { transform: scaleX(0.2) translateY(-4px) rotate(-5deg); }
-  50% { transform: scaleX(1) translateY(-8px) rotate(2deg); }
-  75% { transform: scaleX(0.2) translateY(-3px) rotate(5deg); }
+
+  0%,
+  100% {
+    transform: scaleX(1) translateY(0);
+  }
+
+  25% {
+    transform: scaleX(0.2) translateY(-4px) rotate(-5deg);
+  }
+
+  50% {
+    transform: scaleX(1) translateY(-8px) rotate(2deg);
+  }
+
+  75% {
+    transform: scaleX(0.2) translateY(-3px) rotate(5deg);
+  }
 }
 
 .animate-flutter-fast {
@@ -93,18 +162,31 @@ button, a, [role="button"], input[type="submit"], input[type="button"] {
 }
 
 @keyframes pulseGlow {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 0 25px rgba(255, 255, 255, 0.4), 0 0 50px rgba(212, 175, 55, 0.3);
   }
+
   50% {
     box-shadow: 0 0 50px rgba(255, 255, 255, 0.8), 0 0 90px rgba(212, 175, 55, 0.6);
   }
 }
 
 @keyframes fairyDust {
-  0% { transform: translateY(0) scale(0.8); opacity: 0; }
-  50% { opacity: 0.9; }
-  100% { transform: translateY(-80px) scale(1.4); opacity: 0; }
+  0% {
+    transform: translateY(0) scale(0.8);
+    opacity: 0;
+  }
+
+  50% {
+    opacity: 0.9;
+  }
+
+  100% {
+    transform: translateY(-80px) scale(1.4);
+    opacity: 0;
+  }
 }
 
 .animate-float-slow {
@@ -160,7 +242,7 @@ button, a, [role="button"], input[type="submit"], input[type="button"] {
   box-shadow: 0 0 25px rgba(212, 175, 55, 0.6);
 }
 
-/* Text stroke for Cinzel headings */
+/* Text stroke for serif-display headings */
 .text-stroke-gold {
   -webkit-text-stroke: 1px rgba(255, 255, 255, 0.8);
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
@@ -179,4 +261,3 @@ button, a, [role="button"], input[type="submit"], input[type="button"] {
   border-color: #ffd89b;
   box-shadow: inset 0 2px 6px rgba(255, 255, 255, 0.5), inset 0 -2px 6px rgba(0, 0, 0, 0.6), 0 10px 30px rgba(212, 175, 55, 0.4);
 }
-

@@ -1,18 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { HugoTeam, TeamMoment } from '../../types';
 import { TEAMS } from '../../data/mockData';
 import { soundFx } from '../../utils/soundEffects';
-import { getStoredMoments, addTeamMoment, toggleLikeMoment, resetStoredMoments } from '../../utils/momentsStorage';
+import { getStoredMoments, saveStoredMoments, addTeamMoment, toggleLikeMoment, isMomentLikedByUser, isMomentCreatedByUser, deleteTeamMoment, resetStoredMoments } from '../../utils/momentsStorage';
+import { saveMomentToFirestore, deleteMomentFromFirestore, subscribeToMomentsFirestore } from '../../utils/firebase';
 import { ButterflyParticle } from '../ButterflyParticle';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Plus, Heart, Sparkles, CheckCircle2, X, Camera, Maximize2, Image as ImageIcon, 
+import {
+  Plus, Heart, Sparkles, CheckCircle2, X, Camera, Maximize2, Image as ImageIcon,
   Tag, User, ChevronDown, Upload, Link as LinkIcon, FileImage, Trash2, RotateCcw,
   ChevronLeft, ChevronRight
 } from 'lucide-react';
 
 interface TeamSelectionScreenProps {
   selectedTeam: HugoTeam | null;
+  userName?: string;
   onSelectTeam: (team: HugoTeam) => void;
   onBack: () => void;
   onNext: () => void;
@@ -20,6 +22,7 @@ interface TeamSelectionScreenProps {
 
 export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
   selectedTeam,
+  userName = '',
   onSelectTeam,
   onBack,
   onNext
@@ -27,11 +30,17 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
   // Currently displayed team in the showcase panel
   const [activeTeamId, setActiveTeamId] = useState<HugoTeam>(selectedTeam || 'prs');
   const [moments, setMoments] = useState<TeamMoment[]>(() => getStoredMoments());
-  const [showDetailOnMobile, setShowDetailOnMobile] = useState(false);
-  
+  const [showDetailOnMobile, setShowDetailOnMobile] = useState(true);
+
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [lightboxMoment, setLightboxMoment] = useState<TeamMoment | null>(null);
+
+  const handleOpenAddModal = () => {
+    setNewAuthor(userName || '');
+    setIsAddModalOpen(true);
+  };
+
 
   // Form states for adding moment
   const [newCaption, setNewCaption] = useState('');
@@ -42,6 +51,25 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
   const [imageUrlInput, setImageUrlInput] = useState('');
   const [isDragging, setIsDragging] = useState(false);
 
+  // Sync moments with Firebase Firestore in real-time
+  useEffect(() => {
+    const unsubscribe = subscribeToMomentsFirestore((firestoreMoments) => {
+      setMoments(prev => {
+        const map = new Map<string, TeamMoment>();
+        // Add firestore moments first
+        firestoreMoments.forEach(m => map.set(m.id, m));
+        // Preserve local moments if offline
+        prev.forEach(m => {
+          if (!map.has(m.id)) map.set(m.id, m);
+        });
+        const merged = Array.from(map.values());
+        saveStoredMoments(merged);
+        return merged;
+      });
+    });
+    return () => unsubscribe();
+  }, []);
+
   const processFile = (file: File) => {
     if (!file.type.startsWith('image/')) {
       alert('Vui lòng chọn một tập tin hình ảnh (JPG, PNG, WEBP, GIF)');
@@ -49,7 +77,41 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
     }
     const reader = new FileReader();
     reader.onloadend = () => {
-      setNewImage(reader.result as string);
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 800;
+        const MAX_HEIGHT = 800;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height = Math.round((height * MAX_WIDTH) / width);
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width = Math.round((width * MAX_HEIGHT) / height);
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.82);
+          setNewImage(compressedDataUrl);
+        } else {
+          setNewImage(reader.result as string);
+        }
+      };
+      img.onerror = () => {
+        setNewImage(reader.result as string);
+      };
+      img.src = reader.result as string;
     };
     reader.readAsDataURL(file);
   };
@@ -103,8 +165,41 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
   const handleLike = (momentId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     soundFx.playClick();
-    const updated = toggleLikeMoment(momentId);
+    const { moments: updated } = toggleLikeMoment(momentId);
     setMoments(updated);
+
+    const target = updated.find(m => m.id === momentId);
+    if (target) {
+      saveMomentToFirestore(target);
+    }
+
+    if (lightboxMoment && lightboxMoment.id === momentId) {
+      if (target) {
+        setLightboxMoment(target);
+      }
+    }
+  };
+
+  const handleDeleteMoment = (momentId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (window.confirm('Bạn có chắc chắn muốn xóa khoảnh khắc này không?')) {
+      soundFx.playClick();
+      const updated = deleteTeamMoment(momentId);
+      setMoments(updated);
+      deleteMomentFromFirestore(momentId);
+      if (lightboxMoment && lightboxMoment.id === momentId) {
+        setLightboxMoment(null);
+      }
+    }
+  };
+
+  const handleResetMoments = () => {
+    if (window.confirm('Bạn có chắc chắn muốn xóa tất cả khoảnh khắc test để làm sạch trang không?')) {
+      soundFx.playClick();
+      const empty = resetStoredMoments();
+      setMoments(empty);
+      if (lightboxMoment) setLightboxMoment(null);
+    }
   };
 
   const handleAddMomentSubmit = (e: React.FormEvent) => {
@@ -116,7 +211,7 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
 
     const finalImage = newImage || (uploadTab === 'url' ? imageUrlInput.trim() : '');
 
-    addTeamMoment({
+    const created = addTeamMoment({
       teamId: activeTeamId,
       imageUrl: finalImage,
       caption: newCaption.trim(),
@@ -125,8 +220,13 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
       tag: newTag.trim() || 'Khoảnh khắc Team'
     });
 
+    // 1. Immediately update local state in memory so it renders INSTANTLY!
+    setMoments(prev => [created, ...prev.filter(m => m.id !== created.id)]);
+
+    // 2. Sync to Firebase Firestore
+    saveMomentToFirestore(created);
+
     soundFx.playSelect();
-    setMoments(getStoredMoments());
     setIsAddModalOpen(false);
     setNewCaption('');
     setNewAuthor('');
@@ -135,13 +235,6 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
     setImageUrlInput('');
   };
 
-  const handleResetMoments = () => {
-    if (window.confirm('Bạn có muốn khôi phục danh sách khoảnh khắc về mặc định không?')) {
-      soundFx.playClick();
-      const defaults = resetStoredMoments();
-      setMoments(defaults);
-    }
-  };
 
   return (
     <div className="relative flex-1 flex flex-col items-center justify-between w-full h-full min-h-0 py-2 sm:py-3 px-3 sm:px-6 overflow-y-auto custom-scrollbar pb-64 sm:pb-72">
@@ -170,11 +263,10 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
             soundFx.playSelect();
             onNext();
           }}
-          className={`px-4 py-1.5 sm:px-6 sm:py-2 rounded-full border-2 border-white/80 font-serif-display text-xs sm:text-base flex items-center gap-1 cursor-pointer transition-all shadow-md active:scale-95 select-none ${
-            selectedTeam
+          className={`px-4 py-1.5 sm:px-6 sm:py-2 rounded-full border-2 border-white/80 font-serif-display text-xs sm:text-base flex items-center gap-1 cursor-pointer transition-all shadow-md active:scale-95 select-none ${selectedTeam
               ? 'bg-gradient-to-r from-amber-300 via-amber-200 to-white text-gray-950 font-bold hover:scale-105'
               : 'bg-white/40 text-gray-800 opacity-60'
-          }`}
+            }`}
         >
           <span>Next</span>
           <ChevronRight className="w-4 h-4" />
@@ -183,11 +275,16 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
 
       {/* Top Header - Compact for Mobile */}
       <div className="text-center shrink-0 mb-1.5 sm:mb-3">
-        <h2 className="font-cinzel text-xl sm:text-4xl md:text-5xl font-extrabold tracking-wider text-white text-stroke-gold drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] uppercase leading-tight">
+        <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-400/20 border border-amber-400/40 text-amber-300 text-[0.65rem] sm:text-xs font-bold mb-1 shadow-md">
+          <span>⏱️ VÒNG 2 (29/07 - 02/08)</span>
+          <span className="opacity-50">•</span>
+          <span>Hạn chót: 23:59 02/08</span>
+        </div>
+        <h2 className="font-serif-display text-2xl sm:text-4xl md:text-5xl font-black tracking-wider text-white text-stroke-gold drop-shadow-[0_8px_20px_rgba(0,0,0,0.8)] uppercase leading-tight">
           TEAM SHOWCASE
         </h2>
-        <p className="font-serif-display text-amber-200/90 text-[0.65rem] sm:text-xs italic mt-0.5">
-          Khám phá những khoảnh khắc rực rỡ & Bình chọn Đội yêu thích của bạn
+        <p className="font-serif-display text-[0.7rem] sm:text-sm text-amber-300 font-bold mt-0.5 max-w-2xl mx-auto drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)]">
+          🎗 Khám phá những khoảnh khắc rực rỡ & Bình chọn Đội ngũ / Ban hoạt động đồng hành của bạn
         </p>
       </div>
 
@@ -204,11 +301,10 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
                 onClick={() => {
                   handleSelectTeamForVote(team.id);
                 }}
-                className={`relative p-3 rounded-2xl cursor-pointer transition-all duration-300 border flex flex-col items-center text-center justify-between select-none touch-manipulation active:scale-95 shadow-lg ${
-                  isVoted
+                className={`relative p-3 rounded-2xl cursor-pointer transition-all duration-300 border flex flex-col items-center text-center justify-between select-none touch-manipulation active:scale-95 shadow-lg ${isVoted
                     ? 'bg-gradient-to-br from-amber-950/80 via-black/80 to-amber-900/60 border-amber-400 shadow-[0_0_20px_rgba(251,191,36,0.4)] scale-[1.02]'
                     : 'bg-black/50 hover:bg-black/70 border-white/20'
-                }`}
+                  }`}
               >
                 {/* Floating Butterfly Badge */}
                 {isVoted && (
@@ -240,11 +336,10 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
                     e.stopPropagation();
                     handleSelectTeamForVote(team.id);
                   }}
-                  className={`w-full py-1 px-2 rounded-xl text-[0.7rem] font-bold font-serif-display transition-all border flex items-center justify-center space-x-1 cursor-pointer ${
-                    isVoted
+                  className={`w-full py-1 px-2 rounded-xl text-[0.7rem] font-bold font-serif-display transition-all border flex items-center justify-center space-x-1 cursor-pointer ${isVoted
                       ? 'bg-gradient-to-r from-amber-400 to-amber-200 text-gray-950 border-amber-300 shadow-md'
                       : 'bg-white/10 hover:bg-white/20 text-amber-200 border-white/20'
-                  }`}
+                    }`}
                 >
                   {isVoted ? (
                     <>
@@ -270,22 +365,100 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
             onClick={() => setShowDetailOnMobile(!showDetailOnMobile)}
             className="text-[0.7rem] text-amber-200/80 hover:text-amber-100 font-serif-display underline flex items-center justify-center gap-1 mx-auto py-1"
           >
-            <span>{showDetailOnMobile ? 'Thu gọn chi tiết' : 'Xem thêm giới thiệu các đội'}</span>
+            <span>{showDetailOnMobile ? 'Thu gọn chi tiết' : 'Xem thêm giới thiệu các đội & khoảnh khắc'}</span>
             <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showDetailOnMobile ? 'rotate-180' : ''}`} />
           </button>
 
           {showDetailOnMobile && (
-            <div className="mt-2 p-3 rounded-2xl bg-black/60 border border-white/20 text-xs text-amber-100 font-serif-display text-left space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
+            <div className="mt-2 p-3.5 rounded-2xl bg-black/60 border border-white/20 text-xs text-amber-100 font-serif-display text-left space-y-3 max-h-80 overflow-y-auto custom-scrollbar shadow-xl">
               <p className="italic text-amber-200 font-bold">"{currentTeamObj.name}: {currentTeamObj.description}"</p>
               <div className="pt-2 border-t border-white/10 flex justify-between items-center">
-                <span>Khoảnh khắc ({activeMoments.length})</span>
-                <button
-                  onClick={() => setIsAddModalOpen(true)}
-                  className="px-2.5 py-1 rounded-lg bg-amber-400/20 hover:bg-amber-400/30 text-amber-200 border border-amber-400/30 text-[0.65rem] font-bold flex items-center gap-1 transition-colors"
-                >
-                  <Plus className="w-3 h-3 text-amber-300" /> Đăng khoảnh khắc
-                </button>
+                <span className="font-bold text-amber-300 text-xs">Khoảnh khắc đáng nhớ ({activeMoments.length})</span>
+                <div className="flex items-center gap-1.5">
+                  {moments.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleResetMoments}
+                      className="px-2 py-1 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30 text-[0.65rem] font-bold flex items-center gap-1 transition-colors cursor-pointer"
+                      title="Xóa tất cả khoảnh khắc test"
+                    >
+                      <Trash2 className="w-3 h-3 text-red-400" /> Xóa tất cả
+                    </button>
+                  )}
+                  <button
+                    onClick={handleOpenAddModal}
+                    className="px-2.5 py-1 rounded-lg bg-amber-400/20 hover:bg-amber-400/30 text-amber-200 border border-amber-400/30 text-[0.65rem] font-bold flex items-center gap-1 transition-colors cursor-pointer"
+                  >
+                    <Plus className="w-3 h-3 text-amber-300" /> Đăng bài
+                  </button>
+                </div>
               </div>
+
+              {/* Mobile Moments Feed List */}
+              {activeMoments.length === 0 ? (
+                <div className="p-3 rounded-xl bg-black/30 border border-dashed border-white/15 text-center">
+                  <p className="text-white/60 text-[0.7rem] italic">Chưa có khoảnh khắc nào cho Team {currentTeamObj.name}</p>
+                </div>
+              ) : (
+                <div className="space-y-2.5 pt-1">
+                  {activeMoments.map((moment) => {
+                    const isLiked = isMomentLikedByUser(moment.id);
+                    const isCreator = isMomentCreatedByUser(moment.id, userName, moment.author);
+
+                    return (
+                      <div
+                        key={moment.id}
+                        onClick={() => setLightboxMoment(moment)}
+                        className="p-2.5 rounded-xl bg-white/5 border border-white/10 hover:border-amber-400/50 flex flex-col gap-1.5 cursor-pointer transition-colors"
+                      >
+                        {moment.imageUrl && (
+                          <div className="relative w-full h-32 rounded-lg overflow-hidden bg-black/40 border border-white/10">
+                            <img
+                              src={moment.imageUrl}
+                              alt={moment.caption}
+                              className="w-full h-full object-cover"
+                            />
+                            {moment.tag && (
+                              <span className="absolute bottom-1.5 left-1.5 px-2 py-0.5 rounded-full bg-black/80 text-amber-300 text-[0.6rem] font-bold border border-amber-400/30">
+                                #{moment.tag}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                        <p className="text-xs text-white italic line-clamp-3 leading-relaxed">
+                          "{moment.caption}"
+                        </p>
+                        <div className="flex justify-between items-center text-[0.65rem] text-amber-200/80 pt-1.5 border-t border-white/10">
+                          <span className="truncate max-w-[120px]">✍️ {moment.author}</span>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={(e) => handleLike(moment.id, e)}
+                              className={`px-2 py-0.5 rounded-full flex items-center gap-1 transition-all cursor-pointer ${isLiked
+                                  ? 'bg-pink-500/35 border border-pink-400 text-pink-200 font-extrabold shadow-md scale-105'
+                                  : 'bg-white/10 hover:bg-white/20 text-pink-300 border border-pink-400/30'
+                                }`}
+                            >
+                              <Heart className={`w-3 h-3 ${isLiked ? 'fill-pink-400 text-pink-400' : 'text-pink-300'}`} />
+                              <span className="font-bold">{moment.likes}</span>
+                            </button>
+                            {isCreator && (
+                              <button
+                                type="button"
+                                onClick={(e) => handleDeleteMoment(moment.id, e)}
+                                className="p-1 rounded-full text-red-400/80 hover:text-red-300 hover:bg-red-500/20 transition-colors cursor-pointer"
+                                title="Xóa khoảnh khắc của bạn"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -306,13 +479,12 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => handleViewTeam(team.id)}
-                className={`relative p-3.5 rounded-2xl cursor-pointer transition-all duration-300 border flex items-center gap-3 shrink-0 ${
-                  isActiveView
+                className={`relative p-3.5 rounded-2xl cursor-pointer transition-all duration-300 border flex items-center gap-3 shrink-0 ${isActiveView
                     ? 'bg-gradient-to-r from-amber-950/70 to-black/70 border-amber-400 shadow-[0_0_25px_rgba(251,191,36,0.3)] scale-[1.02]'
                     : isVoted
-                    ? 'bg-emerald-950/40 border-emerald-400/60 hover:bg-black/50'
-                    : 'bg-black/40 hover:bg-white/10 border-white/20'
-                }`}
+                      ? 'bg-emerald-950/40 border-emerald-400/60 hover:bg-black/50'
+                      : 'bg-black/40 hover:bg-white/10 border-white/20'
+                  }`}
                 style={{ borderColor: isActiveView ? team.color : undefined }}
               >
                 {isVoted && (
@@ -322,9 +494,8 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
                 )}
 
                 <div
-                  className={`relative w-14 h-14 rounded-xl flex items-center justify-center p-1.5 overflow-hidden transition-transform ${
-                    isActiveView ? 'scale-110' : ''
-                  }`}
+                  className={`relative w-14 h-14 rounded-xl flex items-center justify-center p-1.5 overflow-hidden transition-transform ${isActiveView ? 'scale-110' : ''
+                    }`}
                   style={{
                     backgroundColor: `${team.color}25`,
                     boxShadow: isActiveView ? `0 0 20px ${team.glow}` : undefined
@@ -383,11 +554,11 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
               transition={{ duration: 0.3 }}
               className="flex flex-col gap-4"
             >
-              <div 
+              <div
                 className="relative rounded-2xl p-6 overflow-hidden border border-white/20 flex flex-row items-center gap-5 justify-between shrink-0"
                 style={{ background: `linear-gradient(135deg, ${currentTeamObj.color}30 0%, rgba(0,0,0,0.7) 100%)` }}
               >
-                <div 
+                <div
                   className="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-3xl pointer-events-none opacity-50"
                   style={{ backgroundColor: currentTeamObj.color }}
                 />
@@ -411,7 +582,7 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
                 <div className="flex-1 text-left z-10">
                   <div className="flex items-center gap-2">
                     <span className="text-3xl">{currentTeamObj.icon}</span>
-                    <h3 className="font-cinzel text-3xl font-extrabold text-white tracking-wide text-shadow">
+                    <h3 className="font-serif-display text-3xl font-extrabold text-white tracking-wide text-shadow">
                       {currentTeamObj.name}
                     </h3>
                   </div>
@@ -437,8 +608,8 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
                     )}
 
                     <button
-                      onClick={() => setIsAddModalOpen(true)}
-                      className="px-4 py-2 rounded-full bg-amber-400/20 hover:bg-amber-400/30 border border-amber-400/40 text-amber-200 font-serif-display text-sm flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                      onClick={handleOpenAddModal}
+                      className="px-4 py-2 rounded-full bg-amber-400/20 hover:bg-amber-400/30 border border-amber-400/40 text-amber-200 font-sans-clean text-sm flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
                     >
                       <Camera className="w-4 h-4 text-amber-300" />
                       Đăng khoảnh khắc
@@ -457,17 +628,17 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
                     </h4>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button
+                    {/* <button
                       type="button"
                       onClick={handleResetMoments}
                       className="text-xs text-amber-300/70 hover:text-amber-200 font-serif-display underline flex items-center gap-1 cursor-pointer transition-colors"
                       title="Khôi phục khoảnh khắc mặc định"
                     >
                       <RotateCcw className="w-3.5 h-3.5" /> Khôi phục
-                    </button>
+                    </button> */}
                     <button
                       type="button"
-                      onClick={() => setIsAddModalOpen(true)}
+                      onClick={handleOpenAddModal}
                       className="text-xs text-amber-300 hover:text-amber-200 font-serif-display underline flex items-center gap-1 cursor-pointer"
                     >
                       <Plus className="w-3.5 h-3.5" /> Thêm khoảnh khắc mới
@@ -482,7 +653,7 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
                       Chưa có khoảnh khắc nào được chia sẻ cho Team {currentTeamObj.name}.
                     </p>
                     <button
-                      onClick={() => setIsAddModalOpen(true)}
+                      onClick={handleOpenAddModal}
                       className="px-4 py-2 rounded-xl bg-amber-400/20 hover:bg-amber-400/30 border border-amber-400/50 text-amber-200 text-xs font-bold font-serif-display transition-colors flex items-center gap-1.5"
                     >
                       <Camera className="w-4 h-4 text-amber-300" /> Đăng khoảnh khắc đầu tiên
@@ -490,59 +661,78 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {activeMoments.map((moment) => (
-                      <motion.div
-                        key={moment.id}
-                        whileHover={{ y: -4 }}
-                        onClick={() => setLightboxMoment(moment)}
-                        className="group relative bg-black/60 backdrop-blur-md border border-white/15 hover:border-amber-400/70 rounded-2xl overflow-hidden cursor-pointer flex flex-col transition-all duration-300 shadow-xl p-3"
-                      >
-                        {/* Display Moment Photo if present */}
-                        {moment.imageUrl ? (
-                          <div className="relative w-full h-40 mb-3 rounded-xl overflow-hidden bg-black/50 border border-white/10 group-hover:border-amber-400/40 transition-colors">
-                            <img
-                              src={moment.imageUrl}
-                              alt={moment.caption}
-                              className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500"
-                            />
-                            <div className="absolute top-2 right-2 px-2 py-1 rounded-full bg-black/75 backdrop-blur-md text-[0.65rem] text-amber-300 border border-amber-400/40 flex items-center gap-1 font-serif-display font-bold shadow-md">
-                              <Maximize2 className="w-3 h-3" /> Phóng to
+                    {activeMoments.map((moment) => {
+                      const isLiked = isMomentLikedByUser(moment.id);
+                      const isCreator = isMomentCreatedByUser(moment.id, userName, moment.author);
+
+                      return (
+                        <motion.div
+                          key={moment.id}
+                          whileHover={{ y: -4 }}
+                          onClick={() => setLightboxMoment(moment)}
+                          className="group relative bg-black/60 backdrop-blur-md border border-white/15 hover:border-amber-400/70 rounded-2xl overflow-hidden cursor-pointer flex flex-col transition-all duration-300 shadow-xl p-3"
+                        >
+                          {/* Display Moment Photo if present */}
+                          {moment.imageUrl ? (
+                            <div className="relative w-full h-40 mb-3 rounded-xl overflow-hidden bg-black/50 border border-white/10 group-hover:border-amber-400/40 transition-colors">
+                              <img
+                                src={moment.imageUrl}
+                                alt={moment.caption}
+                                className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500"
+                              />
+                              <div className="absolute top-2 right-2 px-2 py-1 rounded-full bg-black/75 backdrop-blur-md text-[0.65rem] text-amber-300 border border-amber-400/40 flex items-center gap-1 font-serif-display font-bold shadow-md">
+                                <Maximize2 className="w-3 h-3" /> Phóng to
+                              </div>
+                              {moment.tag && (
+                                <span className="absolute bottom-2 left-2 px-2.5 py-0.5 rounded-full bg-black/80 text-amber-200 border border-amber-400/30 text-[0.65rem] font-bold font-serif-display shadow-md">
+                                  #{moment.tag}
+                                </span>
+                              )}
                             </div>
-                            {moment.tag && (
-                              <span className="absolute bottom-2 left-2 px-2.5 py-0.5 rounded-full bg-black/80 text-amber-200 border border-amber-400/30 text-[0.65rem] font-bold font-serif-display shadow-md">
-                                #{moment.tag}
-                              </span>
-                            )}
-                          </div>
-                        ) : (
-                          <div className="mb-2 flex items-center justify-between">
-                            {moment.tag && (
-                              <span className="px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[0.65rem] font-bold font-serif-display">
-                                #{moment.tag}
-                              </span>
-                            )}
-                          </div>
-                        )}
+                          ) : (
+                            <div className="mb-2 flex items-center justify-between">
+                              {moment.tag && (
+                                <span className="px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[0.65rem] font-bold font-serif-display">
+                                  #{moment.tag}
+                                </span>
+                              )}
+                            </div>
+                          )}
 
-                        <p className="font-serif-display text-sm text-gray-100 italic line-clamp-3 leading-relaxed">
-                          "{moment.caption}"
-                        </p>
+                          <p className="font-serif-display text-sm text-gray-100 italic line-clamp-3 leading-relaxed">
+                            "{moment.caption}"
+                          </p>
 
-                        <div className="mt-auto pt-3 border-t border-white/10 flex items-center justify-between text-xs text-white/60">
-                          <span className="flex items-center gap-1.5 text-amber-200 font-serif-display truncate max-w-[150px]">
-                            <User className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-                            <span className="truncate">{moment.author}</span>
-                          </span>
-                          <button
-                            onClick={(e) => handleLike(moment.id, e)}
-                            className="px-2.5 py-1 rounded-full bg-white/10 hover:bg-pink-500/20 text-pink-300 border border-pink-400/30 flex items-center gap-1 transition-colors cursor-pointer shrink-0"
-                          >
-                            <Heart className="w-3.5 h-3.5 fill-pink-400 text-pink-400" />
-                            <span className="font-bold">{moment.likes}</span>
-                          </button>
-                        </div>
-                      </motion.div>
-                    ))}
+                          <div className="mt-auto pt-3 border-t border-white/10 flex items-center justify-between text-xs text-white/60">
+                            <span className="flex items-center gap-1.5 text-amber-200 font-serif-display truncate max-w-[130px]">
+                              <User className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+                              <span className="truncate">{moment.author}</span>
+                            </span>
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                onClick={(e) => handleLike(moment.id, e)}
+                                className={`px-2.5 py-1 rounded-full border flex items-center gap-1 transition-all cursor-pointer shrink-0 ${isLiked
+                                    ? 'bg-pink-500/35 border-pink-400 text-pink-200 font-extrabold shadow-md scale-105'
+                                    : 'bg-white/10 hover:bg-pink-500/20 text-pink-300 border-pink-400/30'
+                                  }`}
+                              >
+                                <Heart className={`w-3.5 h-3.5 ${isLiked ? 'fill-pink-400 text-pink-400' : 'text-pink-300'}`} />
+                                <span className="font-bold">{moment.likes}</span>
+                              </button>
+                              {isCreator && (
+                                <button
+                                  onClick={(e) => handleDeleteMoment(moment.id, e)}
+                                  className="p-1 rounded-full text-red-400/80 hover:text-red-300 hover:bg-red-500/20 transition-colors cursor-pointer"
+                                  title="Xóa khoảnh khắc của bạn"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -573,11 +763,10 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
             soundFx.playSelect();
             onNext();
           }}
-          className={`px-6 py-2 sm:px-9 sm:py-2.5 min-w-[95px] sm:min-w-[130px] rounded-full border-2 border-white/90 font-serif-display text-base sm:text-xl transition-all shadow-[0_4px_20px_rgba(0,0,0,0.6)] active:scale-95 select-none touch-manipulation cursor-pointer ${
-            selectedTeam
+          className={`px-6 py-2 sm:px-9 sm:py-2.5 min-w-[95px] sm:min-w-[130px] rounded-full border-2 border-white/90 font-serif-display text-base sm:text-xl transition-all shadow-[0_4px_20px_rgba(0,0,0,0.6)] active:scale-95 select-none touch-manipulation cursor-pointer ${selectedTeam
               ? 'bg-gradient-to-r from-amber-300 via-amber-200 to-white hover:scale-105 text-gray-950 font-bold'
               : 'bg-white/40 text-gray-800 opacity-60'
-          }`}
+            }`}
         >
           Next
         </button>
@@ -678,11 +867,10 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
                     <button
                       type="button"
                       onClick={() => setUploadTab('file')}
-                      className={`py-1.5 rounded-lg font-bold flex items-center justify-center gap-1.5 transition-all ${
-                        uploadTab === 'file'
+                      className={`py-1.5 rounded-lg font-bold flex items-center justify-center gap-1.5 transition-all ${uploadTab === 'file'
                           ? 'bg-amber-400 text-black shadow-md'
                           : 'text-white/70 hover:text-white'
-                      }`}
+                        }`}
                     >
                       <Upload className="w-3.5 h-3.5" />
                       <span>Tải ảnh lên</span>
@@ -690,11 +878,10 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
                     <button
                       type="button"
                       onClick={() => setUploadTab('url')}
-                      className={`py-1.5 rounded-lg font-bold flex items-center justify-center gap-1.5 transition-all ${
-                        uploadTab === 'url'
+                      className={`py-1.5 rounded-lg font-bold flex items-center justify-center gap-1.5 transition-all ${uploadTab === 'url'
                           ? 'bg-amber-400 text-black shadow-md'
                           : 'text-white/70 hover:text-white'
-                      }`}
+                        }`}
                     >
                       <LinkIcon className="w-3.5 h-3.5" />
                       <span>Dán Link URL</span>
@@ -725,11 +912,10 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
                       onDragOver={handleDragOver}
                       onDragLeave={handleDragLeave}
                       onDrop={handleDrop}
-                      className={`relative flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer transition-all p-3 text-center ${
-                        isDragging
+                      className={`relative flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer transition-all p-3 text-center ${isDragging
                           ? 'border-amber-400 bg-amber-400/20 scale-[1.01]'
                           : 'border-amber-400/40 hover:border-amber-400 bg-black/40 hover:bg-black/60'
-                      }`}
+                        }`}
                     >
                       <div className="p-2.5 rounded-full bg-amber-400/15 text-amber-300 mb-1.5">
                         <FileImage className="w-6 h-6" />
@@ -785,46 +971,66 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
       )}
 
       {/* Lightbox Modal for Moment Photo Preview */}
-      {lightboxMoment && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-4 bg-black/90 backdrop-blur-md animate-fade-in">
-          <div className="relative w-full max-w-lg max-h-[85vh] sm:max-h-[90vh] bg-gray-900 border-2 border-amber-400/50 rounded-2xl overflow-hidden shadow-2xl flex flex-col">
-            <button
-              onClick={() => setLightboxMoment(null)}
-              className="absolute top-3 right-3 z-20 p-2 rounded-full bg-black/60 text-white hover:bg-white/20 transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            {lightboxMoment.imageUrl && (
-              <div className="w-full max-h-[50vh] bg-black flex items-center justify-center overflow-hidden">
-                <img src={lightboxMoment.imageUrl} alt="Moment" className="w-full h-full object-contain" />
-              </div>
-            )}
-            <div className="p-4 sm:p-5 overflow-y-auto space-y-2 custom-scrollbar">
-              {lightboxMoment.tag && (
-                <span className="text-[0.65rem] px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 font-bold inline-block font-serif-display">
-                  #{lightboxMoment.tag}
-                </span>
+      {lightboxMoment && (() => {
+        const isLiked = isMomentLikedByUser(lightboxMoment.id);
+        const isCreator = isMomentCreatedByUser(lightboxMoment.id, userName, lightboxMoment.author);
+
+        return (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-4 bg-black/90 backdrop-blur-md animate-fade-in">
+            <div className="relative w-full max-w-lg max-h-[85vh] sm:max-h-[90vh] bg-gray-900 border-2 border-amber-400/50 rounded-2xl overflow-hidden shadow-2xl flex flex-col">
+              <button
+                onClick={() => setLightboxMoment(null)}
+                className="absolute top-3 right-3 z-20 p-2 rounded-full bg-black/60 text-white hover:bg-white/20 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              {lightboxMoment.imageUrl && (
+                <div className="w-full max-h-[50vh] bg-black flex items-center justify-center overflow-hidden">
+                  <img src={lightboxMoment.imageUrl} alt="Moment" className="w-full h-full object-contain" />
+                </div>
               )}
-              <p className="font-serif-display text-base text-white italic leading-relaxed">
-                "{lightboxMoment.caption}"
-              </p>
-              <div className="pt-2 border-t border-white/10 flex items-center justify-between text-xs text-white/70">
-                <span className="flex items-center gap-1 text-amber-200 font-serif-display">
-                  <User className="w-3.5 h-3.5 text-amber-300" />
-                  {lightboxMoment.author} • {lightboxMoment.date}
-                </span>
-                <button
-                  onClick={(e) => handleLike(lightboxMoment.id, e)}
-                  className="px-3 py-1 rounded-full bg-white/10 hover:bg-pink-500/20 text-pink-300 border border-pink-400/30 flex items-center gap-1.5 transition-colors cursor-pointer"
-                >
-                  <Heart className="w-4 h-4 fill-pink-400 text-pink-400" />
-                  <span className="font-bold">{lightboxMoment.likes}</span>
-                </button>
+              <div className="p-4 sm:p-5 overflow-y-auto space-y-2 custom-scrollbar">
+                {lightboxMoment.tag && (
+                  <span className="text-[0.65rem] px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 font-bold inline-block font-serif-display">
+                    #{lightboxMoment.tag}
+                  </span>
+                )}
+                <p className="font-serif-display text-base text-white italic leading-relaxed">
+                  "{lightboxMoment.caption}"
+                </p>
+                <div className="pt-2 border-t border-white/10 flex items-center justify-between text-xs text-white/70">
+                  <span className="flex items-center gap-1 text-amber-200 font-serif-display">
+                    <User className="w-3.5 h-3.5 text-amber-300" />
+                    {lightboxMoment.author} • {lightboxMoment.date}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => handleLike(lightboxMoment.id, e)}
+                      className={`px-3 py-1 rounded-full border flex items-center gap-1.5 transition-all cursor-pointer ${isLiked
+                          ? 'bg-pink-500/35 border-pink-400 text-pink-200 font-extrabold shadow-md scale-105'
+                          : 'bg-white/10 hover:bg-pink-500/20 text-pink-300 border-pink-400/30'
+                        }`}
+                    >
+                      <Heart className={`w-4 h-4 ${isLiked ? 'fill-pink-400 text-pink-400' : 'text-pink-300'}`} />
+                      <span className="font-bold">{lightboxMoment.likes}</span>
+                    </button>
+                    {isCreator && (
+                      <button
+                        onClick={(e) => handleDeleteMoment(lightboxMoment.id, e)}
+                        className="px-2.5 py-1 rounded-full bg-red-500/20 hover:bg-red-500/40 text-red-300 border border-red-500/40 text-xs flex items-center gap-1 font-serif-display transition-colors cursor-pointer"
+                        title="Xóa khoảnh khắc của bạn"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Xóa</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 };

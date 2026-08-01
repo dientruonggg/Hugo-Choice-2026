@@ -40,27 +40,27 @@ export const BallotDrawer: React.FC<BallotDrawerProps> = ({
     },
     {
       title: 'Best Member',
-      value: getResolvedBestMemberName(votingState.selectedBestMember, 'No candidate selected'),
+      value: getResolvedBestMemberName(votingState.selectedBestMember, 'Chưa chọn đủ 3 người'),
       step: 'best_member' as ScreenStep,
-      filled: Boolean(votingState.selectedBestMember)
+      filled: Array.isArray(votingState.selectedBestMember) && votingState.selectedBestMember.length === 3
     },
     {
       title: 'Best Event',
-      value: getResolvedEventName(votingState.selectedBestEvent, 'No event selected'),
+      value: getResolvedEventName(votingState.selectedBestEvent, 'Chưa chọn đủ 3 sự kiện'),
       step: 'best_event' as ScreenStep,
-      filled: Boolean(votingState.selectedBestEvent)
+      filled: Array.isArray(votingState.selectedBestEvent) && votingState.selectedBestEvent.length === 3
     },
     {
       title: 'The Rookie',
-      value: getResolvedRookieName(votingState.selectedRookie, 'No candidate selected'),
+      value: getResolvedRookieName(votingState.selectedRookie, 'Chưa chọn đủ 3 tân binh'),
       step: 'rookie' as ScreenStep,
-      filled: Boolean(votingState.selectedRookie)
+      filled: Array.isArray(votingState.selectedRookie) && votingState.selectedRookie.length === 3
     },
     {
       title: 'The Perfect Duo',
-      value: getResolvedDuoName(votingState.selectedDuo, 'No duo selected'),
+      value: getResolvedDuoName(votingState.selectedDuo, 'Chưa chọn đủ 3 cặp'),
       step: 'perfect_duo' as ScreenStep,
-      filled: Boolean(votingState.selectedDuo)
+      filled: Array.isArray(votingState.selectedDuo) && votingState.selectedDuo.length === 3
     }
   ];
 
@@ -73,7 +73,7 @@ export const BallotDrawer: React.FC<BallotDrawerProps> = ({
           {/* Drawer Header */}
           <div className="flex items-center justify-between pb-4 border-b border-white/10">
             <div>
-              <h2 className="font-cinzel text-xl font-bold text-amber-200">
+              <h2 className="font-serif-display text-xl font-bold text-amber-200">
                 Ballot Review 🗳️
               </h2>
               <p className="font-sans-clean text-xs text-emerald-300">
@@ -110,11 +110,10 @@ export const BallotDrawer: React.FC<BallotDrawerProps> = ({
             {categories.map((cat, idx) => (
               <div
                 key={idx}
-                className={`p-3.5 rounded-xl border transition-all duration-200 flex items-center justify-between ${
-                  cat.filled
+                className={`p-3.5 rounded-xl border transition-all duration-200 flex items-center justify-between ${cat.filled
                     ? 'bg-emerald-900/30 border-emerald-500/40 text-white'
                     : 'bg-white/5 border-white/10 text-white/60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center space-x-3">
                   {cat.filled ? (
@@ -162,7 +161,7 @@ export const BallotDrawer: React.FC<BallotDrawerProps> = ({
               }
               onClose();
             }}
-            className="w-full py-3 px-4 rounded-xl font-cinzel font-bold text-sm bg-gradient-to-r from-amber-400 to-amber-500 text-black shadow-lg hover:from-amber-300 hover:to-amber-400 transition-all duration-200 text-center"
+            className="w-full py-3 px-4 rounded-xl font-serif-display font-bold text-sm bg-gradient-to-r from-amber-400 to-amber-500 text-black shadow-lg hover:from-amber-300 hover:to-amber-400 transition-all duration-200 text-center"
           >
             {totalFilled === 6 ? 'Proceed to Final Submission 🚀' : 'Continue Voting'}
           </button>

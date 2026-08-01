@@ -8,7 +8,6 @@ import { AdminLeaderboardModal } from './components/AdminLeaderboardModal';
 import { GoogleAuthModal } from './components/GoogleAuthModal';
 import { subscribeToAuthChanges, logoutGoogle } from './utils/firebase';
 import { saveUserBallot, getSavedBallotForUser } from './utils/ballotStorage';
-import { Agentation } from 'agentation';
 
 import { LandingScreen } from './components/screens/LandingScreen';
 import { ProcessModalScreen } from './components/screens/ProcessModalScreen';
@@ -23,6 +22,12 @@ import { SubmissionScreen } from './components/screens/SubmissionScreen';
 const STORAGE_KEY_VOTE = 'hugo_award_2026_user_state';
 const STORAGE_KEY_RESULTS = 'hugo_award_2026_live_results';
 
+function toArr(val: any): string[] {
+  if (Array.isArray(val)) return val;
+  if (typeof val === 'string' && val.trim() !== '') return [val];
+  return [];
+}
+
 export default function App() {
   const [currentStep, setCurrentStep] = useState<ScreenStep>('landing');
   const [isBallotDrawerOpen, setIsBallotDrawerOpen] = useState(false);
@@ -33,17 +38,26 @@ export default function App() {
   const [votingState, setVotingState] = useState<VotingState>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY_VOTE);
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return {
+          ...parsed,
+          selectedBestMember: toArr(parsed.selectedBestMember),
+          selectedBestEvent: toArr(parsed.selectedBestEvent),
+          selectedRookie: toArr(parsed.selectedRookie),
+          selectedDuo: toArr(parsed.selectedDuo)
+        };
+      }
     } catch {
       // Fallback
     }
     return {
       userName: '',
       selectedTeam: null,
-      selectedBestMember: null,
-      selectedBestEvent: null,
-      selectedRookie: null,
-      selectedDuo: null,
+      selectedBestMember: [],
+      selectedBestEvent: [],
+      selectedRookie: [],
+      selectedDuo: [],
       isSubmitted: false
     };
   });
@@ -88,10 +102,10 @@ export default function App() {
         userEmail: user.email,
         userAvatar: user.avatar,
         selectedTeam: existingBallot.selectedTeam as any,
-        selectedBestMember: existingBallot.selectedBestMember,
-        selectedBestEvent: existingBallot.selectedBestEvent,
-        selectedRookie: existingBallot.selectedRookie,
-        selectedDuo: existingBallot.selectedDuo,
+        selectedBestMember: toArr(existingBallot.selectedBestMember),
+        selectedBestEvent: toArr(existingBallot.selectedBestEvent),
+        selectedRookie: toArr(existingBallot.selectedRookie),
+        selectedDuo: toArr(existingBallot.selectedDuo),
         isSubmitted: existingBallot.isSubmitted,
         submittedAt: existingBallot.submittedAt
       });
@@ -153,30 +167,30 @@ export default function App() {
           [votingState.selectedTeam]: (next.teams[votingState.selectedTeam] || 0) + 1
         };
       }
-      if (votingState.selectedBestMember) {
-        next.bestMember = {
-          ...next.bestMember,
-          [votingState.selectedBestMember]: (next.bestMember[votingState.selectedBestMember] || 0) + 1
-        };
-      }
-      if (votingState.selectedBestEvent) {
-        next.bestEvent = {
-          ...next.bestEvent,
-          [votingState.selectedBestEvent]: (next.bestEvent[votingState.selectedBestEvent] || 0) + 1
-        };
-      }
-      if (votingState.selectedRookie) {
-        next.rookie = {
-          ...next.rookie,
-          [votingState.selectedRookie]: (next.rookie[votingState.selectedRookie] || 0) + 1
-        };
-      }
-      if (votingState.selectedDuo) {
-        next.perfectDuo = {
-          ...next.perfectDuo,
-          [votingState.selectedDuo]: (next.perfectDuo[votingState.selectedDuo] || 0) + 1
-        };
-      }
+
+      const bmNext = { ...next.bestMember };
+      votingState.selectedBestMember.forEach(id => {
+        bmNext[id] = (bmNext[id] || 0) + 1;
+      });
+      next.bestMember = bmNext;
+
+      const beNext = { ...next.bestEvent };
+      votingState.selectedBestEvent.forEach(id => {
+        beNext[id] = (beNext[id] || 0) + 1;
+      });
+      next.bestEvent = beNext;
+
+      const rookieNext = { ...next.rookie };
+      votingState.selectedRookie.forEach(id => {
+        rookieNext[id] = (rookieNext[id] || 0) + 1;
+      });
+      next.rookie = rookieNext;
+
+      const duoNext = { ...next.perfectDuo };
+      votingState.selectedDuo.forEach(id => {
+        duoNext[id] = (duoNext[id] || 0) + 1;
+      });
+      next.perfectDuo = duoNext;
 
       return next;
     });
@@ -185,14 +199,13 @@ export default function App() {
   // Clear Current User's Ballot (Revote)
   const handleClearMyBallot = () => {
     if (!votingState.isSubmitted) {
-      // If not submitted yet, just clear the local choices and go back to start
       setVotingState(prev => ({
         ...prev,
         selectedTeam: null,
-        selectedBestMember: null,
-        selectedBestEvent: null,
-        selectedRookie: null,
-        selectedDuo: null
+        selectedBestMember: [],
+        selectedBestEvent: [],
+        selectedRookie: [],
+        selectedDuo: []
       }));
       navigateTo('team_selection');
       setIsAdminModalOpen(false);
@@ -201,23 +214,56 @@ export default function App() {
 
     // Decrement live results
     setLiveResults(prev => {
-      const next = { ...prev, totalSubmissions: Math.max(0, prev.totalSubmissions - 1) };
+      const nextTotal = Math.max(0, prev.totalSubmissions - 1);
+      const next = { ...prev, totalSubmissions: nextTotal };
 
       if (votingState.selectedTeam && next.teams[votingState.selectedTeam]) {
-        next.teams = { ...next.teams, [votingState.selectedTeam]: next.teams[votingState.selectedTeam] - 1 };
+        const val = Math.max(0, next.teams[votingState.selectedTeam] - 1);
+        const newTeams = { ...next.teams };
+        if (val > 0) newTeams[votingState.selectedTeam] = val;
+        else delete newTeams[votingState.selectedTeam];
+        next.teams = newTeams;
       }
-      if (votingState.selectedBestMember && next.bestMember[votingState.selectedBestMember]) {
-        next.bestMember = { ...next.bestMember, [votingState.selectedBestMember]: next.bestMember[votingState.selectedBestMember] - 1 };
-      }
-      if (votingState.selectedBestEvent && next.bestEvent[votingState.selectedBestEvent]) {
-        next.bestEvent = { ...next.bestEvent, [votingState.selectedBestEvent]: next.bestEvent[votingState.selectedBestEvent] - 1 };
-      }
-      if (votingState.selectedRookie && next.rookie[votingState.selectedRookie]) {
-        next.rookie = { ...next.rookie, [votingState.selectedRookie]: next.rookie[votingState.selectedRookie] - 1 };
-      }
-      if (votingState.selectedDuo && next.perfectDuo[votingState.selectedDuo]) {
-        next.perfectDuo = { ...next.perfectDuo, [votingState.selectedDuo]: next.perfectDuo[votingState.selectedDuo] - 1 };
-      }
+
+      const newBM = { ...next.bestMember };
+      votingState.selectedBestMember.forEach(id => {
+        if (newBM[id]) {
+          const val = Math.max(0, newBM[id] - 1);
+          if (val > 0) newBM[id] = val;
+          else delete newBM[id];
+        }
+      });
+      next.bestMember = newBM;
+
+      const newBE = { ...next.bestEvent };
+      votingState.selectedBestEvent.forEach(id => {
+        if (newBE[id]) {
+          const val = Math.max(0, newBE[id] - 1);
+          if (val > 0) newBE[id] = val;
+          else delete newBE[id];
+        }
+      });
+      next.bestEvent = newBE;
+
+      const newRookies = { ...next.rookie };
+      votingState.selectedRookie.forEach(id => {
+        if (newRookies[id]) {
+          const val = Math.max(0, newRookies[id] - 1);
+          if (val > 0) newRookies[id] = val;
+          else delete newRookies[id];
+        }
+      });
+      next.rookie = newRookies;
+
+      const newDuos = { ...next.perfectDuo };
+      votingState.selectedDuo.forEach(id => {
+        if (newDuos[id]) {
+          const val = Math.max(0, newDuos[id] - 1);
+          if (val > 0) newDuos[id] = val;
+          else delete newDuos[id];
+        }
+      });
+      next.perfectDuo = newDuos;
 
       return next;
     });
@@ -226,10 +272,10 @@ export default function App() {
     setVotingState(prev => ({
       ...prev,
       selectedTeam: null,
-      selectedBestMember: null,
-      selectedBestEvent: null,
-      selectedRookie: null,
-      selectedDuo: null,
+      selectedBestMember: [],
+      selectedBestEvent: [],
+      selectedRookie: [],
+      selectedDuo: [],
       isSubmitted: false,
       submittedAt: undefined
     }));
@@ -250,10 +296,10 @@ export default function App() {
       userEmail: undefined,
       userAvatar: undefined,
       selectedTeam: null,
-      selectedBestMember: null,
-      selectedBestEvent: null,
-      selectedRookie: null,
-      selectedDuo: null,
+      selectedBestMember: [],
+      selectedBestEvent: [],
+      selectedRookie: [],
+      selectedDuo: [],
       isSubmitted: false
     });
     localStorage.removeItem(STORAGE_KEY_VOTE);
@@ -302,10 +348,10 @@ export default function App() {
                   userEmail: votingState.userEmail,
                   userAvatar: votingState.userAvatar,
                   selectedTeam: existingBallot.selectedTeam as any,
-                  selectedBestMember: existingBallot.selectedBestMember,
-                  selectedBestEvent: existingBallot.selectedBestEvent,
-                  selectedRookie: existingBallot.selectedRookie,
-                  selectedDuo: existingBallot.selectedDuo,
+                  selectedBestMember: toArr(existingBallot.selectedBestMember),
+                  selectedBestEvent: toArr(existingBallot.selectedBestEvent),
+                  selectedRookie: toArr(existingBallot.selectedRookie),
+                  selectedDuo: toArr(existingBallot.selectedDuo),
                   isSubmitted: existingBallot.isSubmitted,
                   submittedAt: existingBallot.submittedAt
                 });
@@ -324,6 +370,7 @@ export default function App() {
         {currentStep === 'team_selection' && (
           <TeamSelectionScreen
             selectedTeam={votingState.selectedTeam}
+            userName={votingState.userName}
             onSelectTeam={(team) => setVotingState(prev => ({ ...prev, selectedTeam: team }))}
             onBack={() => navigateTo('name_input')}
             onNext={() => navigateTo('best_member')}
@@ -332,8 +379,9 @@ export default function App() {
 
         {currentStep === 'best_member' && (
           <BestMemberScreen
-            selectedCandidateId={votingState.selectedBestMember}
-            onSelectCandidate={(id) => setVotingState(prev => ({ ...prev, selectedBestMember: id }))}
+            selectedCandidateIds={votingState.selectedBestMember}
+            userTeam={votingState.selectedTeam}
+            onSelectCandidates={(ids) => setVotingState(prev => ({ ...prev, selectedBestMember: ids }))}
             onBack={() => navigateTo('team_selection')}
             onNext={() => navigateTo('best_event')}
           />
@@ -341,8 +389,8 @@ export default function App() {
 
         {currentStep === 'best_event' && (
           <BestEventScreen
-            selectedEventId={votingState.selectedBestEvent}
-            onSelectEvent={(id) => setVotingState(prev => ({ ...prev, selectedBestEvent: id }))}
+            selectedEventIds={votingState.selectedBestEvent}
+            onSelectEvents={(ids) => setVotingState(prev => ({ ...prev, selectedBestEvent: ids }))}
             onBack={() => navigateTo('best_member')}
             onNext={() => navigateTo('rookie')}
           />
@@ -350,8 +398,9 @@ export default function App() {
 
         {currentStep === 'rookie' && (
           <RookieScreen
-            selectedRookieId={votingState.selectedRookie}
-            onSelectRookie={(id) => setVotingState(prev => ({ ...prev, selectedRookie: id }))}
+            selectedRookieIds={votingState.selectedRookie}
+            userTeam={votingState.selectedTeam}
+            onSelectRookies={(ids) => setVotingState(prev => ({ ...prev, selectedRookie: ids }))}
             onBack={() => navigateTo('best_event')}
             onNext={() => navigateTo('perfect_duo')}
           />
@@ -359,8 +408,8 @@ export default function App() {
 
         {currentStep === 'perfect_duo' && (
           <PerfectDuoScreen
-            selectedDuoId={votingState.selectedDuo}
-            onSelectDuo={(id) => setVotingState(prev => ({ ...prev, selectedDuo: id }))}
+            selectedDuoIds={votingState.selectedDuo}
+            onSelectDuos={(duos) => setVotingState(prev => ({ ...prev, selectedDuo: duos }))}
             onBack={() => navigateTo('rookie')}
             onNext={() => navigateTo('submission')}
           />
@@ -401,8 +450,6 @@ export default function App() {
           handleUserLogin(user);
         }}
       />
-      
-      <Agentation />
     </BackgroundLandscape>
   );
 }

@@ -67,10 +67,10 @@ export interface VotingState {
   userEmail?: string;
   userAvatar?: string;
   selectedTeam: HugoTeam | null;
-  selectedBestMember: string | null;
-  selectedBestEvent: string | null;
-  selectedRookie: string | null;
-  selectedDuo: string | null;
+  selectedBestMember: string[];
+  selectedBestEvent: string[];
+  selectedRookie: string[];
+  selectedDuo: string[];
   isSubmitted: boolean;
   submittedAt?: string;
 }

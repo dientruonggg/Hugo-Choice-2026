@@ -1,17 +1,17 @@
 import React from 'react';
 import { ScreenStep, VotingState } from '../types';
 import { soundFx } from '../utils/soundEffects';
-import { 
-  Volume2, 
-  VolumeX, 
-  Vote, 
-  BarChart2, 
-  Music, 
-  Menu, 
-  X, 
-  Home, 
-  FileText, 
-  LogOut, 
+import {
+  Volume2,
+  VolumeX,
+  Vote,
+  BarChart2,
+  Music,
+  Menu,
+  X,
+  Home,
+  FileText,
+  LogOut,
   Sparkles,
   ChevronRight
 } from 'lucide-react';
@@ -93,20 +93,20 @@ export const Header: React.FC<HeaderProps> = ({
 
   // Count votes cast
   const votesCount = [
-    votingState.selectedTeam,
-    votingState.selectedBestMember,
-    votingState.selectedBestEvent,
-    votingState.selectedRookie,
-    votingState.selectedDuo
+    Boolean(votingState.selectedTeam),
+    Array.isArray(votingState.selectedBestMember) && votingState.selectedBestMember.length === 3,
+    Array.isArray(votingState.selectedBestEvent) && votingState.selectedBestEvent.length === 3,
+    Array.isArray(votingState.selectedRookie) && votingState.selectedRookie.length === 3,
+    Array.isArray(votingState.selectedDuo) && votingState.selectedDuo.length === 3
   ].filter(Boolean).length;
 
   return (
     <header className="sticky top-0 z-40 w-full lg:max-w-6xl lg:mx-auto lg:px-6 lg:py-2.5 transition-all duration-300" data-purpose="site-header">
       {/* Background Audio */}
-      <audio 
-        ref={audioRef} 
-        src="/ambient-bg.mp3" 
-        loop 
+      <audio
+        ref={audioRef}
+        src="/ambient-bg.mp3"
+        loop
         autoPlay
         onPlay={() => setIsBgMusicPlaying(true)}
         onPause={() => setIsBgMusicPlaying(false)}
@@ -114,7 +114,7 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Top Header Bar - Transparent background */}
       <div className="flex items-center justify-between w-full bg-transparent p-0 border-none shadow-none">
-        
+
         {/* Brand Title & Hugo Logo */}
         <div
           onClick={() => {
@@ -137,7 +137,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           <div className="flex flex-col">
-            <h1 className="font-cinzel text-xs sm:text-sm lg:text-xl font-extrabold tracking-wider text-amber-200 lg:text-white text-shadow-elegant drop-shadow-md group-hover:text-amber-300 transition-colors leading-tight">
+            <h1 className="font-serif-display text-xs sm:text-sm lg:text-xl font-extrabold tracking-wider text-amber-200 lg:text-white text-shadow-elegant drop-shadow-md group-hover:text-amber-300 transition-colors leading-tight">
               HUGO ENGLISH CLUB
             </h1>
             <p className="font-serif-display italic text-[0.6rem] sm:text-xs text-amber-300/80 tracking-wide hidden sm:block">
@@ -184,11 +184,10 @@ export const Header: React.FC<HeaderProps> = ({
           {/* BG Music Toggle */}
           <button
             onClick={handleToggleBgMusic}
-            className={`relative p-2 rounded-full border transition-all duration-300 flex items-center justify-center shrink-0 ${
-              isBgMusicPlaying 
-                ? 'bg-fuchsia-900/40 border-fuchsia-400/60 text-fuchsia-200 hover:bg-fuchsia-800/50 shadow-[0_0_15px_rgba(232,121,249,0.5)]' 
+            className={`relative p-2 rounded-full border transition-all duration-300 flex items-center justify-center shrink-0 ${isBgMusicPlaying
+                ? 'bg-fuchsia-900/40 border-fuchsia-400/60 text-fuchsia-200 hover:bg-fuchsia-800/50 shadow-[0_0_15px_rgba(232,121,249,0.5)]'
                 : 'bg-black/40 hover:bg-black/60 border-white/20 text-white/90 hover:text-fuchsia-300'
-            }`}
+              }`}
             title={isBgMusicPlaying ? "Pause ambient vibes 🌸" : "Play chill flower vibes 🌸"}
           >
             {isBgMusicPlaying && (
@@ -257,7 +256,7 @@ export const Header: React.FC<HeaderProps> = ({
                   className="w-7 h-7 rounded-full border border-amber-400/80 object-cover shadow-sm shrink-0"
                 />
               )}
-              <span 
+              <span
                 className="font-sans-clean text-xs font-bold text-amber-200 truncate max-w-[120px]"
                 title={votingState.userEmail || votingState.userName}
               >
@@ -285,18 +284,16 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Mobile Drawer Overlay Backdrop (< lg) */}
-      <div 
-        className={`fixed inset-0 bg-black/80 backdrop-blur-md z-40 lg:hidden transition-opacity duration-300 ${
-          isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}
+      <div
+        className={`fixed inset-0 bg-black/80 backdrop-blur-md z-40 lg:hidden transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+          }`}
         onClick={() => setIsMobileMenuOpen(false)}
       />
 
       {/* Mobile Sidebar Drawer Panel (< lg) */}
-      <aside 
-        className={`fixed top-0 right-0 bottom-0 h-full w-[310px] sm:w-[360px] z-50 bg-gradient-to-b from-slate-950 via-gray-900 to-slate-950 border-l border-amber-500/30 shadow-[0_0_50px_rgba(0,0,0,0.9)] flex flex-col justify-between p-5 sm:p-6 lg:hidden transform transition-transform duration-300 ease-out overflow-y-auto ${
-          isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
+      <aside
+        className={`fixed top-0 right-0 bottom-0 h-full w-[310px] sm:w-[360px] z-50 bg-gradient-to-b from-slate-950 via-gray-900 to-slate-950 border-l border-amber-500/30 shadow-[0_0_50px_rgba(0,0,0,0.9)] flex flex-col justify-between p-5 sm:p-6 lg:hidden transform transition-transform duration-300 ease-out overflow-y-auto ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
       >
         {/* Drawer Header */}
         <div className="flex items-center justify-between pb-4 border-b border-amber-500/20">
@@ -305,7 +302,7 @@ export const Header: React.FC<HeaderProps> = ({
               <img src="/assets/logo.png" alt="Hugo" className="w-full h-full object-cover scale-125" />
             </div>
             <div>
-              <h2 className="font-cinzel text-xs font-bold text-amber-300 tracking-wider">HUGO CHOICE 2026</h2>
+              <h2 className="font-serif-display text-xs font-bold text-amber-300 tracking-wider">HUGO CHOICE 2026</h2>
               <p className="text-[0.65rem] text-gray-400 font-serif-display italic">Mobile Navigation</p>
             </div>
           </div>
@@ -357,10 +354,10 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="p-4 rounded-2xl bg-slate-900/80 border border-amber-400/40 shadow-lg">
               <div className="flex items-center space-x-3 mb-3">
                 {votingState.userAvatar ? (
-                  <img 
-                    src={votingState.userAvatar} 
-                    alt={votingState.userName} 
-                    className="w-10 h-10 rounded-full border-2 border-amber-400 object-cover shadow-md shrink-0" 
+                  <img
+                    src={votingState.userAvatar}
+                    alt={votingState.userName}
+                    className="w-10 h-10 rounded-full border-2 border-amber-400 object-cover shadow-md shrink-0"
                   />
                 ) : (
                   <div className="w-10 h-10 rounded-full bg-amber-500/20 border-2 border-amber-400 flex items-center justify-center font-bold text-amber-300">
@@ -405,11 +402,10 @@ export const Header: React.FC<HeaderProps> = ({
                 onNavigate('landing');
                 setIsMobileMenuOpen(false);
               }}
-              className={`w-full p-3 rounded-xl flex items-center justify-between text-xs font-semibold transition-all border cursor-pointer ${
-                currentStep === 'landing'
+              className={`w-full p-3 rounded-xl flex items-center justify-between text-xs font-semibold transition-all border cursor-pointer ${currentStep === 'landing'
                   ? 'bg-amber-500/20 text-amber-200 border-amber-400/50 shadow-md'
                   : 'bg-white/5 hover:bg-white/10 text-gray-200 border-white/10'
-              }`}
+                }`}
             >
               <div className="flex items-center space-x-2.5">
                 <Home className="w-4 h-4 text-amber-400" />
@@ -425,11 +421,10 @@ export const Header: React.FC<HeaderProps> = ({
                 onNavigate('process');
                 setIsMobileMenuOpen(false);
               }}
-              className={`w-full p-3 rounded-xl flex items-center justify-between text-xs font-semibold transition-all border cursor-pointer ${
-                currentStep === 'process'
+              className={`w-full p-3 rounded-xl flex items-center justify-between text-xs font-semibold transition-all border cursor-pointer ${currentStep === 'process'
                   ? 'bg-amber-500/20 text-amber-200 border-amber-400/50 shadow-md'
                   : 'bg-white/5 hover:bg-white/10 text-gray-200 border-white/10'
-              }`}
+                }`}
             >
               <div className="flex items-center space-x-2.5">
                 <FileText className="w-4 h-4 text-amber-400" />
@@ -482,11 +477,10 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={handleToggleSound}
-                className={`p-2.5 rounded-xl border flex flex-col items-center justify-center space-y-1 transition-all cursor-pointer ${
-                  isMuted 
-                    ? 'bg-red-950/30 border-red-500/30 text-red-300' 
+                className={`p-2.5 rounded-xl border flex flex-col items-center justify-center space-y-1 transition-all cursor-pointer ${isMuted
+                    ? 'bg-red-950/30 border-red-500/30 text-red-300'
                     : 'bg-amber-500/10 border-amber-400/30 text-amber-200'
-                }`}
+                  }`}
               >
                 {isMuted ? <VolumeX className="w-4 h-4 text-red-300" /> : <Volume2 className="w-4 h-4 text-amber-300" />}
                 <span className="text-[0.7rem] font-medium">{isMuted ? 'Tắt FX' : 'Bật FX'}</span>
@@ -494,11 +488,10 @@ export const Header: React.FC<HeaderProps> = ({
 
               <button
                 onClick={handleToggleBgMusic}
-                className={`p-2.5 rounded-xl border flex flex-col items-center justify-center space-y-1 transition-all cursor-pointer ${
-                  isBgMusicPlaying 
-                    ? 'bg-fuchsia-950/40 border-fuchsia-400/50 text-fuchsia-200 shadow-[0_0_12px_rgba(232,121,249,0.3)]' 
+                className={`p-2.5 rounded-xl border flex flex-col items-center justify-center space-y-1 transition-all cursor-pointer ${isBgMusicPlaying
+                    ? 'bg-fuchsia-950/40 border-fuchsia-400/50 text-fuchsia-200 shadow-[0_0_12px_rgba(232,121,249,0.3)]'
                     : 'bg-white/5 border-white/10 text-gray-400'
-                }`}
+                  }`}
               >
                 <Music className={`w-4 h-4 ${isBgMusicPlaying ? 'text-fuchsia-300 animate-pulse' : ''}`} />
                 <span className="text-[0.7rem] font-medium">{isBgMusicPlaying ? 'Nhạc nền: Bật' : 'Nhạc nền: Tắt'}</span>

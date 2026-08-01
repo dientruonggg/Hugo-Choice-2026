@@ -9,10 +9,10 @@ export interface SavedBallotRecord {
   userName: string;
   userAvatar?: string;
   selectedTeam: HugoTeam | null;
-  selectedBestMember: string | null;
-  selectedBestEvent: string | null;
-  selectedRookie: string | null;
-  selectedDuo: string | null;
+  selectedBestMember: string[] | string | null;
+  selectedBestEvent: string[] | string | null;
+  selectedRookie: string[] | string | null;
+  selectedDuo: string[] | string | null;
   isSubmitted: boolean;
   submittedAt?: string;
 }

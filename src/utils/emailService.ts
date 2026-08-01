@@ -47,7 +47,7 @@ export async function sendBallotEmailAuto(votingState: VotingState): Promise<Aut
     }
   };
 
-  // 1. Direct System Backend Email via /api/send-email
+  // 1. Direct System Backend Email via /api/send-email (if backend server is active)
   try {
     const response = await fetch('/api/send-email', {
       method: 'POST',
@@ -55,31 +55,38 @@ export async function sendBallotEmailAuto(votingState: VotingState): Promise<Aut
       body: JSON.stringify(ballotPayload)
     });
 
-    if (response.ok) {
+    const contentType = response.headers.get('content-type') || '';
+    if (response.ok && contentType.includes('application/json')) {
       const data = await response.json();
       recordSentEmailLog(targetEmail, votingState);
-      if (data.previewUrl) {
-        console.log('✉️ Test Email Preview Link:', data.previewUrl);
-      }
       return {
         success: true,
-        message: data.configuredSmtp
-          ? `✉️ Hệ thống đã tự động gửi Email xác nhận tới ${targetEmail}!`
-          : `✉️ Hệ thống đã kích hoạt tự động gửi Email xác nhận tới ${targetEmail}!`
+        message: `✉️ Hệ thống đã tự động gửi Email xác nhận tới ${targetEmail}!`
       };
     }
   } catch (err) {
-    console.warn('Backend system email endpoint notice:', err);
+    console.warn('Backend endpoint notice, switching to EmailJS:', err);
   }
 
-  // 2. EmailJS fallback
+  // 2. EmailJS sending
   if (EMAILJS_SERVICE_ID && EMAILJS_TEMPLATE_ID && EMAILJS_PUBLIC_KEY) {
     try {
+      emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+
       const templateParams = {
         to_email: targetEmail,
         to_name: userName,
         user_name: userName,
         user_email: targetEmail,
+        reply_to: targetEmail,
+        email: targetEmail,
+        name: userName,
+        message: `KẾT QUẢ BÌNH CHỌN HUGO AWARD 2026:
+• Best Team: ${ballotPayload.ballot.team}
+• Best Member: ${ballotPayload.ballot.member}
+• Best Event: ${ballotPayload.ballot.event}
+• Best Rookie: ${ballotPayload.ballot.rookie}
+• Perfect Duo: ${ballotPayload.ballot.duo}`,
         submitted_at: submittedDate,
         intro_heading: EMAIL_TEMPLATE_CONFIG.introHeading,
         intro_message: EMAIL_TEMPLATE_CONFIG.introMessage,
@@ -90,30 +97,45 @@ export async function sendBallotEmailAuto(votingState: VotingState): Promise<Aut
         selected_event: ballotPayload.ballot.event,
         selected_rookie: ballotPayload.ballot.rookie,
         selected_duo: ballotPayload.ballot.duo,
+        team: ballotPayload.ballot.team,
+        member: ballotPayload.ballot.member,
+        event: ballotPayload.ballot.event,
+        rookie: ballotPayload.ballot.rookie,
+        duo: ballotPayload.ballot.duo
       };
 
-      await emailjs.send(
+      const result = await emailjs.send(
         EMAILJS_SERVICE_ID,
         EMAILJS_TEMPLATE_ID,
         templateParams,
-        EMAILJS_PUBLIC_KEY
+        { publicKey: EMAILJS_PUBLIC_KEY }
       );
+
+      console.log('✅ EmailJS success:', result.status, result.text);
       recordSentEmailLog(targetEmail, votingState);
       return {
         success: true,
-        message: `✉️ Hệ thống đã tự động gửi Email xác nhận tới ${targetEmail}!`
+        message: `✉️ Đã tự động gửi Email xác nhận tới ${targetEmail} thành công!`
       };
     } catch (err: any) {
-      console.warn('EmailJS sending warning:', err);
+      console.error('❌ EmailJS send error:', err);
+      return {
+        success: false,
+        message: `⚠️ EmailJS báo lỗi (${err?.text || err?.message || 'Lỗi gửi mail'}). Vui lòng kiểm tra lại EmailJS Service/Template!`
+      };
     }
+  } else {
+    console.warn('⚠️ Missing EmailJS Environment Variables:', {
+      hasServiceId: !!EMAILJS_SERVICE_ID,
+      hasTemplateId: !!EMAILJS_TEMPLATE_ID,
+      hasPublicKey: !!EMAILJS_PUBLIC_KEY
+    });
   }
 
-  // 3. Record log fallback
   recordSentEmailLog(targetEmail, votingState);
-
   return {
-    success: true,
-    message: `✉️ Hệ thống đã tự động gửi Email xác nhận tới ${targetEmail}!`
+    success: false,
+    message: `⚠️ Chưa cấu hình đủ VITE_EMAILJS_SERVICE_ID, VITE_EMAILJS_TEMPLATE_ID, VITE_EMAILJS_PUBLIC_KEY!`
   };
 }
 

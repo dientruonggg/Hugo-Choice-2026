@@ -251,11 +251,39 @@ export const ALL_MEMBERS: ClubMember[] = [
   }))
 ];
 
-export function filterMembers(query: string, teamFilter: HugoTeam | 'all' = 'all'): ClubMember[] {
+export function getAvailableGivenNameInitials(members: ClubMember[] = ALL_MEMBERS): string[] {
+  const lettersSet = new Set<string>();
+  members.forEach(m => {
+    const given = getGivenName(m.name);
+    const norm = removeVietnameseTones(given).toUpperCase();
+    if (norm.length > 0) {
+      lettersSet.add(norm[0]);
+    }
+  });
+  return Array.from(lettersSet).sort((a, b) => a.localeCompare(b, 'vi'));
+}
+
+export function filterMembers(
+  query: string,
+  teamFilter: HugoTeam | 'all' = 'all',
+  letterFilter: string = 'all'
+): ClubMember[] {
   const normalizedQuery = removeVietnameseTones(query.trim());
+  const normalizedLetter = letterFilter !== 'all' ? removeVietnameseTones(letterFilter).toUpperCase() : '';
+
   const list = ALL_MEMBERS.filter((member) => {
     const matchesTeam = teamFilter === 'all' || member.teamId === teamFilter;
     if (!matchesTeam) return false;
+
+    if (normalizedLetter) {
+      const given = getGivenName(member.name);
+      const normGiven = removeVietnameseTones(given).toUpperCase();
+      const normFull = removeVietnameseTones(member.name).toUpperCase();
+      const matchesGivenLetter = normGiven.startsWith(normalizedLetter);
+      const matchesFullLetter = normFull.startsWith(normalizedLetter);
+      if (!matchesGivenLetter && !matchesFullLetter) return false;
+    }
+
     if (!normalizedQuery) return true;
     const normalizedName = removeVietnameseTones(member.name);
     return normalizedName.includes(normalizedQuery);
@@ -274,3 +302,4 @@ export function filterMembers(query: string, teamFilter: HugoTeam | 'all' = 'all
     return removeVietnameseTones(a.name).localeCompare(removeVietnameseTones(b.name), 'vi');
   });
 }
+

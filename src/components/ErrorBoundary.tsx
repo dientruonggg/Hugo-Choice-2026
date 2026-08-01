@@ -53,7 +53,7 @@ export class ErrorBoundary extends Component<Props, State> {
             </div>
 
             <div className="space-y-2">
-              <h1 className="font-cinzel text-2xl sm:text-3xl font-extrabold text-white">
+              <h1 className="font-serif-display text-2xl sm:text-3xl font-extrabold text-white">
                 Hugo Award 2026
               </h1>
               <h2 className="font-sans-clean text-lg font-bold text-amber-200 uppercase tracking-wider">
@@ -80,7 +80,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
               <button
                 onClick={this.handleReset}
-                className="flex-1 py-3 px-6 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-cinzel font-bold text-sm shadow-lg transition-all flex items-center justify-center space-x-2"
+                className="flex-1 py-3 px-6 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-serif-display font-bold text-sm shadow-lg transition-all flex items-center justify-center space-x-2"
               >
                 <RotateCcw className="w-4 h-4" />
                 <span>Reset & Restart</span>

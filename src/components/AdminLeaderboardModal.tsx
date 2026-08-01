@@ -30,7 +30,7 @@ export const AdminLeaderboardModal: React.FC<AdminLeaderboardModalProps> = ({
               <Award className="w-6 h-6 text-amber-300" />
             </div>
             <div>
-              <h2 className="font-cinzel text-xl md:text-2xl font-bold text-amber-200">
+              <h2 className="font-serif-display text-xl md:text-2xl font-bold text-amber-200">
                 Live Hugo Award 2026 Leaderboard
               </h2>
               <p className="font-sans-clean text-xs text-emerald-300 flex items-center space-x-2">
@@ -58,7 +58,7 @@ export const AdminLeaderboardModal: React.FC<AdminLeaderboardModalProps> = ({
         <div className="p-6 overflow-y-auto space-y-8 flex-1">
           {/* Teams Stats */}
           <div>
-            <h3 className="font-cinzel text-sm uppercase tracking-widest text-amber-300 mb-3 flex items-center">
+            <h3 className="font-serif-display text-sm uppercase tracking-widest text-amber-300 mb-3 flex items-center">
               <Users className="w-4 h-4 mr-2" /> Teams Distribution
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -85,116 +85,138 @@ export const AdminLeaderboardModal: React.FC<AdminLeaderboardModalProps> = ({
 
           {/* Best Member */}
           <div>
-            <h3 className="font-cinzel text-sm uppercase tracking-widest text-amber-300 mb-3 flex items-center">
+            <h3 className="font-serif-display text-sm uppercase tracking-widest text-amber-300 mb-3 flex items-center">
               <Sparkles className="w-4 h-4 mr-2" /> Best Member
             </h3>
             <div className="space-y-2">
-              {Object.entries(results.bestMember).map(([idOrName, count]) => {
-                const name = getResolvedBestMemberName(idOrName);
-                const percent = results.totalSubmissions ? Math.round((count / results.totalSubmissions) * 100) : 0;
+              {Object.entries(results.bestMember).filter(([_, count]) => count > 0).length > 0 ? (
+                Object.entries(results.bestMember)
+                  .filter(([_, count]) => count > 0)
+                  .map(([idOrName, count]) => {
+                    const name = getResolvedBestMemberName(idOrName);
+                    const percent = results.totalSubmissions ? Math.round((count / results.totalSubmissions) * 100) : 0;
 
-                return (
-                  <div key={idOrName} className="p-3 rounded-lg bg-emerald-950/40 border border-emerald-500/20 flex items-center justify-between">
-                    <div className="flex-1 pr-4">
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className="font-serif-display font-medium text-white">{name}</span>
-                        <span className="text-amber-300 font-bold">{count} ({percent}%)</span>
+                    return (
+                      <div key={idOrName} className="p-3 rounded-lg bg-emerald-950/40 border border-emerald-500/20 flex items-center justify-between">
+                        <div className="flex-1 pr-4">
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="font-serif-display font-medium text-white">{name}</span>
+                            <span className="text-amber-300 font-bold">{count} ({percent}%)</span>
+                          </div>
+                          <div className="w-full bg-black/40 h-2 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-emerald-400 to-amber-300 rounded-full"
+                              style={{ width: `${percent}%` }}
+                            />
+                          </div>
+                        </div>
                       </div>
-                      <div className="w-full bg-black/40 h-2 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-gradient-to-r from-emerald-400 to-amber-300 rounded-full"
-                          style={{ width: `${percent}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+                    );
+                  })
+              ) : (
+                <p className="text-xs text-white/50 italic px-1 py-2">Chưa có lượt bình chọn nào</p>
+              )}
             </div>
           </div>
 
           {/* Best Event */}
           <div>
-            <h3 className="font-cinzel text-sm uppercase tracking-widest text-amber-300 mb-3 flex items-center">
+            <h3 className="font-serif-display text-sm uppercase tracking-widest text-amber-300 mb-3 flex items-center">
               <Calendar className="w-4 h-4 mr-2" /> Best Event
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {BEST_EVENTS.map(e => {
-                const count = results.bestEvent[e.id] || 0;
-                const percent = results.totalSubmissions ? Math.round((count / results.totalSubmissions) * 100) : 0;
+              {BEST_EVENTS.filter(e => (results.bestEvent[e.id] || 0) > 0).length > 0 ? (
+                BEST_EVENTS.filter(e => (results.bestEvent[e.id] || 0) > 0).map(e => {
+                  const count = results.bestEvent[e.id] || 0;
+                  const percent = results.totalSubmissions ? Math.round((count / results.totalSubmissions) * 100) : 0;
 
-                return (
-                  <div key={e.id} className="p-4 rounded-xl bg-amber-950/20 border border-amber-500/30">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <span className="text-3xl">{e.icon}</span>
-                      <div>
-                        <h4 className="font-cinzel font-bold text-white text-base">{e.name}</h4>
-                        <span className="text-xs text-amber-300 font-bold">{count} votes ({percent}%)</span>
+                  return (
+                    <div key={e.id} className="p-4 rounded-xl bg-amber-950/20 border border-amber-500/30">
+                      <div className="flex items-center space-x-3 mb-2">
+                        <span className="text-3xl">{e.icon}</span>
+                        <div>
+                          <h4 className="font-serif-display font-bold text-white text-base">{e.name}</h4>
+                          <span className="text-xs text-amber-300 font-bold">{count} votes ({percent}%)</span>
+                        </div>
+                      </div>
+                      <div className="w-full bg-black/40 h-2.5 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-amber-400 rounded-full"
+                          style={{ width: `${percent}%` }}
+                        />
                       </div>
                     </div>
-                    <div className="w-full bg-black/40 h-2.5 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-amber-400 rounded-full"
-                        style={{ width: `${percent}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              ) : (
+                <p className="text-xs text-white/50 italic px-1 py-2 col-span-full">Chưa có lượt bình chọn nào</p>
+              )}
             </div>
           </div>
 
           {/* The Rookie */}
           <div>
-            <h3 className="font-cinzel text-sm uppercase tracking-widest text-amber-300 mb-3 flex items-center">
+            <h3 className="font-serif-display text-sm uppercase tracking-widest text-amber-300 mb-3 flex items-center">
               🌱 The Rookie Award
             </h3>
             <div className="space-y-2">
-              {Object.entries(results.rookie).map(([idOrName, count]) => {
-                const name = getResolvedRookieName(idOrName);
-                const percent = results.totalSubmissions ? Math.round((count / results.totalSubmissions) * 100) : 0;
+              {Object.entries(results.rookie).filter(([_, count]) => count > 0).length > 0 ? (
+                Object.entries(results.rookie)
+                  .filter(([_, count]) => count > 0)
+                  .map(([idOrName, count]) => {
+                    const name = getResolvedRookieName(idOrName);
+                    const percent = results.totalSubmissions ? Math.round((count / results.totalSubmissions) * 100) : 0;
 
-                return (
-                  <div key={idOrName} className="p-3 rounded-lg bg-white/5 border border-white/10 flex items-center justify-between">
-                    <div className="flex-1 pr-4">
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className="font-serif-display font-medium text-white">{name}</span>
-                        <span className="text-emerald-300 font-bold">{count} ({percent}%)</span>
+                    return (
+                      <div key={idOrName} className="p-3 rounded-lg bg-white/5 border border-white/10 flex items-center justify-between">
+                        <div className="flex-1 pr-4">
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="font-serif-display font-medium text-white">{name}</span>
+                            <span className="text-emerald-300 font-bold">{count} ({percent}%)</span>
+                          </div>
+                          <div className="w-full bg-black/40 h-2 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-emerald-400 rounded-full"
+                              style={{ width: `${percent}%` }}
+                            />
+                          </div>
+                        </div>
                       </div>
-                      <div className="w-full bg-black/40 h-2 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-emerald-400 rounded-full"
-                          style={{ width: `${percent}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+                    );
+                  })
+              ) : (
+                <p className="text-xs text-white/50 italic px-1 py-2">Chưa có lượt bình chọn nào</p>
+              )}
             </div>
           </div>
 
           {/* Perfect Duo */}
           <div>
-            <h3 className="font-cinzel text-sm uppercase tracking-widest text-amber-300 mb-3 flex items-center">
+            <h3 className="font-serif-display text-sm uppercase tracking-widest text-amber-300 mb-3 flex items-center">
               🦋 The Perfect Duo
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {Object.entries(results.perfectDuo).map(([idOrName, count]) => {
-                const name = getResolvedDuoName(idOrName);
-                const percent = results.totalSubmissions ? Math.round((count / results.totalSubmissions) * 100) : 0;
+              {Object.entries(results.perfectDuo).filter(([_, count]) => count > 0).length > 0 ? (
+                Object.entries(results.perfectDuo)
+                  .filter(([_, count]) => count > 0)
+                  .map(([idOrName, count]) => {
+                    const name = getResolvedDuoName(idOrName);
+                    const percent = results.totalSubmissions ? Math.round((count / results.totalSubmissions) * 100) : 0;
 
-                return (
-                  <div key={idOrName} className="p-3 rounded-lg bg-purple-950/20 border border-purple-400/30 flex justify-between items-center">
-                    <div>
-                      <span className="font-serif-display text-sm font-semibold text-white block">
-                        {name}
-                      </span>
-                      <span className="text-xs text-purple-200">{count} votes ({percent}%)</span>
-                    </div>
-                  </div>
-                );
-              })}
+                    return (
+                      <div key={idOrName} className="p-3 rounded-lg bg-purple-950/20 border border-purple-400/30 flex justify-between items-center">
+                        <div>
+                          <span className="font-serif-display text-sm font-semibold text-white block">
+                            {name}
+                          </span>
+                          <span className="text-xs text-purple-200">{count} votes ({percent}%)</span>
+                        </div>
+                      </div>
+                    );
+                  })
+              ) : (
+                <p className="text-xs text-white/50 italic px-1 py-2 col-span-full">Chưa có lượt bình chọn nào</p>
+              )}
             </div>
           </div>
         </div>
@@ -208,17 +230,17 @@ export const AdminLeaderboardModal: React.FC<AdminLeaderboardModalProps> = ({
                 if (onClearMyBallot) onClearMyBallot();
               }
             }}
-            className="px-4 py-2 rounded-full border border-red-500/50 bg-red-500/10 hover:bg-red-500/30 text-red-400 font-cinzel font-bold text-xs transition-colors"
+            className="px-4 py-2 rounded-full border border-red-500/50 bg-red-500/10 hover:bg-red-500/30 text-red-400 font-serif-display font-bold text-xs transition-colors"
           >
             Clear My Ballot & Revote
           </button>
-          
+
           <button
             onClick={() => {
               soundFx.playClick();
               onClose();
             }}
-            className="px-6 py-2 rounded-full bg-amber-400 text-black font-cinzel font-bold text-sm hover:bg-amber-300 transition-colors"
+            className="px-6 py-2 rounded-full bg-amber-400 text-black font-serif-display font-bold text-sm hover:bg-amber-300 transition-colors"
           >
             Close Leaderboard
           </button>
