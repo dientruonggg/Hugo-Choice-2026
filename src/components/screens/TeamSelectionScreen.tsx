@@ -276,9 +276,9 @@ export const TeamSelectionScreen: React.FC<TeamSelectionScreenProps> = ({
       {/* Top Header - Compact for Mobile */}
       <div className="text-center shrink-0 mb-1.5 sm:mb-3">
         <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-400/20 border border-amber-400/40 text-amber-300 text-[0.65rem] sm:text-xs font-bold mb-1 shadow-md">
-          <span>⏱️ VÒNG 2 (29/07 - 02/08)</span>
+          <span>⏱️ VÒNG 1 (01/08 - 03/08)</span>
           <span className="opacity-50">•</span>
-          <span>Hạn chót: 23:59 02/08</span>
+          <span>VÒNG 2 (05/08 - 09/08)</span>
         </div>
         <h2 className="font-serif-display text-2xl sm:text-4xl md:text-5xl font-black tracking-wider text-white text-stroke-gold drop-shadow-[0_8px_20px_rgba(0,0,0,0.8)] uppercase leading-tight">
           TEAM SHOWCASE

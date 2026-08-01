@@ -98,7 +98,9 @@ export const BestMemberScreen: React.FC<BestMemberScreenProps> = ({
       {/* Title Header */}
       <div className="text-center mb-2 sm:mb-3 shrink-0">
         <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-400/20 border border-amber-400/40 text-amber-300 text-[0.65rem] sm:text-xs font-bold mb-1 shadow-md">
-          <span>⏱️ VÒNG 2 (29/07 - 02/08)</span>
+          <span>⏱️ VÒNG 1 (01/08 - 03/08)</span>
+          <span className="opacity-50">•</span>
+          <span>VÒNG 2 (05/08 - 09/08)</span>
           <span className="opacity-50">•</span>
           <span>BẮT BUỘC CHỌN ĐỦ 3 NGUỜI</span>
         </div>

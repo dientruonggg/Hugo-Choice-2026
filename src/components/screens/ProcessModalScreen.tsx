@@ -46,8 +46,9 @@ export const ProcessModalScreen: React.FC<ProcessModalScreenProps> = ({ onProcee
             Thể Lệ & Thời Gian (Timeline & Rules)
           </h3>
           <ul className="font-serif-display text-xs sm:text-base text-white/90 leading-relaxed space-y-1.5 text-left max-w-lg mx-auto bg-black/30 p-4 rounded-2xl border border-white/10">
-            <li>⏱️ <strong className="text-amber-300">Vòng 2 Bình Chọn:</strong> 29/07 - 02/08/2026</li>
-            <li>⏳ <strong className="text-amber-300">Hạn Chót Đóng Phiếu:</strong> 23:59 ngày 02/08/2026</li>
+            <li>⏱️ <strong className="text-amber-300">Vòng 1 Bình Chọn:</strong> 01/08 - 03/08/2026</li>
+            <li>⏱️ <strong className="text-amber-300">Vòng 2 Bình Chọn:</strong> 05/08 - 09/08/2026</li>
+            <li>⏳ <strong className="text-amber-300">Hạn Chót Đóng Phiếu:</strong> 23:59 ngày 09/08/2026</li>
             <li>📌 <strong className="text-amber-300">Quy Định Bình Chọn:</strong> Bắt buộc chọn đủ 3 người / 3 sự kiện / 3 tân binh / 3 cặp duo để nộp phiếu</li>
           </ul>
         </div>
