@@ -5,10 +5,13 @@ import { soundFx } from '../../utils/soundEffects';
 import { Search, UserCheck, Plus, ChevronLeft, ChevronRight, CheckCircle2, UserPlus } from 'lucide-react';
 import { PaginationFooter } from '../PaginationFooter';
 import { SelectedTray } from '../SelectedTray';
+import { requestAddMember } from '../../utils/approvalStorage';
+import { toast } from '../../utils/toast';
 
 interface RookieScreenProps {
   selectedRookieIds: string[];
   userTeam?: HugoTeam | null;
+  userName?: string;
   onSelectRookies: (ids: string[]) => void;
   onBack: () => void;
   onNext: () => void;
@@ -25,13 +28,14 @@ const TEAM_BADGES: Record<HugoTeam, { name: string; shortName: string; bg: strin
 export const RookieScreen: React.FC<RookieScreenProps> = ({
   selectedRookieIds = [],
   userTeam = null,
+  userName,
   onSelectRookies,
   onBack,
   onNext,
   onNavigate
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const targetTeam: HugoTeam | 'all' = userTeam || 'all';
+  const targetTeam: HugoTeam | 'all' = 'all';
 
   const selectedList = Array.isArray(selectedRookieIds) ? selectedRookieIds : (selectedRookieIds ? [selectedRookieIds] : []);
   const allMembers = getAllMembers();
@@ -52,11 +56,8 @@ export const RookieScreen: React.FC<RookieScreenProps> = ({
 
   const handleAddCustom = () => {
     if (!searchQuery.trim()) return;
-    const added = addCustomMember(searchQuery.trim(), userTeam || 'prs');
-    soundFx.playSelect();
-    if (!selectedList.includes(added.id) && selectedList.length < 3) {
-      onSelectRookies([...selectedList, added.id]);
-    }
+    requestAddMember(searchQuery.trim(), userTeam || 'prs', userName || 'Guest');
+    toast.success(`Request to add "${searchQuery.trim()}" submitted! Admin will review it.`);
     setSearchQuery('');
   };
 
@@ -179,14 +180,13 @@ export const RookieScreen: React.FC<RookieScreenProps> = ({
           <span>Back</span>
         </button>
 
-        <PaginationFooter currentStep="rookie" onNavigate={onNavigate || (() => {})} />
+        <PaginationFooter currentStep="rookie" onNavigate={onNavigate || (() => { })} />
 
         <button
           type="button"
           onClick={() => {
             if (selectedList.length < 3) {
-              soundFx.playClick();
-              alert(`Please select 3 rookies before proceeding (${selectedList.length}/3 selected)`);
+              toast.warning(`Please select 3 rookies before proceeding (${selectedList.length}/3 selected)`);
               return;
             }
             soundFx.playSelect();

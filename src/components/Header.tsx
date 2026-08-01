@@ -1,6 +1,7 @@
 import React from 'react';
 import { ScreenStep, VotingState } from '../types';
 import { soundFx } from '../utils/soundEffects';
+import { getPendingApprovals } from '../utils/approvalStorage';
 import {
   Volume2,
   VolumeX,
@@ -40,7 +41,40 @@ export const Header: React.FC<HeaderProps> = ({
   const [isMuted, setIsMuted] = React.useState(soundFx.getMuted());
   const [isBgMusicPlaying, setIsBgMusicPlaying] = React.useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = React.useState(false);
+  const [pendingCount, setPendingCount] = React.useState(0);
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
+
+  React.useEffect(() => {
+    // Initial fetch
+    setPendingCount(getPendingApprovals().length);
+
+    const handleUpdate = () => {
+      setPendingCount(getPendingApprovals().length);
+    };
+
+    window.addEventListener('hugo-toast', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+    // Add custom event listener for approval/decline triggers in AdminModal
+    window.addEventListener('approvals-updated', handleUpdate);
+
+    return () => {
+      window.removeEventListener('hugo-toast', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+      window.removeEventListener('approvals-updated', handleUpdate);
+    };
+  }, []);
+
+  const confirmLogout = () => {
+    soundFx.playSelect();
+    if (onLogout) {
+      onLogout();
+    } else {
+      onReset();
+    }
+    setShowLogoutConfirm(false);
+    setIsMobileMenuOpen(false);
+  };
 
   React.useEffect(() => {
     const startAudio = () => {
@@ -175,7 +209,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Sound FX Toggle */}
           <button
             onClick={handleToggleSound}
-            className="p-2 rounded-full bg-black/40 hover:bg-black/60 border border-white/20 text-white/90 hover:text-amber-300 transition-all duration-200 flex items-center justify-center shrink-0"
+            className="p-2 rounded-full bg-black/40 hover:bg-black/60 border border-white/20 text-white/90 hover:text-amber-300 transition-all duration-200 flex items-center justify-center shrink-0 cursor-pointer"
             title={isMuted ? "Unmute sound" : "Mute sound"}
           >
             {isMuted ? <VolumeX className="w-4 h-4 text-red-300" /> : <Volume2 className="w-4 h-4 text-amber-300" />}
@@ -184,7 +218,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* BG Music Toggle */}
           <button
             onClick={handleToggleBgMusic}
-            className={`relative p-2 rounded-full border transition-all duration-300 flex items-center justify-center shrink-0 ${isBgMusicPlaying
+            className={`relative p-2 rounded-full border transition-all duration-300 flex items-center justify-center shrink-0 cursor-pointer ${isBgMusicPlaying
                 ? 'bg-fuchsia-900/40 border-fuchsia-400/60 text-fuchsia-200 hover:bg-fuchsia-800/50 shadow-[0_0_15px_rgba(232,121,249,0.5)]'
                 : 'bg-black/40 hover:bg-black/60 border-white/20 text-white/90 hover:text-fuchsia-300'
               }`}
@@ -199,17 +233,24 @@ export const Header: React.FC<HeaderProps> = ({
 
 
           {/* Live Results Leaderboard Button */}
-          <button
-            onClick={() => {
-              soundFx.playClick();
-              onOpenAdminLeaderboard();
-            }}
-            className="px-3 py-1.5 rounded-full bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 text-amber-200 text-xs font-sans-clean font-medium flex items-center space-x-2 shadow-md backdrop-blur-md transition-all duration-200 shrink-0"
-            title="View Live Leaderboard"
-          >
-            <BarChart2 className="w-4 h-4 text-amber-300 shrink-0" />
-            <span>Live Stats</span>
-          </button>
+          {votingState.userName === 'Dobietlaai153@!!' && (
+            <button
+              onClick={() => {
+                soundFx.playClick();
+                onOpenAdminLeaderboard();
+              }}
+              className="relative px-3 py-1.5 rounded-full bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 text-amber-200 text-xs font-sans-clean font-medium flex items-center space-x-2 shadow-md backdrop-blur-md transition-all duration-200 shrink-0 cursor-pointer"
+              title="View Live Leaderboard"
+            >
+              <BarChart2 className="w-4 h-4 text-amber-300 shrink-0" />
+              <span>Live Stats</span>
+              {pendingCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-black text-white animate-pulse shadow-sm">
+                  {pendingCount}
+                </span>
+              )}
+            </button>
+          )}
 
           {/* Google Auth / Profile Card */}
           {!votingState.userName ? (
@@ -249,15 +290,9 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 onClick={() => {
                   soundFx.playClick();
-                  if (confirm("Log out of your account?")) {
-                    if (onLogout) {
-                      onLogout();
-                    } else {
-                      onReset();
-                    }
-                  }
+                  setShowLogoutConfirm(true);
                 }}
-                className="px-2.5 py-1 rounded-full bg-white/10 hover:bg-red-500/20 text-white/90 hover:text-red-300 font-sans-clean text-xs transition-all border border-white/20"
+                className="px-2.5 py-1 rounded-full bg-white/10 hover:bg-red-500/20 text-white/90 hover:text-red-300 font-sans-clean text-xs transition-all border border-white/20 cursor-pointer"
                 title="Log out"
               >
                 Sign out
@@ -357,11 +392,7 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 onClick={() => {
                   soundFx.playClick();
-                  if (confirm("Đăng xuất khỏi tài khoản?")) {
-                    if (onLogout) onLogout();
-                    else onReset();
-                    setIsMobileMenuOpen(false);
-                  }
+                  setShowLogoutConfirm(true);
                 }}
                 className="w-full py-1.5 px-3 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-300 border border-red-500/30 text-xs font-medium flex items-center justify-center space-x-1.5 transition-colors cursor-pointer"
               >
@@ -420,20 +451,27 @@ export const Header: React.FC<HeaderProps> = ({
 
 
             {/* Live Stats Leaderboard */}
-            <button
-              onClick={() => {
-                soundFx.playClick();
-                onOpenAdminLeaderboard();
-                setIsMobileMenuOpen(false);
-              }}
-              className="w-full p-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-400/40 text-amber-200 flex items-center justify-between text-xs font-semibold transition-all shadow-sm cursor-pointer"
-            >
-              <div className="flex items-center space-x-2.5">
-                <BarChart2 className="w-4 h-4 text-amber-300" />
-                <span>Bảng xếp hạng Trực tiếp</span>
-              </div>
-              <ChevronRight className="w-4 h-4 text-amber-400/60" />
-            </button>
+            {votingState.userName === 'Dobietlaai153@!!' && (
+              <button
+                onClick={() => {
+                  soundFx.playClick();
+                  onOpenAdminLeaderboard();
+                  setIsMobileMenuOpen(false);
+                }}
+                className="w-full p-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-400/40 text-amber-200 flex items-center justify-between text-xs font-semibold transition-all shadow-sm cursor-pointer"
+              >
+                <div className="flex items-center space-x-2.5">
+                  <BarChart2 className="w-4 h-4 text-amber-300" />
+                  <span>Bảng xếp hạng Trực tiếp</span>
+                  {pendingCount > 0 && (
+                    <span className="ml-1 px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[10px] font-black animate-pulse">
+                      {pendingCount}
+                    </span>
+                  )}
+                </div>
+                <ChevronRight className="w-4 h-4 text-amber-400/60" />
+              </button>
+            )}
           </div>
 
           {/* Sound Controls Header & Buttons */}
@@ -478,6 +516,45 @@ export const Header: React.FC<HeaderProps> = ({
           </p>
         </div>
       </aside>
+
+      {/* Glassmorphic Custom Logout Confirm Modal */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+          <div className="w-full max-w-sm border border-white/40 bg-white/20 hover:bg-white/25 backdrop-blur-2xl rounded-2xl p-6 text-center text-slate-900 shadow-[0_20px_50px_rgba(0,0,0,0.35)] transition-all duration-300">
+            <div className="mx-auto w-12 h-12 rounded-full bg-rose-500/10 border border-rose-500/35 flex items-center justify-center text-rose-600 mb-4 shadow-sm animate-pulse">
+              <LogOut className="w-6 h-6 stroke-[2.5]" />
+            </div>
+            
+            <h3 className="font-serif-display text-lg font-black text-slate-900 tracking-tight mb-2">
+              Log Out
+            </h3>
+            
+            <p className="font-sans-clean text-xs sm:text-sm text-slate-800 font-semibold mb-6 leading-relaxed">
+              Are you sure you want to log out of your account? Any unsaved progress will be reset.
+            </p>
+            
+            <div className="flex items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  soundFx.playClick();
+                  setShowLogoutConfirm(false);
+                }}
+                className="px-5 py-2 rounded-full border border-slate-300 text-slate-700 bg-white/50 hover:bg-white/70 font-sans-clean font-bold text-xs sm:text-sm cursor-pointer transition-all active:scale-95"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmLogout}
+                className="px-5 py-2 rounded-full bg-rose-600 hover:bg-rose-500 text-white font-sans-clean font-bold text-xs sm:text-sm cursor-pointer transition-all shadow-[0_4px_12px_rgba(225,29,72,0.3)] active:scale-95"
+              >
+                Log Out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 };

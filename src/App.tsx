@@ -8,6 +8,7 @@ import { AdminLeaderboardModal } from './components/AdminLeaderboardModal';
 import { GoogleAuthModal } from './components/GoogleAuthModal';
 import { subscribeToAuthChanges, logoutGoogle } from './utils/firebase';
 import { saveUserBallot, getSavedBallotForUser } from './utils/ballotStorage';
+import { ToastContainer } from './components/ToastContainer';
 
 import { LandingScreen } from './components/screens/LandingScreen';
 import { ProcessModalScreen } from './components/screens/ProcessModalScreen';
@@ -207,7 +208,7 @@ export default function App() {
         selectedRookie: [],
         selectedDuo: []
       }));
-      navigateTo('team_selection');
+      navigateTo('best_member');
       setIsAdminModalOpen(false);
       return;
     }
@@ -280,7 +281,7 @@ export default function App() {
       submittedAt: undefined
     }));
     
-    navigateTo('team_selection');
+    navigateTo('best_member');
     setIsAdminModalOpen(false);
   };
 
@@ -308,6 +309,9 @@ export default function App() {
 
   return (
     <BackgroundLandscape>
+      {/* Toast Notification Container */}
+      <ToastContainer />
+
       {/* Site Header */}
       <Header
         currentStep={currentStep}
@@ -380,6 +384,7 @@ export default function App() {
           <BestMemberScreen
             selectedCandidateIds={votingState.selectedBestMember}
             userTeam={votingState.selectedTeam}
+            userName={votingState.userName}
             onSelectCandidates={(ids) => setVotingState(prev => ({ ...prev, selectedBestMember: ids }))}
             onBack={() => navigateTo('name_input')}
             onNext={() => navigateTo('best_event')}
@@ -390,6 +395,7 @@ export default function App() {
         {currentStep === 'best_event' && (
           <BestEventScreen
             selectedEventIds={votingState.selectedBestEvent}
+            userName={votingState.userName}
             onSelectEvents={(ids) => setVotingState(prev => ({ ...prev, selectedBestEvent: ids }))}
             onBack={() => navigateTo('best_member')}
             onNext={() => navigateTo('rookie')}
@@ -401,6 +407,7 @@ export default function App() {
           <RookieScreen
             selectedRookieIds={votingState.selectedRookie}
             userTeam={votingState.selectedTeam}
+            userName={votingState.userName}
             onSelectRookies={(ids) => setVotingState(prev => ({ ...prev, selectedRookie: ids }))}
             onBack={() => navigateTo('best_event')}
             onNext={() => navigateTo('perfect_duo')}
@@ -411,6 +418,7 @@ export default function App() {
         {currentStep === 'perfect_duo' && (
           <PerfectDuoScreen
             selectedDuoIds={votingState.selectedDuo}
+            userName={votingState.userName}
             onSelectDuos={(duos) => setVotingState(prev => ({ ...prev, selectedDuo: duos }))}
             onBack={() => navigateTo('rookie')}
             onNext={() => navigateTo('submission')}

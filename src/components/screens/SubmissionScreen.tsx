@@ -420,7 +420,7 @@ export const SubmissionScreen: React.FC<SubmissionScreenProps> = ({
         <button
           onClick={() => {
             soundFx.playClick();
-            onNavigate('team_selection');
+            onNavigate('best_member');
           }}
           className="px-6 py-2.5 rounded-full border-2 border-amber-300 bg-amber-400/20 hover:bg-amber-400/30 text-amber-200 font-serif-display text-sm sm:text-base font-bold transition-all shadow-md cursor-pointer"
         >

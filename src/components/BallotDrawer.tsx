@@ -3,7 +3,6 @@ import { VotingState, ScreenStep } from '../types';
 import { X, CheckCircle2, AlertCircle, Edit2 } from 'lucide-react';
 import { soundFx } from '../utils/soundEffects';
 import {
-  getResolvedTeamName,
   getResolvedBestMemberName,
   getResolvedEventName,
   getResolvedRookieName,
@@ -31,12 +30,6 @@ export const BallotDrawer: React.FC<BallotDrawerProps> = ({
       value: votingState.userName || 'Not entered yet',
       step: 'name_input' as ScreenStep,
       filled: Boolean(votingState.userName)
-    },
-    {
-      title: 'Best Team',
-      value: getResolvedTeamName(votingState.selectedTeam, 'No team selected'),
-      step: 'team_selection' as ScreenStep,
-      filled: Boolean(votingState.selectedTeam)
     },
     {
       title: 'Best Member',

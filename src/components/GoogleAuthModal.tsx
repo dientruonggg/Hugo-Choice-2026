@@ -156,7 +156,7 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
             {isBlockedBrowser ? (
               <div className="p-4 rounded-2xl bg-red-500/20 border border-red-500/50 text-red-200 text-xs text-center font-bold leading-relaxed">
                 <AlertCircle className="w-7 h-7 text-red-400 mx-auto mb-2" />
-                Trình duyệt in-app Messenger/Zalo KHÔNG HỖ TRỢ Đăng nhập Google! <br/><br/>
+                Trình duyệt in-app Messenger/Zalo KHÔNG HỖ TRỢ Đăng nhập Google! <br /><br />
                 Vui lòng bấm vào dấu <strong className="text-white">3 chấm (•••)</strong> ở góc trên bên phải màn hình ➔ chọn <strong className="text-white">"Mở bằng trình duyệt" (Open in Chrome/Safari)</strong> để Đăng nhập nhé!
               </div>
             ) : (
@@ -192,7 +192,7 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
                           d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.3-6.4-5.2L1.9 16C3.7 19.7 7.5 23 12 23z"
                         />
                       </svg>
-                      <span>Đăng nhập nhanh bằng Google (Popup)</span>
+                      <span>Đăng nhập bằng Google</span>
                     </>
                   )}
                 </button>
@@ -204,7 +204,7 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
                   className="w-full py-2.5 px-4 rounded-2xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-400/40 font-sans-clean text-xs font-bold flex items-center justify-center space-x-2 transition-all cursor-pointer"
                 >
                   <LogIn className="w-4 h-4 text-amber-300 shrink-0" />
-                  <span>Đăng nhập bằng trang mới (Redirect - Dành cho Mobile/Popup lỗi)</span>
+                  <span>Đăng nhập bằng trang mới</span>
                 </button>
               </>
             )}

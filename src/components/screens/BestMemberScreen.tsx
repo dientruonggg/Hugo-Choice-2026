@@ -5,10 +5,13 @@ import { soundFx } from '../../utils/soundEffects';
 import { Search, UserCheck, Plus, ChevronLeft, ChevronRight, CheckCircle2, UserPlus } from 'lucide-react';
 import { PaginationFooter } from '../PaginationFooter';
 import { SelectedTray, SelectedTrayItem } from '../SelectedTray';
+import { requestAddMember } from '../../utils/approvalStorage';
+import { toast } from '../../utils/toast';
 
 interface BestMemberScreenProps {
   selectedCandidateIds: string[];
   userTeam?: HugoTeam | null;
+  userName?: string;
   onSelectCandidates: (ids: string[]) => void;
   onBack: () => void;
   onNext: () => void;
@@ -25,6 +28,7 @@ const TEAM_BADGES: Record<HugoTeam, { name: string; shortName: string; bg: strin
 export const BestMemberScreen: React.FC<BestMemberScreenProps> = ({
   selectedCandidateIds = [],
   userTeam = null,
+  userName,
   onSelectCandidates,
   onBack,
   onNext,
@@ -52,11 +56,8 @@ export const BestMemberScreen: React.FC<BestMemberScreenProps> = ({
 
   const handleAddCustom = () => {
     if (!searchQuery.trim()) return;
-    const added = addCustomMember(searchQuery.trim(), userTeam || 'prs');
-    soundFx.playSelect();
-    if (!selectedList.includes(added.id) && selectedList.length < 3) {
-      onSelectCandidates([...selectedList, added.id]);
-    }
+    requestAddMember(searchQuery.trim(), userTeam || 'prs', userName || 'Guest');
+    toast.success(`Request to add "${searchQuery.trim()}" submitted! Admin will review it.`);
     setSearchQuery('');
   };
 
@@ -179,14 +180,13 @@ export const BestMemberScreen: React.FC<BestMemberScreenProps> = ({
           <span>Back</span>
         </button>
 
-        <PaginationFooter currentStep="best_member" onNavigate={onNavigate || (() => {})} />
+        <PaginationFooter currentStep="best_member" onNavigate={onNavigate || (() => { })} />
 
         <button
           type="button"
           onClick={() => {
             if (selectedList.length < 3) {
-              soundFx.playClick();
-              alert(`Please select 3 candidates before proceeding (${selectedList.length}/3 selected)`);
+              toast.warning(`Please select 3 candidates before proceeding (${selectedList.length}/3 selected)`);
               return;
             }
             soundFx.playSelect();

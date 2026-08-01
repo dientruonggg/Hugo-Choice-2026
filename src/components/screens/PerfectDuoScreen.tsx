@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
-import { filterMembers, addCustomMember, ClubMember, getAllMembers } from '../../data/membersData';
+import { filterMembers, ClubMember, getAllMembers } from '../../data/membersData';
 import { HugoTeam } from '../../types';
 import { soundFx } from '../../utils/soundEffects';
 import { Search, UserCheck, Plus, ChevronLeft, ChevronRight, Users, CheckCircle2, UserPlus } from 'lucide-react';
 import { PaginationFooter } from '../PaginationFooter';
 import { SelectedTray } from '../SelectedTray';
+import { requestAddMember } from '../../utils/approvalStorage';
+import { toast } from '../../utils/toast';
 
 interface PerfectDuoScreenProps {
   selectedDuoIds: string[];
+  userName?: string;
   onSelectDuos: (duos: string[]) => void;
   onBack: () => void;
   onNext: () => void;
@@ -25,6 +28,7 @@ interface SingleMemberPickerProps {
   title: string;
   selectedId: string;
   otherSelectedId?: string;
+  userName?: string;
   onSelect: (m: ClubMember) => void;
 }
 
@@ -32,6 +36,7 @@ const SingleMemberPicker: React.FC<SingleMemberPickerProps> = ({
   title,
   selectedId,
   otherSelectedId,
+  userName,
   onSelect
 }) => {
   const [search, setSearch] = useState('');
@@ -40,9 +45,8 @@ const SingleMemberPicker: React.FC<SingleMemberPickerProps> = ({
 
   const handleAddCustom = () => {
     if (!search.trim()) return;
-    const added = addCustomMember(search.trim(), 'prs');
-    soundFx.playSelect();
-    onSelect(added);
+    requestAddMember(search.trim(), 'prs', userName || 'Guest');
+    toast.success(`Request to add "${search.trim()}" submitted! Admin will review it.`);
     setSearch('');
   };
 
@@ -129,6 +133,7 @@ const SingleMemberPicker: React.FC<SingleMemberPickerProps> = ({
 
 export const PerfectDuoScreen: React.FC<PerfectDuoScreenProps> = ({
   selectedDuoIds = [],
+  userName,
   onSelectDuos,
   onBack,
   onNext,
@@ -208,12 +213,14 @@ export const PerfectDuoScreen: React.FC<PerfectDuoScreenProps> = ({
             title={`Teammate #1 (Pair ${activeSlot + 1})`}
             selectedId={currentPair.a}
             otherSelectedId={currentPair.b}
+            userName={userName}
             onSelect={handleSetPersonA}
           />
           <SingleMemberPicker
             title={`Teammate #2 (Pair ${activeSlot + 1})`}
             selectedId={currentPair.b}
             otherSelectedId={currentPair.a}
+            userName={userName}
             onSelect={handleSetPersonB}
           />
         </div>
@@ -254,14 +261,13 @@ export const PerfectDuoScreen: React.FC<PerfectDuoScreenProps> = ({
           <span>Back</span>
         </button>
 
-        <PaginationFooter currentStep="perfect_duo" onNavigate={onNavigate || (() => {})} />
+        <PaginationFooter currentStep="perfect_duo" onNavigate={onNavigate || (() => { })} />
 
         <button
           type="button"
           onClick={() => {
             if (validPairsCount < 3) {
-              soundFx.playClick();
-              alert(`Please complete 3 pairs before proceeding (${validPairsCount}/3 completed)`);
+              toast.warning(`Please complete 3 pairs before proceeding (${validPairsCount}/3 completed)`);
               return;
             }
             soundFx.playSelect();

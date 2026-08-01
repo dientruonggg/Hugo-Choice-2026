@@ -4,9 +4,12 @@ import { soundFx } from '../../utils/soundEffects';
 import { Search, ChevronLeft, ChevronRight, Sparkles, Check, Plus, CheckCircle2, PlusCircle } from 'lucide-react';
 import { PaginationFooter } from '../PaginationFooter';
 import { SelectedTray } from '../SelectedTray';
+import { requestAddEvent, getCustomEvents } from '../../utils/approvalStorage';
+import { toast } from '../../utils/toast';
 
 interface BestEventScreenProps {
   selectedEventIds: string[];
+  userName?: string;
   onSelectEvents: (ids: string[]) => void;
   onBack: () => void;
   onNext: () => void;
@@ -15,17 +18,18 @@ interface BestEventScreenProps {
 
 export const BestEventScreen: React.FC<BestEventScreenProps> = ({
   selectedEventIds = [],
+  userName,
   onSelectEvents,
   onBack,
   onNext,
   onNavigate
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [customEvents, setCustomEvents] = useState<Array<{ id: string; name: string; icon: string; description?: string }>>([]);
 
   const selectedList = Array.isArray(selectedEventIds) ? selectedEventIds : (selectedEventIds ? [selectedEventIds] : []);
 
-  const allEventsList = [...BEST_EVENTS, ...customEvents];
+  const approvedCustomEvents = getCustomEvents();
+  const allEventsList = [...BEST_EVENTS, ...approvedCustomEvents];
   const filteredEvents = searchQuery.trim()
     ? allEventsList.filter(e => e.name.toLowerCase().includes(searchQuery.trim().toLowerCase()))
     : allEventsList;
@@ -44,14 +48,8 @@ export const BestEventScreen: React.FC<BestEventScreenProps> = ({
 
   const handleAddCustomEvent = () => {
     if (!searchQuery.trim()) return;
-    const trimmed = searchQuery.trim();
-    const newId = `custom-event-${Date.now()}`;
-    const newEv = { id: newId, name: trimmed, icon: '🌟', description: 'Custom event added by voter' };
-    setCustomEvents(prev => [...prev, newEv]);
-    soundFx.playSelect();
-    if (!selectedList.includes(newId) && selectedList.length < 3) {
-      onSelectEvents([...selectedList, newId]);
-    }
+    requestAddEvent(searchQuery.trim(), userName || 'Guest');
+    toast.success(`Request to add event "${searchQuery.trim()}" submitted! Admin will review it.`);
     setSearchQuery('');
   };
 
@@ -170,14 +168,13 @@ export const BestEventScreen: React.FC<BestEventScreenProps> = ({
           <span>Back</span>
         </button>
 
-        <PaginationFooter currentStep="best_event" onNavigate={onNavigate || (() => {})} />
+        <PaginationFooter currentStep="best_event" onNavigate={onNavigate || (() => { })} />
 
         <button
           type="button"
           onClick={() => {
             if (selectedList.length < 3) {
-              soundFx.playClick();
-              alert(`Please select 3 events before proceeding (${selectedList.length}/3 selected)`);
+              toast.warning(`Please select 3 events before proceeding (${selectedList.length}/3 selected)`);
               return;
             }
             soundFx.playSelect();
