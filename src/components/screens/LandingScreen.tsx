@@ -1,7 +1,7 @@
-import React from 'react';
-import { ScreenStep } from '../../types';
+import React, { useState, useRef } from 'react';
 import { soundFx } from '../../utils/soundEffects';
 import { ButterflyParticle } from '../ButterflyParticle';
+import { EventInfoPanel } from '../EventInfoPanel';
 
 interface LandingScreenProps {
   userName?: string;
@@ -10,10 +10,12 @@ interface LandingScreenProps {
 }
 
 export const LandingScreen: React.FC<LandingScreenProps> = ({ userName, onStart, onRequireLogin }) => {
-  const [isFlyingToLogin, setIsFlyingToLogin] = React.useState(false);
-  const [loginPos, setLoginPos] = React.useState({ x: 0, y: 0 });
+  const [isFlyingToLogin, setIsFlyingToLogin] = useState(false);
+  const [loginPos, setLoginPos] = useState({ x: 0, y: 0 });
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
+  const infoRef = useRef<HTMLDivElement>(null);
 
-  const handleStart = () => {
+  const handleStartClick = () => {
     soundFx.playSelect();
     if (!userName) {
       const loginBtn = document.getElementById('header-login-button');
@@ -28,15 +30,26 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ userName, onStart,
       setTimeout(() => {
         setIsFlyingToLogin(false);
         onRequireLogin();
-      }, 3000);
+      }, 2500);
       return;
     }
     onStart();
   };
 
+  const toggleInfo = () => {
+    soundFx.playPaperSlide();
+    const nextState = !isInfoOpen;
+    setIsInfoOpen(nextState);
+    if (nextState) {
+      setTimeout(() => {
+        infoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+  };
+
   return (
-    <div className="relative flex-1 flex flex-col items-center justify-center w-full min-h-[80vh] px-4 py-8">
-      {/* Animated Flying Butterfly from Start to Log in Button */}
+    <div className="relative flex-1 flex flex-col items-center justify-center w-full min-h-[80vh] px-3 sm:px-4 py-6 sm:py-8 select-none">
+      {/* Animated Flying Butterfly to Header Login */}
       {isFlyingToLogin && (
         <div
           className="animate-fly-to-login-dynamic"
@@ -53,65 +66,106 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ userName, onStart,
         </div>
       )}
 
-      {/* Left Typography Block - "WHAT'S NEXT? HUGO AWARD 2026" */}
-      <div
-        className="absolute top-12 sm:top-12 md:top-1/2 left-0 right-0 md:right-auto md:left-6 lg:left-16 md:-translate-y-1/2 flex flex-col items-center md:items-start text-center md:text-left z-20 max-w-2xl mx-auto md:mx-0 px-4 md:px-0"
-        data-purpose="hero-typography"
-      >
-        <h2 className="font-serif-display text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight text-white tracking-tight drop-shadow-[0_8px_20px_rgba(0,0,0,0.8)] text-stroke-gold uppercase mb-1 sm:mb-2">
-          WHAT'S<br /> NEXT?
-        </h2>
-        <h3 className="font-sans-clean text-xs sm:text-lg md:text-xl font-extrabold uppercase tracking-[0.2em] text-amber-200 drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]">
-          HUGO AWARD 2026
-        </h3>
-      </div>
-
-      {/* Center Interactive Orb "Start" Button */}
-      <div className="relative flex flex-col items-center justify-center z-20 mt-16 sm:mt-32 md:mt-0" data-purpose="interactive-orb">
-        {/* Floating & Flapping Butterfly assets near Orb */}
-        <div className="absolute -top-14 -left-12 z-30 animate-float-slow">
-          <img
-            src="/assets/butterfly.webp"
-            alt="Butterfly"
-            className="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.7)] animate-flutter"
-          />
+      {/* Main Landing Content Container */}
+      <div className="relative z-20 flex flex-col items-center text-center max-w-4xl mx-auto w-full px-2 sm:px-4">
+        {/* Top Header Tagline: The 18th Hugo Awards */}
+        <div className="flex items-center justify-center gap-2.5 text-amber-100/90 text-xs sm:text-sm font-semibold tracking-[0.35em] uppercase mb-1 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+          <span className="w-1.5 h-1.5 rounded-full bg-amber-300 animate-pulse" />
+          <span>The 18th Hugo Awards</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-amber-300 animate-pulse" />
         </div>
 
-        {/* Small Flapping Butterfly around Orb */}
-        <div className="absolute top-2 -right-8 z-30 animate-float-slow delay-300">
-          <img
-            src="/assets/butterfly.webp"
-            alt="Butterfly"
-            className="w-9 h-9 object-contain drop-shadow-[0_0_10px_rgba(255,255,255,0.6)] animate-flutter"
-          />
+        {/* Round 1 Status Ribbon Banner with Crisp Pointed Border */}
+        <div className="flex items-center justify-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+          <div className="h-[1px] w-6 sm:w-16 bg-gradient-to-r from-transparent via-amber-200/50 to-amber-300/80" />
+          
+          <div className="relative inline-flex items-center justify-center px-8 sm:px-10 py-1.5">
+            {/* Background SVG Ribbon Shape with Golden Border */}
+            <svg
+              className="absolute inset-0 w-full h-full drop-shadow-[0_0_12px_rgba(251,191,36,0.4)]"
+              viewBox="0 0 200 40"
+              preserveAspectRatio="none"
+            >
+              <polygon
+                points="14,0 186,0 200,20 186,40 14,40 0,20"
+                className="fill-amber-300/15 stroke-amber-300/70"
+                strokeWidth="1.5"
+              />
+            </svg>
+
+            {/* Banner Text */}
+            <div className="relative z-10 flex items-center gap-2 text-amber-200 font-serif-display text-xs sm:text-sm font-extrabold tracking-[0.2em] uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-300 animate-ping" />
+              <span>Round 1 • Nominations</span>
+            </div>
+          </div>
+
+          <div className="h-[1px] w-6 sm:w-16 bg-gradient-to-l from-transparent via-amber-200/50 to-amber-300/80" />
         </div>
-        <div className="absolute -bottom-6 left-1 z-30 animate-float-slow delay-700">
-          <ButterflyParticle type="white" size={28} />
-        </div>
 
-        {/* Glowing Pedestal Orb */}
-        <button
-          onClick={handleStart}
-          className="group relative w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48 lg:w-56 lg:h-56 rounded-full flex items-center justify-center bg-black/40 backdrop-blur-md border border-white/40 shadow-[0_0_40px_rgba(255,255,255,0.4)] transition-all duration-500 hover:scale-105 active:scale-95 animate-pulse-glow cursor-pointer"
-        >
-          {/* Outer Ring Accent */}
-          <div className="absolute inset-2 rounded-full border border-amber-300/30 group-hover:border-amber-300/80 transition-colors duration-500" />
+        {/* Main Title: Hugo Awards 2026 */}
+        <h1 className="font-serif-display text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white via-amber-100 to-amber-200 tracking-tight leading-none drop-shadow-[0_10px_25px_rgba(0,0,0,0.7)] mb-2">
+          Hugo Awards 2026
+        </h1>
 
-          {/* Inner Light Core */}
-          <div className="absolute inset-4 rounded-full bg-gradient-to-b from-white/20 via-amber-200/10 to-transparent blur-md group-hover:from-amber-200/30 transition-all duration-500" />
-
-          {/* Start Label */}
-          <span className="font-serif-display text-2xl sm:text-3xl md:text-4xl font-semibold text-white group-hover:text-amber-300 transition-colors duration-300 drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)] tracking-wide">
-            Start
+        {/* Theme Title: Florescence */}
+        <div className="flex items-center justify-center gap-3 sm:gap-6 mb-6 sm:mb-10">
+          <div className="h-[1px] w-8 sm:w-16 bg-gradient-to-r from-transparent to-amber-200/60" />
+          <span className="font-script text-3xl sm:text-5xl md:text-6xl text-amber-200 drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] tracking-wide">
+            Florescence
           </span>
-        </button>
+          <div className="h-[1px] w-8 sm:w-16 bg-gradient-to-l from-transparent to-amber-200/60" />
+        </div>
 
-        {/* Decorative Pedestal Stand */}
-        <div className="flex flex-col items-center mt-4 opacity-80">
-          <div className="w-12 h-9 sm:w-16 sm:h-12 bg-gradient-to-b from-white/30 to-white/5 rounded-t-lg border-t border-white/40 backdrop-blur-sm shadow-md" />
-          <div className="w-24 sm:w-32 h-2.5 sm:h-3 bg-black/40 rounded-full blur-sm" />
+        {/* Primary Action Buttons */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 sm:gap-4 mb-4 sm:mb-6 w-full max-w-xs sm:max-w-none">
+          <button
+            onClick={toggleInfo}
+            className="w-full sm:w-auto group relative inline-flex items-center justify-center gap-3 px-6 sm:px-9 py-3.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-xl border border-white/30 text-white font-sans-clean font-semibold text-xs sm:text-sm tracking-widest uppercase transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.25)] hover:border-amber-200/60 cursor-pointer"
+          >
+            <span>{isInfoOpen ? 'Hide Event Info' : 'Explore Event Info'}</span>
+            <svg
+              className={`w-4 h-4 text-amber-200 transition-transform duration-300 ${isInfoOpen ? 'rotate-180' : ''}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          <button
+            onClick={handleStartClick}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 sm:px-10 py-3.5 rounded-full bg-gradient-to-r from-amber-300 via-amber-200 to-amber-400 hover:from-amber-200 hover:to-amber-300 text-slate-950 font-sans-clean font-bold text-xs sm:text-sm tracking-widest uppercase shadow-[0_0_25px_rgba(251,191,36,0.4)] transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
+          >
+            <span>{userName ? 'Start Voting' : 'Log In & Vote'}</span>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Modular Event Info Sub-Component */}
+        <EventInfoPanel
+          isOpen={isInfoOpen}
+          infoRef={infoRef}
+          userName={userName}
+          onStartClick={handleStartClick}
+        />
+
+        {/* Decorative Floating Butterfly Details */}
+        <div className="absolute -top-6 -left-8 sm:-left-16 z-10 pointer-events-none animate-float-slow">
+          <img
+            src="/assets/butterfly.webp"
+            alt="Butterfly"
+            className="w-12 h-12 sm:w-16 sm:h-16 object-contain opacity-80 drop-shadow-[0_0_12px_rgba(255,255,255,0.8)] animate-flutter"
+          />
+        </div>
+        <div className="absolute bottom-2 -right-4 sm:-right-12 z-10 pointer-events-none animate-float-slow delay-500">
+          <ButterflyParticle type="white" size={24} />
         </div>
       </div>
     </div>
   );
 };
+

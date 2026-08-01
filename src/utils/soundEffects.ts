@@ -97,14 +97,29 @@ class SoundManager {
         gain.gain.setValueAtTime(0.2, now + idx * 0.1);
         gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + 0.4);
 
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-
         osc.start(now + idx * 0.1);
         osc.stop(now + idx * 0.1 + 0.4);
       });
     } catch {
       // Ignore
+    }
+  }
+
+  public playPaperSlide() {
+    if (this.isMuted) return;
+    try {
+      const audio = new Audio('/assets/paper_slide.wav');
+      audio.volume = 0.9;
+      // Reset currentTime if already created or clone for overlapping clicks
+      audio.currentTime = 0;
+      const promise = audio.play();
+      if (promise !== undefined) {
+        promise.catch((err) => {
+          console.warn('Audio play failed:', err);
+        });
+      }
+    } catch (e) {
+      console.warn('Paper slide sound error:', e);
     }
   }
 }
