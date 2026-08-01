@@ -131,17 +131,19 @@ export const BallotDrawer: React.FC<BallotDrawerProps> = ({
                   </div>
                 </div>
 
-                <button
-                  onClick={() => {
-                    soundFx.playClick();
-                    onNavigate(cat.step);
-                    onClose();
-                  }}
-                  className="p-1.5 rounded-lg bg-white/10 hover:bg-amber-400/20 hover:text-amber-300 text-white/80 transition-colors"
-                  title="Edit selection"
-                >
-                  <Edit2 className="w-4 h-4" />
-                </button>
+                {!votingState.isSubmitted && (
+                  <button
+                    onClick={() => {
+                      soundFx.playClick();
+                      onNavigate(cat.step);
+                      onClose();
+                    }}
+                    className="p-1.5 rounded-lg bg-white/10 hover:bg-amber-400/20 hover:text-amber-300 text-white/80 transition-colors"
+                    title="Edit selection"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                )}
               </div>
             ))}
           </div>
@@ -152,7 +154,7 @@ export const BallotDrawer: React.FC<BallotDrawerProps> = ({
           <button
             onClick={() => {
               soundFx.playClick();
-              if (totalFilled === categories.length) {
+              if (votingState.isSubmitted || totalFilled === categories.length) {
                 onNavigate('submission');
               } else {
                 // Navigate to next unfulfilled step
@@ -163,7 +165,11 @@ export const BallotDrawer: React.FC<BallotDrawerProps> = ({
             }}
             className="w-full py-3 px-4 rounded-xl font-serif-display font-bold text-sm bg-gradient-to-r from-amber-400 to-amber-500 text-black shadow-lg hover:from-amber-300 hover:to-amber-400 transition-all duration-200 text-center"
           >
-            {totalFilled === categories.length ? 'Proceed to Final Submission 🚀' : 'Continue Voting'}
+            {votingState.isSubmitted
+              ? 'View Receipt 🗳️'
+              : totalFilled === categories.length
+              ? 'Proceed to Final Submission 🚀'
+              : 'Continue Voting'}
           </button>
         </div>
       </div>

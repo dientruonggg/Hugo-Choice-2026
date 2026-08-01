@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { filterMembers, addCustomMember, ClubMember, getAllMembers } from '../../data/membersData';
+import { filterRookies, getAllRookies, ClubMember } from '../../data/membersData';
 import { HugoTeam } from '../../types';
 import { soundFx } from '../../utils/soundEffects';
 import { Search, UserCheck, Plus, ChevronLeft, ChevronRight, CheckCircle2, UserPlus } from 'lucide-react';
@@ -35,11 +35,11 @@ export const RookieScreen: React.FC<RookieScreenProps> = ({
   onNavigate
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const targetTeam: HugoTeam | 'all' = 'all';
+  const [teamFilter, setTeamFilter] = useState<HugoTeam | 'all'>('all');
 
   const selectedList = Array.isArray(selectedRookieIds) ? selectedRookieIds : (selectedRookieIds ? [selectedRookieIds] : []);
-  const allMembers = getAllMembers();
-  const filteredList = filterMembers(searchQuery, targetTeam);
+  const allMembers = getAllRookies();
+  const filteredList = filterRookies(searchQuery, teamFilter);
 
   const handleSelectMember = (member: ClubMember) => {
     soundFx.playSelect();
@@ -101,8 +101,34 @@ export const RookieScreen: React.FC<RookieScreenProps> = ({
           )}
         </div>
 
+        {/* Team Filter Tabs */}
+        <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 mb-3.5 shrink-0">
+          {(['all', 'prs', 'hc', 'bnn', 'niff'] as const).map((filter) => {
+            const isActive = teamFilter === filter;
+            const label = filter === 'all' ? 'All Teams' : TEAM_BADGES[filter].name;
+
+            return (
+              <button
+                key={filter}
+                type="button"
+                onClick={() => {
+                  soundFx.playClick();
+                  setTeamFilter(filter);
+                }}
+                className={`px-3 py-1.5 rounded-full text-xs font-bold font-serif-display border transition-all cursor-pointer select-none ${
+                  isActive
+                    ? 'bg-amber-300 border-amber-300 text-slate-950 font-black shadow-md scale-102'
+                    : 'bg-black/40 hover:bg-black/60 border-white/15 text-slate-300'
+                }`}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+
         {/* Member Search Results Grid */}
-        <div className="relative shrink-0 max-h-[320px] overflow-y-auto pr-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 items-start content-start custom-scrollbar mb-0">
+        <div className="relative shrink-0 max-h-[270px] overflow-y-auto pr-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 items-start content-start custom-scrollbar mb-0">
           {filteredList.length > 0 ? (
             filteredList.map((member) => {
               const isSelected = selectedList.includes(member.id) || selectedList.includes(member.name);

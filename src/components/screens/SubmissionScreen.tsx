@@ -367,24 +367,32 @@ export const SubmissionScreen: React.FC<SubmissionScreenProps> = ({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 font-sans-clean">
-          {ballotSummaryItems.map((item, idx) => (
-            <div
-              key={idx}
-              className="p-3.5 rounded-2xl bg-white/5 border border-amber-300/30 flex flex-col justify-between hover:border-amber-300 transition-colors group cursor-pointer"
-              onClick={() => {
-                soundFx.playClick();
-                onNavigate(item.step);
-              }}
-            >
-              <div className="flex justify-between items-center mb-2 pb-1 border-b border-white/10">
-                <span className="text-xs uppercase tracking-wider text-amber-300 font-extrabold flex items-center gap-1.5">
-                  <span>{item.icon}</span>
-                  <span>{item.label}</span>
-                </span>
-                <span className="text-[11px] text-amber-400 font-bold opacity-70 group-hover:opacity-100 transition-opacity">
-                  Edit ✏️
-                </span>
-              </div>
+          {ballotSummaryItems.map((item, idx) => {
+            const canEdit = !votingState.isSubmitted;
+            return (
+              <div
+                key={idx}
+                className={`p-3.5 rounded-2xl bg-white/5 border border-amber-300/30 flex flex-col justify-between transition-colors group ${
+                  canEdit ? 'hover:border-amber-300 cursor-pointer' : ''
+                }`}
+                onClick={() => {
+                  if (canEdit) {
+                    soundFx.playClick();
+                    onNavigate(item.step);
+                  }
+                }}
+              >
+                <div className="flex justify-between items-center mb-2 pb-1 border-b border-white/10">
+                  <span className="text-xs uppercase tracking-wider text-amber-300 font-extrabold flex items-center gap-1.5">
+                    <span>{item.icon}</span>
+                    <span>{item.label}</span>
+                  </span>
+                  {canEdit && (
+                    <span className="text-[11px] text-amber-400 font-bold opacity-70 group-hover:opacity-100 transition-opacity">
+                      Edit ✏️
+                    </span>
+                  )}
+                </div>
               
               <div className="space-y-1.5">
                 {item.values.length > 0 ? (
@@ -401,31 +409,45 @@ export const SubmissionScreen: React.FC<SubmissionScreenProps> = ({
                 )}
               </div>
             </div>
-          ))}
+          ); })}
         </div>
       </div>
 
       {/* Action Navigation Footer */}
-      <div className="w-full flex justify-between items-center pt-4 border-t border-amber-300/30 z-20">
-        <button
-          onClick={() => {
-            soundFx.playClick();
-            onNavigate('perfect_duo');
-          }}
-          className="px-6 py-2.5 rounded-full border-2 border-white/90 bg-black/60 hover:bg-black/80 text-white font-serif-display text-sm sm:text-base font-bold transition-all shadow-md cursor-pointer"
-        >
-          Back to Perfect Duo
-        </button>
+      <div className="w-full flex justify-center items-center pt-4 border-t border-amber-300/30 z-20">
+        {votingState.isSubmitted ? (
+          <button
+            onClick={() => {
+              soundFx.playClick();
+              setShowReceiptModal(true);
+            }}
+            className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-300 via-amber-200 to-amber-400 hover:from-amber-200 hover:to-amber-300 text-slate-950 font-sans-clean font-bold text-xs sm:text-sm tracking-widest uppercase transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer shadow-lg"
+          >
+            Show Receipt 🗳️
+          </button>
+        ) : (
+          <div className="w-full flex justify-between items-center">
+            <button
+              onClick={() => {
+                soundFx.playClick();
+                onNavigate('perfect_duo');
+              }}
+              className="px-6 py-2.5 rounded-full border-2 border-white/90 bg-black/60 hover:bg-black/80 text-white font-serif-display text-sm sm:text-base font-bold transition-all shadow-md cursor-pointer"
+            >
+              Back to Perfect Duo
+            </button>
 
-        <button
-          onClick={() => {
-            soundFx.playClick();
-            onNavigate('best_member');
-          }}
-          className="px-6 py-2.5 rounded-full border-2 border-amber-300 bg-amber-400/20 hover:bg-amber-400/30 text-amber-200 font-serif-display text-sm sm:text-base font-bold transition-all shadow-md cursor-pointer"
-        >
-          Review Selections
-        </button>
+            <button
+              onClick={() => {
+                soundFx.playClick();
+                onNavigate('best_member');
+              }}
+              className="px-6 py-2.5 rounded-full border-2 border-amber-300 bg-amber-400/20 hover:bg-amber-400/30 text-amber-200 font-serif-display text-sm sm:text-base font-bold transition-all shadow-md cursor-pointer"
+            >
+              Review Selections
+            </button>
+          </div>
+        )}
       </div>
 
       {/* 200px - 300px Extra Bottom Scroll Space for Mobile Accessibility */}

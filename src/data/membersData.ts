@@ -224,6 +224,77 @@ const rawNifflerMembers = [
   'Nguyễn Anh Bão'
 ];
 
+const newNifflerMembers = [
+  'Nguyễn Thế Vân Nhi',
+  'Huỳnh Uyên Quế Trân',
+  'Trần Trương Đức Lộc',
+  'Võ Nguyên Hưng',
+  'Nguyễn Đoàn Hoàng Hiệp',
+  'Võ Văn Triều',
+  'Trần Nguyễn Thành Nhân',
+  'Lê Long Vũ',
+  'Bùi Phương Ánh Dương',
+  'Trương Nguyễn Nhật Hàn',
+  'Phan Ngọc Minh Hằng',
+  'Đào Xuân Bách',
+  'Nguyễn Anh Bão',
+];
+
+const newHCMembers = [
+  'Nguyễn Nguyễn Thái Tuệ',
+  'Nguyễn Minh Khánh',
+  'Huỳnh Thị Hồng Tú',
+  'Nguyễn Đại Phú',
+  'Phạm Như Anh Thư',
+  'Trương Tấn Khoa',
+  'Nguyễn Tấn Khoa',
+  'Võ Thanh Quân',
+  'Thái Thành Tài',
+  'Nguyễn Phước Nam Hải',
+  'Nguyễn Đặng Minh Hương',
+  'Bảo Duy',
+  'Nguyễn Đông Phúc',
+  'Huỳnh Công Minh',
+  'Nguyễn Văn Huy',
+];
+
+const newPRMembers = [
+  'Nguyễn Vĩnh Phúc',
+  'Phạm Chiêu Uyên',
+  'Nguyễn Văn Tùng Dương',
+  'Dương Phước Hoàng',
+  'Ngô Thuỳ Linh',
+  'Huỳnh Thị Thanh Lịch',
+  'Nguyễn Thị Nghĩa',
+  'Hồ Văn Trung Hiếu',
+  'Hoàng Tam Nguyên',
+  'Nguyễn Thị Ngọc Minh',
+  'Hồ Mai Anh Thư',
+  'Đỗ Nguyễn Cẩm Tú',
+  'Nguyễn Song Bảo Nhân',
+  'Nguyễn Tấn Sinh Thời',
+  'Nguyễn Trần Khánh Ngọc',
+  'Nguyễn Minh Mẫn',
+  'Lê Nhật Anh',
+];
+
+const newBananaMembers = [
+  'Võ Đặng Nhật Quang',
+  'Hồ Thị Mỹ Duyên',
+  'Hoàng Như Ý',
+  'Nguyễn Duy Khánh',
+  'Thái Hữu Phước',
+  'Phạm Anh Hào',
+  'Huỳnh Nguyễn Thế Hiển',
+  'Phạm Võ Thanh Tú',
+  'Hoàng Hải Long',
+  'Lê Doãn Phú',
+  'Nguyễn Tiến Hưng',
+  'Hồ Thị Thuỷ Tiên',
+  'Trần Phước Anh Vũ',
+  'Nguyễn Vũ Phong',
+  'Phạm Phan Bảo Trúc',
+];
 
 export const ALL_MEMBERS: ClubMember[] = [
   ...rawBananaMembers.map((name, idx) => ({
@@ -308,6 +379,78 @@ export function filterMembers(
 ): ClubMember[] {
   const normalizedQuery = removeVietnameseTones(query.trim());
   const all = getAllMembers();
+
+  const list = all.filter((member) => {
+    const matchesTeam = teamFilter === 'all' || member.teamId === teamFilter;
+    if (!matchesTeam) return false;
+
+    if (!normalizedQuery) return true;
+    const normalizedName = removeVietnameseTones(member.name);
+    return normalizedName.includes(normalizedQuery);
+  });
+
+  return list.sort((a, b) => {
+    const givenA = getGivenName(a.name);
+    const givenB = getGivenName(b.name);
+    const normA = removeVietnameseTones(givenA);
+    const normB = removeVietnameseTones(givenB);
+
+    const comp = normA.localeCompare(normB, 'en');
+    if (comp !== 0) return comp;
+
+    return removeVietnameseTones(a.name).localeCompare(removeVietnameseTones(b.name), 'en');
+  });
+}
+
+export const ALL_ROOKIES: ClubMember[] = [
+  ...newBananaMembers.map((name, idx) => {
+    const found = ALL_MEMBERS.find(m => m.name === name.trim() && m.teamId === 'bnn');
+    return found || {
+      id: `bnn-rookie-${idx + 1}`,
+      name: name.trim(),
+      teamId: 'bnn' as HugoTeam,
+      teamName: 'Banana'
+    };
+  }),
+  ...newPRMembers.map((name, idx) => {
+    const found = ALL_MEMBERS.find(m => m.name === name.trim() && m.teamId === 'prs');
+    return found || {
+      id: `prs-rookie-${idx + 1}`,
+      name: name.trim(),
+      teamId: 'prs' as HugoTeam,
+      teamName: 'Power Rangers'
+    };
+  }),
+  ...newHCMembers.map((name, idx) => {
+    const found = ALL_MEMBERS.find(m => m.name === name.trim() && m.teamId === 'hc');
+    return found || {
+      id: `hc-rookie-${idx + 1}`,
+      name: name.trim(),
+      teamId: 'hc' as HugoTeam,
+      teamName: 'Heroes Company'
+    };
+  }),
+  ...newNifflerMembers.map((name, idx) => {
+    const found = ALL_MEMBERS.find(m => m.name === name.trim() && m.teamId === 'niff');
+    return found || {
+      id: `niff-rookie-${idx + 1}`,
+      name: name.trim(),
+      teamId: 'niff' as HugoTeam,
+      teamName: 'Nifflers'
+    };
+  })
+];
+
+export function getAllRookies(): ClubMember[] {
+  return ALL_ROOKIES;
+}
+
+export function filterRookies(
+  query: string,
+  teamFilter: HugoTeam | 'all' = 'all'
+): ClubMember[] {
+  const normalizedQuery = removeVietnameseTones(query.trim());
+  const all = getAllRookies();
 
   const list = all.filter((member) => {
     const matchesTeam = teamFilter === 'all' || member.teamId === teamFilter;

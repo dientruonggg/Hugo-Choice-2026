@@ -110,6 +110,9 @@ export default function App() {
         isSubmitted: existingBallot.isSubmitted,
         submittedAt: existingBallot.submittedAt
       });
+      if (existingBallot.isSubmitted) {
+        navigateTo('submission');
+      }
     } else {
       setVotingState(prev => ({
         ...prev,
@@ -329,7 +332,13 @@ export default function App() {
         {currentStep === 'landing' && (
           <LandingScreen
             userName={votingState.userName}
-            onStart={() => navigateTo('process')}
+            onStart={() => {
+              if (votingState.isSubmitted) {
+                navigateTo('submission');
+              } else {
+                navigateTo('process');
+              }
+            }}
             onRequireLogin={() => setIsGoogleAuthOpen(true)}
           />
         )}
@@ -359,6 +368,10 @@ export default function App() {
                   isSubmitted: existingBallot.isSubmitted,
                   submittedAt: existingBallot.submittedAt
                 });
+                if (existingBallot.isSubmitted) {
+                  navigateTo('submission');
+                  return;
+                }
               } else {
                 setVotingState(prev => ({
                   ...prev,
