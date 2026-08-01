@@ -127,7 +127,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Prominent Hugo Logo Icon with Glowing Golden Aura */}
           <div className="relative w-9 h-9 sm:w-11 sm:h-11 lg:w-16 lg:h-16 flex items-center justify-center rounded-full bg-white shadow-[0_0_15px_rgba(251,191,36,0.5)] group-hover:scale-105 transition-transform duration-300 overflow-hidden border-2 border-amber-400 shrink-0">
             <img
-              src="/assets/logo.png"
+              src="/assets/logo.webp"
               alt="Hugo English Club Logo"
               onError={(e) => {
                 (e.target as HTMLImageElement).src = '/assets/hugo_award_2024.png';
@@ -299,7 +299,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center justify-between pb-4 border-b border-amber-500/20">
           <div className="flex items-center space-x-2.5">
             <div className="w-8 h-8 rounded-full bg-white border border-amber-300 overflow-hidden flex items-center justify-center shrink-0 shadow-[0_0_10px_rgba(251,191,36,0.4)]">
-              <img src="/assets/logo.png" alt="Hugo" className="w-full h-full object-cover scale-125" />
+              <img src="/assets/logo.webp" alt="Hugo" className="w-full h-full object-cover scale-125" />
             </div>
             <div>
               <h2 className="font-serif-display text-xs font-bold text-amber-300 tracking-wider">HUGO CHOICE 2026</h2>

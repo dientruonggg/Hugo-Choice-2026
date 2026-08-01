@@ -46,7 +46,7 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ userName, onStart,
           } as React.CSSProperties}
         >
           <img
-            src="/assets/hope_butterfly.png"
+            src="/assets/hope_butterfly.webp"
             alt="Flying Hope Butterfly"
             className="w-full h-full object-contain drop-shadow-[0_0_20px_rgba(96,165,250,0.9)] animate-flutter-fast"
           />
@@ -71,7 +71,7 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ userName, onStart,
         {/* Floating & Flapping Butterfly assets near Orb */}
         <div className="absolute -top-14 -left-12 z-30 animate-float-slow">
           <img
-            src="/assets/butterfly.png"
+            src="/assets/butterfly.webp"
             alt="Butterfly"
             className="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.7)] animate-flutter"
           />
@@ -80,7 +80,7 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ userName, onStart,
         {/* Small Flapping Butterfly around Orb */}
         <div className="absolute top-2 -right-8 z-30 animate-float-slow delay-300">
           <img
-            src="/assets/butterfly.png"
+            src="/assets/butterfly.webp"
             alt="Butterfly"
             className="w-9 h-9 object-contain drop-shadow-[0_0_10px_rgba(255,255,255,0.6)] animate-flutter"
           />

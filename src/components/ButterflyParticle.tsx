@@ -14,7 +14,7 @@ export const ButterflyParticle: React.FC<ButterflyParticleProps> = ({
   if (type === 'hope') {
     return (
       <img
-        src="/assets/hope_butterfly.png"
+        src="/assets/hope_butterfly.webp"
         alt="Hope Butterfly"
         style={{ width: size, height: 'auto' }}
         className={`animate-flutter drop-shadow-[0_4px_12px_rgba(96,165,250,0.6)] ${className}`}
@@ -24,7 +24,7 @@ export const ButterflyParticle: React.FC<ButterflyParticleProps> = ({
   if (type === 'png') {
     return (
       <img
-        src="/assets/butterfly.png"
+        src="/assets/butterfly.webp"
         alt="Butterfly"
         style={{ width: size, height: 'auto' }}
         className={`animate-flutter drop-shadow-[0_4px_12px_rgba(255,255,255,0.4)] ${className}`}

@@ -40,8 +40,8 @@ async function generateFallbackCanvasReceipt(votingState: VotingState): Promise<
   const ctx = canvas.getContext('2d');
   if (!ctx) return '';
 
-  // 1. Draw Site Background Image (/assets/bg.png) if loaded
-  const bgImg = await loadCanvasImage('/assets/bg.png');
+  // 1. Draw Site Background Image (/assets/bg.webp) if loaded
+  const bgImg = await loadCanvasImage('/assets/bg.webp');
   if (bgImg) {
     ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
     // Dark overlay for text readability
@@ -56,8 +56,8 @@ async function generateFallbackCanvasReceipt(votingState: VotingState): Promise<
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
 
-  // 2. Draw Light Effect Overlay (/assets/effect.png) if loaded
-  const effectImg = await loadCanvasImage('/assets/effect.png');
+  // 2. Draw Light Effect Overlay (/assets/effect.webp) if loaded
+  const effectImg = await loadCanvasImage('/assets/effect.webp');
   if (effectImg) {
     ctx.globalCompositeOperation = 'screen';
     ctx.globalAlpha = 0.5;
@@ -445,7 +445,7 @@ export const SubmissionScreen: React.FC<SubmissionScreenProps> = ({
             >
               {/* Site Background Image (Explicit img tag for 100% html2canvas compatibility) */}
               <img
-                src="/assets/bg.png"
+                src="/assets/bg.webp"
                 alt="Hugo Meadow Background"
                 className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
               />
@@ -455,7 +455,7 @@ export const SubmissionScreen: React.FC<SubmissionScreenProps> = ({
 
               {/* Light Effect Overlay */}
               <img
-                src="/assets/effect.png"
+                src="/assets/effect.webp"
                 alt="Hugo Light Effect"
                 className="absolute inset-0 w-full h-full object-cover mix-blend-screen opacity-60 z-0 pointer-events-none"
               />

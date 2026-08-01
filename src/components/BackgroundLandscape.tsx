@@ -12,8 +12,8 @@ export const BackgroundLandscape: React.FC<BackgroundLandscapeProps> = ({
   overlayOpacity = 'bg-black/30',
   themeVariant = 'meadow'
 }) => {
-  const primaryBg = "/assets/bg.png";
-  const effectBg = "/assets/effect.png";
+  const primaryBg = "/assets/bg.webp";
+  const effectBg = "/assets/effect.webp";
 
   return (
     <div className="relative min-h-screen w-full overflow-x-hidden bg-[#101b13] flex flex-col selection:bg-amber-300 selection:text-black">
