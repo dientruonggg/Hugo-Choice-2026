@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { ALL_MEMBERS, filterMembers, getAvailableGivenNameInitials, ClubMember } from '../../data/membersData';
+import { TOP_5_BEST_MEMBERS, Top5Candidate } from '../../data/round2Data';
+import { activeRoundConfig, CURRENT_ROUND } from '../../config/roundConfig';
 import { HugoTeam } from '../../types';
 import { soundFx } from '../../utils/soundEffects';
-import { ButterflyParticle } from '../ButterflyParticle';
-import { Check, Search, UserCheck, Sparkles, Award, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, UserCheck, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface BestMemberScreenProps {
   selectedCandidateIds: string[];
@@ -32,6 +33,8 @@ export const BestMemberScreen: React.FC<BestMemberScreenProps> = ({
   const [selectedLetterFilter, setSelectedLetterFilter] = useState<string>('all');
 
   const selectedList = Array.isArray(selectedCandidateIds) ? selectedCandidateIds : (selectedCandidateIds ? [selectedCandidateIds] : []);
+  const requiredCount = activeRoundConfig.requiredVotesPerCategory;
+  const isComplete = selectedList.length === requiredCount;
 
   const teamMembersPool = targetTeam !== 'all'
     ? ALL_MEMBERS.filter(m => m.teamId === targetTeam)
@@ -41,22 +44,20 @@ export const BestMemberScreen: React.FC<BestMemberScreenProps> = ({
   const hasActiveFilter = searchQuery.trim() !== '' || selectedLetterFilter !== 'all';
   const filteredList = hasActiveFilter ? filterMembers(searchQuery, targetTeam, selectedLetterFilter) : [];
 
-  const handleSelectMember = (member: ClubMember) => {
+  const handleSelectMember = (member: { id: string; name: string }) => {
     soundFx.playSelect();
     if (selectedList.includes(member.id) || selectedList.includes(member.name)) {
       // Remove
       const nextList = selectedList.filter(id => id !== member.id && id !== member.name);
       onSelectCandidates(nextList);
     } else {
-      if (selectedList.length >= 3) {
-        alert('Bạn chỉ được chọn tối đa 3 người cho Best Member! Vui lòng bỏ chọn 1 người trước nếu muốn thay đổi.');
+      if (selectedList.length >= requiredCount) {
+        alert(`Bạn chỉ được chọn tối đa ${requiredCount} người cho Best Member! Vui lòng bỏ chọn 1 người trước nếu muốn thay đổi.`);
         return;
       }
       onSelectCandidates([...selectedList, member.id]);
     }
   };
-
-  const isComplete = selectedList.length === 3;
 
   return (
     <div className="relative flex-1 flex flex-col justify-between w-full h-full min-h-0 py-2 sm:py-3 px-3 sm:px-6 overflow-y-auto custom-scrollbar pb-64 sm:pb-72">
@@ -77,9 +78,9 @@ export const BestMemberScreen: React.FC<BestMemberScreenProps> = ({
         <button
           type="button"
           onClick={() => {
-            if (selectedList.length < 3) {
+            if (selectedList.length < requiredCount) {
               soundFx.playClick();
-              alert(`Yêu cầu phải vote đủ 3 người mới qua được! (Hiện tại bạn mới chọn ${selectedList.length}/3 người)`);
+              alert(`Yêu cầu phải vote đủ ${requiredCount} người mới qua được! (Hiện tại bạn mới chọn ${selectedList.length}/${requiredCount} người)`);
               return;
             }
             soundFx.playSelect();
@@ -90,7 +91,7 @@ export const BestMemberScreen: React.FC<BestMemberScreenProps> = ({
               : 'bg-white/40 text-gray-800 opacity-60'
             }`}
         >
-          <span>Next ({selectedList.length}/3)</span>
+          <span>Next ({selectedList.length}/{requiredCount})</span>
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>
@@ -98,174 +99,250 @@ export const BestMemberScreen: React.FC<BestMemberScreenProps> = ({
       {/* Title Header */}
       <div className="text-center mb-2 sm:mb-3 shrink-0">
         <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-400/20 border border-amber-400/40 text-amber-300 text-[0.65rem] sm:text-xs font-bold mb-1 shadow-md">
-          <span>⏱️ VÒNG 1 (01/08 - 03/08)</span>
-          <span className="opacity-50">•</span>
-          <span>VÒNG 2 (05/08 - 09/08)</span>
-          <span className="opacity-50">•</span>
-          <span>BẮT BUỘC CHỌN ĐỦ 3 NGUỜI</span>
+          {CURRENT_ROUND === 2 ? (
+            <>
+              <span>🔥 VÒNG 2 (05/08 - 09/08)</span>
+              <span className="opacity-50">•</span>
+              <span>CHỌN ĐÚNG 2 ỨNG VIÊN TOP 5</span>
+            </>
+          ) : (
+            <>
+              <span>⏱️ VÒNG 1 (01/08 - 03/08)</span>
+              <span className="opacity-50">•</span>
+              <span>BẮT BUỘC CHỌN ĐỦ 3 NGƯỜI</span>
+            </>
+          )}
         </div>
         <h2 className="font-serif-display text-2xl sm:text-4xl md:text-5xl font-black tracking-wider text-white text-stroke-gold drop-shadow-[0_8px_20px_rgba(0,0,0,0.8)] uppercase">
           THE BEST MEMBER
         </h2>
         <p className="font-serif-display text-[0.7rem] sm:text-sm text-amber-300 font-bold mt-0.5 max-w-2xl mx-auto drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)]">
-          🎗 Tôn vinh cá nhân có cống hiến xuất sắc • <span className="text-white underline">Yêu cầu chọn đủ 3 người</span> mới qua được!
+          🎗 Tôn vinh cá nhân có cống hiến xuất sắc • <span className="text-white underline">Yêu cầu chọn đủ {requiredCount} người</span> mới qua được!
         </p>
       </div>
 
       {/* Main Content Layout */}
       <div className="relative flex-1 flex flex-col min-h-0 max-w-5xl mx-auto w-full py-1 overflow-hidden">
-        {/* Search & Team Filter Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 mb-2 bg-black/60 p-2 sm:p-3 rounded-2xl backdrop-blur-md border border-amber-300/50 shadow-2xl w-full min-w-0 max-w-full shrink-0">
-          {/* Search Box */}
-          <div className="relative w-full sm:w-56 md:w-64 shrink-0">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={userTeam ? `Tìm thành viên ${TEAM_BADGES[userTeam].name}...` : "Search member by name..."}
-              className="w-full py-2 sm:py-2.5 pl-9 pr-3 rounded-full bg-white/95 text-gray-900 placeholder-gray-500 font-serif-display text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-300"
-            />
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
-          </div>
-
-          {/* Selection counter status */}
-          <div className="flex items-center gap-2">
-            <div className={`px-3 py-1.5 rounded-full text-xs font-bold font-serif-display border flex items-center gap-1.5 shadow ${isComplete ? 'bg-emerald-500/30 border-emerald-400 text-emerald-200' : 'bg-amber-500/20 border-amber-400 text-amber-200'}`}>
-              <span>{isComplete ? '✓ Đã chọn đủ 3/3 người' : `Đang chọn: ${selectedList.length}/3 người (Cần thêm ${3 - selectedList.length})`}</span>
+        {CURRENT_ROUND === 2 ? (
+          /* ROUND 2 TOP 5 CARDS DISPLAY */
+          <div className="flex flex-col min-h-0 h-full overflow-y-auto custom-scrollbar p-1">
+            <div className="mb-3 p-3 rounded-2xl bg-black/60 border border-amber-400/50 backdrop-blur-md text-amber-200 text-center text-xs sm:text-sm font-bold font-serif-display shrink-0">
+              🏆 Top 5 Cá Nhân Xuất Sắc Nhất Vòng 1 — Vui lòng chọn đúng 2 người ({selectedList.length}/{requiredCount})
             </div>
-          </div>
-        </div>
 
-        {/* Alphabet Letter Quick Filter Bar */}
-        <div className="mb-2.5 bg-black/60 px-3 py-1.5 rounded-xl backdrop-blur-md border border-amber-300/40 flex items-center gap-1 overflow-x-auto custom-scrollbar shrink-0">
-          <span className="text-[0.7rem] sm:text-xs text-amber-300 font-serif-display shrink-0 font-bold mr-1">Tên A-Z:</span>
-          <button
-            type="button"
-            onClick={() => {
-              setSelectedLetterFilter('all');
-              soundFx.playClick();
-            }}
-            className={`px-2 py-0.5 rounded-full text-[0.7rem] sm:text-xs font-serif-display transition-all cursor-pointer shrink-0 ${selectedLetterFilter === 'all'
-                ? 'bg-amber-400 text-black font-extrabold shadow'
-                : 'bg-white/10 text-white/70 hover:bg-white/20'
-              }`}
-          >
-            Tất cả
-          </button>
-          {availableInitials.map(letter => (
-            <button
-              key={letter}
-              type="button"
-              onClick={() => {
-                setSelectedLetterFilter(letter);
-                soundFx.playClick();
-              }}
-              className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full text-[0.7rem] sm:text-xs font-serif-display transition-all flex items-center justify-center cursor-pointer shrink-0 ${selectedLetterFilter === letter
-                  ? 'bg-amber-400 text-black font-extrabold shadow-[0_0_12px_rgba(251,191,36,0.9)] scale-110'
-                  : 'bg-white/10 text-white/70 hover:bg-white/20'
-                }`}
-            >
-              {letter}
-            </button>
-          ))}
-        </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 my-auto">
+              {TOP_5_BEST_MEMBERS.map((candidate) => {
+                const isSelected = selectedList.includes(candidate.id) || selectedList.includes(candidate.name);
+                const badge = candidate.teamId ? TEAM_BADGES[candidate.teamId] : null;
 
-        {/* Currently Selected 3 Members Pills Bar */}
-        <div className="mb-2.5 p-2.5 sm:p-3 rounded-2xl bg-black/70 border-2 border-amber-400/60 backdrop-blur-md text-white shadow-xl shrink-0">
-          <div className="text-[0.65rem] sm:text-xs text-amber-300 font-bold uppercase tracking-wider mb-1.5 flex items-center justify-between">
-            <span>Danh sách 3 ứng viên Best Member đã chọn ({selectedList.length}/3):</span>
-            {!isComplete && <span className="text-amber-200 italic animate-pulse">Vui lòng chọn thêm {3 - selectedList.length} người</span>}
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {[0, 1, 2].map((idx) => {
-              const selectedId = selectedList[idx];
-              const memObj = selectedId ? ALL_MEMBERS.find(m => m.id === selectedId || m.name === selectedId) : null;
-
-              return memObj ? (
-                <div
-                  key={memObj.id}
-                  className="px-3 py-1.5 rounded-full bg-amber-400 text-black font-bold font-serif-display text-xs sm:text-sm flex items-center gap-2 shadow-md animate-fade-in"
-                >
-                  <span className="w-5 h-5 rounded-full bg-black text-amber-300 text-[0.65rem] flex items-center justify-center font-black">
-                    #{idx + 1}
-                  </span>
-                  <span>{memObj.name}</span>
-                  <button
-                    type="button"
-                    onClick={() => handleSelectMember(memObj)}
-                    className="w-4 h-4 rounded-full bg-black/30 hover:bg-black/70 text-white flex items-center justify-center text-xs font-bold cursor-pointer"
-                    title="Bỏ chọn"
+                return (
+                  <div
+                    key={candidate.id}
+                    onClick={() => handleSelectMember(candidate)}
+                    className={`relative p-4 rounded-2xl border transition-all duration-300 flex flex-col items-center text-center justify-between cursor-pointer select-none group shadow-xl ${
+                      isSelected
+                        ? 'bg-gradient-to-b from-amber-400/90 to-amber-500/90 border-amber-300 text-gray-950 font-extrabold shadow-[0_0_30px_rgba(251,191,36,0.85)] scale-105 z-10'
+                        : 'bg-black/65 hover:bg-black/85 border-amber-400/30 text-white hover:scale-102'
+                    }`}
                   >
-                    ×
-                  </button>
-                </div>
-              ) : (
-                <div
-                  key={idx}
-                  className="px-3 py-1.5 rounded-full bg-white/10 border border-dashed border-white/30 text-white/50 font-serif-display text-xs sm:text-sm flex items-center gap-1.5"
-                >
-                  <span className="w-5 h-5 rounded-full bg-white/10 text-white/50 text-[0.65rem] flex items-center justify-center">
-                    #{idx + 1}
-                  </span>
-                  <span>Chưa chọn ứng viên #{idx + 1}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+                    <span className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-full bg-black/80 border border-amber-400/40 text-amber-300 text-[0.65rem] font-black">
+                      TOP 5
+                    </span>
+                    {isSelected && (
+                      <span className="absolute top-2.5 right-2.5 w-6 h-6 rounded-full bg-emerald-500 text-white text-xs font-black flex items-center justify-center shadow-lg">
+                        ✓
+                      </span>
+                    )}
 
-        {/* Scrollable Grid of Members */}
-        <div className="relative flex-1 min-h-0 overflow-y-auto pr-1 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3 custom-scrollbar">
-          {!hasActiveFilter ? (
-            <div className="col-span-full py-12 px-4 rounded-2xl bg-black/40 border border-dashed border-amber-300/40 text-center flex flex-col items-center justify-center my-auto">
-              <Search className="w-10 h-10 text-amber-300 mb-2 animate-bounce" />
-              <p className="font-serif-display text-white text-sm sm:text-base font-bold mb-1">
-                {userTeam
-                  ? `Gõ tên thành viên Đội ${TEAM_BADGES[userTeam].name} vào ô tìm kiếm hoặc chọn chữ cái`
-                  : 'Gõ tên thành viên vào ô tìm kiếm hoặc chọn chữ cái để hiển thị danh sách ứng viên'}
-              </p>
-              <p className="text-xs text-amber-200/80 italic">
-                (Hãy chọn đúng 3 người để hoàn tất Best Member)
-              </p>
+                    <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden border-2 border-amber-300/60 my-2 shadow-lg group-hover:scale-105 transition-transform duration-300 bg-black/40">
+                      <img src={candidate.image} alt={candidate.name} className="w-full h-full object-cover" />
+                    </div>
+
+                    <div className="w-full">
+                      <h3 className={`font-serif-display text-sm sm:text-base font-black leading-snug truncate ${isSelected ? 'text-gray-950' : 'text-amber-200'}`}>
+                        {candidate.name}
+                      </h3>
+                      {badge && (
+                        <div className="inline-flex items-center gap-1 mt-1 text-xs">
+                          <img src={badge.image} alt={badge.name} className="w-3.5 h-3.5 object-contain" />
+                          <span className={isSelected ? 'text-gray-900 font-bold' : badge.text}>{badge.name}</span>
+                        </div>
+                      )}
+                      <p className={`text-[0.7rem] mt-1.5 line-clamp-2 ${isSelected ? 'text-gray-900 font-medium' : 'text-white/70'}`}>
+                        {candidate.description}
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      className={`w-full mt-3 py-1.5 rounded-xl font-serif-display text-xs font-black transition-all ${
+                        isSelected
+                          ? 'bg-gray-950 text-amber-300 shadow'
+                          : 'bg-amber-400/20 text-amber-300 group-hover:bg-amber-400 group-hover:text-black'
+                      }`}
+                    >
+                      {isSelected ? '✓ ĐÃ BÌNH CHỌN' : 'BÌNH CHỌN'}
+                    </button>
+                  </div>
+                );
+              })}
             </div>
-          ) : filteredList.length > 0 ? (
-            filteredList.map((member) => {
-              const isSelected = selectedList.includes(member.id) || selectedList.includes(member.name);
-              const badge = TEAM_BADGES[member.teamId];
+          </div>
+        ) : (
+          /* ROUND 1 FULL DIRECTORY LOOKUP */
+          <>
+            {/* Search & Team Filter Bar */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 mb-2 bg-black/60 p-2 sm:p-3 rounded-2xl backdrop-blur-md border border-amber-300/50 shadow-2xl w-full min-w-0 max-w-full shrink-0">
+              <div className="relative w-full sm:w-56 md:w-64 shrink-0">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={userTeam ? `Tìm thành viên ${TEAM_BADGES[userTeam].name}...` : "Search member by name..."}
+                  className="w-full py-2 sm:py-2.5 pl-9 pr-3 rounded-full bg-white/95 text-gray-900 placeholder-gray-500 font-serif-display text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-300"
+                />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+              </div>
 
-              return (
+              <div className="flex items-center gap-2">
+                <div className={`px-3 py-1.5 rounded-full text-xs font-bold font-serif-display border flex items-center gap-1.5 shadow ${isComplete ? 'bg-emerald-500/30 border-emerald-400 text-emerald-200' : 'bg-amber-500/20 border-amber-400 text-amber-200'}`}>
+                  <span>{isComplete ? `✓ Đã chọn đủ ${requiredCount}/${requiredCount} người` : `Đang chọn: ${selectedList.length}/${requiredCount} người`}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Alphabet Letter Quick Filter Bar */}
+            <div className="mb-2.5 bg-black/60 px-3 py-1.5 rounded-xl backdrop-blur-md border border-amber-300/40 flex items-center gap-1 overflow-x-auto custom-scrollbar shrink-0">
+              <span className="text-[0.7rem] sm:text-xs text-amber-300 font-serif-display shrink-0 font-bold mr-1">Tên A-Z:</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedLetterFilter('all');
+                  soundFx.playClick();
+                }}
+                className={`px-2 py-0.5 rounded-full text-[0.7rem] sm:text-xs font-serif-display transition-all cursor-pointer shrink-0 ${selectedLetterFilter === 'all'
+                    ? 'bg-amber-400 text-black font-extrabold shadow'
+                    : 'bg-white/10 text-white/70 hover:bg-white/20'
+                  }`}
+              >
+                Tất cả
+              </button>
+              {availableInitials.map(letter => (
                 <button
-                  key={member.id}
-                  onClick={() => handleSelectMember(member)}
-                  className={`p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl font-serif-display transition-all duration-200 flex items-center justify-between cursor-pointer border text-left ${isSelected
-                      ? 'bg-amber-400 border-amber-300 text-gray-950 font-black shadow-[0_0_24px_rgba(251,191,36,0.85)] scale-[1.02]'
-                      : 'bg-black/55 hover:bg-amber-950/60 border-amber-300/40 text-white hover:scale-[1.01]'
+                  key={letter}
+                  type="button"
+                  onClick={() => {
+                    setSelectedLetterFilter(letter);
+                    soundFx.playClick();
+                  }}
+                  className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full text-[0.7rem] sm:text-xs font-serif-display transition-all flex items-center justify-center cursor-pointer shrink-0 ${selectedLetterFilter === letter
+                      ? 'bg-amber-400 text-black font-extrabold shadow-[0_0_12px_rgba(251,191,36,0.9)] scale-110'
+                      : 'bg-white/10 text-white/70 hover:bg-white/20'
                     }`}
                 >
-                  <div className="flex items-center gap-2 overflow-hidden min-w-0">
-                    <UserCheck className={`w-4 h-4 sm:w-5 sm:h-5 shrink-0 ${isSelected ? 'text-gray-950' : 'text-amber-300'}`} />
-                    <div className="truncate min-w-0">
-                      <div className="text-xs sm:text-base font-bold truncate leading-tight">{member.name}</div>
-                      <div className={`text-[0.65rem] sm:text-xs inline-flex items-center gap-1 opacity-95 ${isSelected ? 'text-gray-950 font-bold' : badge.text}`}>
-                        <img src={badge.image} alt={badge.name} className="w-3.5 h-3.5 sm:w-4 sm:h-4 object-contain rounded-full shrink-0" />
-                        <span className="truncate">{badge.shortName}</span>
-                      </div>
-                    </div>
-                  </div>
-                  {isSelected && (
-                    <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gray-950 text-amber-300 flex items-center justify-center shrink-0 ml-1 shadow font-bold text-xs">
-                      ✓
-                    </span>
-                  )}
+                  {letter}
                 </button>
-              );
-            })
-          ) : (
-            <div className="col-span-full py-10 text-center text-amber-200/90 font-serif-display text-base drop-shadow">
-              Không tìm thấy thành viên phù hợp với từ khóa "{searchQuery}"
+              ))}
             </div>
-          )}
-        </div>
+
+            {/* Currently Selected Pills Bar */}
+            <div className="mb-2.5 p-2.5 sm:p-3 rounded-2xl bg-black/70 border-2 border-amber-400/60 backdrop-blur-md text-white shadow-xl shrink-0">
+              <div className="text-[0.65rem] sm:text-xs text-amber-300 font-bold uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                <span>Danh sách ứng viên Best Member đã chọn ({selectedList.length}/{requiredCount}):</span>
+                {!isComplete && <span className="text-amber-200 italic animate-pulse">Vui lòng chọn thêm {requiredCount - selectedList.length} người</span>}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {Array.from({ length: requiredCount }).map((_, idx) => {
+                  const selectedId = selectedList[idx];
+                  const memObj = selectedId ? ALL_MEMBERS.find(m => m.id === selectedId || m.name === selectedId) : null;
+
+                  return memObj ? (
+                    <div
+                      key={memObj.id}
+                      className="px-3 py-1.5 rounded-full bg-amber-400 text-black font-bold font-serif-display text-xs sm:text-sm flex items-center gap-2 shadow-md animate-fade-in"
+                    >
+                      <span className="w-5 h-5 rounded-full bg-black text-amber-300 text-[0.65rem] flex items-center justify-center font-black">
+                        #{idx + 1}
+                      </span>
+                      <span>{memObj.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleSelectMember(memObj)}
+                        className="w-4 h-4 rounded-full bg-black/30 hover:bg-black/70 text-white flex items-center justify-center text-xs font-bold cursor-pointer"
+                        title="Bỏ chọn"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ) : (
+                    <div
+                      key={idx}
+                      className="px-3 py-1.5 rounded-full bg-white/10 border border-dashed border-white/30 text-white/50 font-serif-display text-xs sm:text-sm flex items-center gap-1.5"
+                    >
+                      <span className="w-5 h-5 rounded-full bg-white/10 text-white/50 text-[0.65rem] flex items-center justify-center">
+                        #{idx + 1}
+                      </span>
+                      <span>Chưa chọn ứng viên #{idx + 1}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Scrollable Grid of Members */}
+            <div className="relative flex-1 min-h-0 overflow-y-auto pr-1 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3 custom-scrollbar">
+              {!hasActiveFilter ? (
+                <div className="col-span-full py-12 px-4 rounded-2xl bg-black/40 border border-dashed border-amber-300/40 text-center flex flex-col items-center justify-center my-auto">
+                  <Search className="w-10 h-10 text-amber-300 mb-2 animate-bounce" />
+                  <p className="font-serif-display text-white text-sm sm:text-base font-bold mb-1">
+                    {userTeam
+                      ? `Gõ tên thành viên Đội ${TEAM_BADGES[userTeam].name} vào ô tìm kiếm hoặc chọn chữ cái`
+                      : 'Gõ tên thành viên vào ô tìm kiếm hoặc chọn chữ cái để hiển thị danh sách ứng viên'}
+                  </p>
+                  <p className="text-xs text-amber-200/80 italic">
+                    (Hãy chọn đúng {requiredCount} người để hoàn tất Best Member)
+                  </p>
+                </div>
+              ) : filteredList.length > 0 ? (
+                filteredList.map((member) => {
+                  const isSelected = selectedList.includes(member.id) || selectedList.includes(member.name);
+                  const badge = TEAM_BADGES[member.teamId];
+
+                  return (
+                    <button
+                      key={member.id}
+                      onClick={() => handleSelectMember(member)}
+                      className={`p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl font-serif-display transition-all duration-200 flex items-center justify-between cursor-pointer border text-left ${isSelected
+                          ? 'bg-amber-400 border-amber-300 text-gray-950 font-black shadow-[0_0_24px_rgba(251,191,36,0.85)] scale-[1.02]'
+                          : 'bg-black/55 hover:bg-amber-950/60 border-amber-300/40 text-white hover:scale-[1.01]'
+                        }`}
+                    >
+                      <div className="flex items-center gap-2 overflow-hidden min-w-0">
+                        <UserCheck className={`w-4 h-4 sm:w-5 sm:h-5 shrink-0 ${isSelected ? 'text-gray-950' : 'text-amber-300'}`} />
+                        <div className="truncate min-w-0">
+                          <div className="text-xs sm:text-base font-bold truncate leading-tight">{member.name}</div>
+                          <div className={`text-[0.65rem] sm:text-xs inline-flex items-center gap-1 opacity-95 ${isSelected ? 'text-gray-950 font-bold' : badge.text}`}>
+                            <img src={badge.image} alt={badge.name} className="w-3.5 h-3.5 sm:w-4 sm:h-4 object-contain rounded-full shrink-0" />
+                            <span className="truncate">{badge.shortName}</span>
+                          </div>
+                        </div>
+                      </div>
+                      {isSelected && (
+                        <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gray-950 text-amber-300 flex items-center justify-center shrink-0 ml-1 shadow font-bold text-xs">
+                          ✓
+                        </span>
+                      )}
+                    </button>
+                  );
+                })
+              ) : (
+                <div className="col-span-full py-10 text-center text-amber-200/90 font-serif-display text-base drop-shadow">
+                  Không tìm thấy thành viên phù hợp với từ khóa "{searchQuery}"
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </div>
 
       {/* Fixed Navigation Buttons */}
@@ -282,9 +359,9 @@ export const BestMemberScreen: React.FC<BestMemberScreenProps> = ({
 
         <button
           onClick={() => {
-            if (selectedList.length < 3) {
+            if (selectedList.length < requiredCount) {
               soundFx.playClick();
-              alert(`Yêu cầu phải vote đủ 3 người mới qua được! (Hiện tại bạn mới chọn ${selectedList.length}/3 người)`);
+              alert(`Yêu cầu phải vote đủ ${requiredCount} người mới qua được! (Hiện tại bạn mới chọn ${selectedList.length}/${requiredCount} người)`);
               return;
             }
             soundFx.playSelect();
@@ -295,7 +372,7 @@ export const BestMemberScreen: React.FC<BestMemberScreenProps> = ({
               : 'bg-white/40 text-gray-800 opacity-60'
             }`}
         >
-          Next ({selectedList.length}/3)
+          Next ({selectedList.length}/{requiredCount})
         </button>
       </div>
 

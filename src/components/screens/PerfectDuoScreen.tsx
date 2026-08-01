@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ALL_MEMBERS, filterMembers, getAvailableGivenNameInitials, ClubMember } from '../../data/membersData';
+import { TOP_5_PERFECT_DUOS } from '../../data/round2Data';
+import { activeRoundConfig, CURRENT_ROUND } from '../../config/roundConfig';
 import { HugoTeam } from '../../types';
 import { soundFx } from '../../utils/soundEffects';
-import { Check, Search, Heart, Users, Sparkles, Zap, ShieldAlert, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Check, Search, Heart, Users, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface PerfectDuoScreenProps {
   selectedDuoIds: string[];
@@ -18,7 +20,6 @@ const TEAM_BADGES: Record<HugoTeam, { name: string; bg: string; text: string; im
   niff: { name: 'Nifflers', bg: 'bg-purple-500/35 border-purple-300/80', text: 'text-purple-300 font-bold', image: '/team_logo/NIFFLER.png' }
 };
 
-// Reusable member picker panel using Cyan & Emerald (non-romantic colors)
 interface MemberPickerProps {
   label: string;
   color: 'cyan' | 'emerald';
@@ -46,71 +47,53 @@ const MemberPicker: React.FC<MemberPickerProps> = ({
 
   return (
     <div className="flex flex-col bg-black/40 p-3 rounded-2xl backdrop-blur-md border border-white/20 min-h-0 overflow-hidden h-full">
-      {/* Header */}
       <div className="flex items-center justify-between mb-2 shrink-0">
-        <h3 className={`font-serif-display text-sm font-bold flex items-center gap-1.5 ${titleColor}`}>
-          <Users className="w-4 h-4" /> {label}
-        </h3>
+        <div className="flex items-center gap-1.5">
+          <Users className={`w-4 h-4 ${titleColor}`} />
+          <span className={`font-serif-display font-black text-sm ${titleColor}`}>{label}</span>
+        </div>
         {selectedId && (
-          <span className={`text-[0.7rem] px-2 py-0.5 rounded-full ${activePill}`}>
+          <span className="text-[0.65rem] px-2 py-0.5 rounded-full bg-emerald-400/20 text-emerald-300 font-bold border border-emerald-400/40">
             ✓ Đã chọn
           </span>
         )}
       </div>
 
-      {/* Search */}
-      <div className="relative mb-2 shrink-0">
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => onSearch(e.target.value)}
-          placeholder={`Tìm ${label}...`}
-          className={`w-full py-1.5 pl-8 pr-3 rounded-full bg-white/90 text-gray-900 placeholder-gray-500 font-serif-display text-xs focus:outline-none focus:ring-2 ${ringColor}`}
-        />
-        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none" />
-      </div>
+      <div className="flex items-center gap-1.5 mb-2 shrink-0">
+        <div className="relative flex-1">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => onSearch(e.target.value)}
+            placeholder={`Tìm ${label.toLowerCase()}...`}
+            className={`w-full py-1.5 pl-8 pr-2 rounded-full bg-white/95 text-gray-900 text-xs font-medium focus:outline-none focus:ring-2 ${ringColor}`}
+          />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none" />
+        </div>
 
-      {/* Team Filters */}
-      <div className="flex flex-wrap gap-1 mb-1.5 shrink-0">
-        <button
-          onClick={() => {
-            onTeamFilter('all');
-            soundFx.playClick();
-          }}
-          className={`px-2 py-0.5 rounded-full text-[0.7rem] font-serif-display transition-all cursor-pointer ${teamFilter === 'all' ? activePill : 'bg-white/10 text-white/70 hover:bg-white/20'
-            }`}
+        <select
+          value={teamFilter}
+          onChange={(e) => onTeamFilter(e.target.value as HugoTeam | 'all')}
+          className="py-1.5 px-2 rounded-full bg-white/90 text-gray-900 text-[0.7rem] font-bold focus:outline-none cursor-pointer"
         >
-          Tất cả ({ALL_MEMBERS.length})
-        </button>
-        {(['prs', 'hc', 'bnn', 'niff'] as HugoTeam[]).map(t => {
-          const count = ALL_MEMBERS.filter(m => m.teamId === t).length;
-          return (
-            <button
-              key={t}
-              onClick={() => {
-                onTeamFilter(t);
-                soundFx.playClick();
-              }}
-              className={`px-1.5 py-0.5 rounded-full text-[0.7rem] font-serif-display transition-all flex items-center gap-1 cursor-pointer ${teamFilter === t ? activePill : 'bg-white/10 text-white/70 hover:bg-white/20'
-                }`}
-            >
-              <img src={TEAM_BADGES[t].image} alt={TEAM_BADGES[t].name} className="w-3.5 h-3.5 object-contain rounded-full shrink-0" />
-              <span className="hidden sm:inline">{TEAM_BADGES[t].name} ({count})</span>
-              <span className="sm:hidden">{t.toUpperCase()} ({count})</span>
-            </button>
-          );
-        })}
+          <option value="all">Tất cả Team</option>
+          <option value="prs">Power Rangers</option>
+          <option value="hc">Heroes Company</option>
+          <option value="bnn">Banana</option>
+          <option value="niff">Nifflers</option>
+        </select>
       </div>
 
-      {/* Alphabet Quick Filter */}
-      <div className="flex items-center gap-1 overflow-x-auto custom-scrollbar mb-2 shrink-0 pb-1">
-        <span className="text-[0.65rem] text-amber-200/80 font-serif-display shrink-0 font-bold mr-0.5">Tên:</span>
+      <div className="mb-2 bg-black/40 px-2 py-1 rounded-xl border border-white/10 flex items-center gap-1 overflow-x-auto custom-scrollbar shrink-0">
         <button
+          type="button"
           onClick={() => {
             setLetterFilter('all');
             soundFx.playClick();
           }}
-          className={`px-1.5 py-0.5 rounded-full text-[0.65rem] font-serif-display transition-all shrink-0 cursor-pointer ${letterFilter === 'all' ? activePill : 'bg-white/10 text-white/70 hover:bg-white/20'
+          className={`px-1.5 py-0.5 rounded-full text-[0.65rem] font-serif-display transition-all cursor-pointer shrink-0 ${letterFilter === 'all'
+              ? activePill
+              : 'bg-white/10 text-white/70 hover:bg-white/20'
             }`}
         >
           Tất cả
@@ -118,11 +101,14 @@ const MemberPicker: React.FC<MemberPickerProps> = ({
         {availableInitials.map(letter => (
           <button
             key={letter}
+            type="button"
             onClick={() => {
               setLetterFilter(letter);
               soundFx.playClick();
             }}
-            className={`w-5 h-5 rounded-full text-[0.65rem] font-serif-display transition-all flex items-center justify-center shrink-0 cursor-pointer ${letterFilter === letter ? activePill + ' scale-110 shadow' : 'bg-white/10 text-white/70 hover:bg-white/20'
+            className={`w-5 h-5 rounded-full text-[0.65rem] font-serif-display transition-all flex items-center justify-center cursor-pointer shrink-0 ${letterFilter === letter
+                ? activePill
+                : 'bg-white/10 text-white/70 hover:bg-white/20'
               }`}
           >
             {letter}
@@ -130,56 +116,47 @@ const MemberPicker: React.FC<MemberPickerProps> = ({
         ))}
       </div>
 
-      {/* Scrollable 2-Column Grid */}
-      <div className="flex-1 min-h-0 overflow-y-auto pr-1 custom-scrollbar">
+      <div className="flex-1 min-h-0 overflow-y-auto pr-1 grid grid-cols-2 gap-1.5 custom-scrollbar">
         {!hasActiveFilter ? (
-          <div className="py-8 px-3 text-center flex flex-col items-center justify-center my-auto border border-dashed border-white/20 rounded-xl bg-black/30">
-            <Search className="w-6 h-6 text-amber-300 mb-1 animate-bounce" />
-            <p className="font-serif-display text-white text-xs font-bold">
-              Gõ tên vào ô tìm kiếm hoặc chọn Đội / Chữ cái để tìm {label}
-            </p>
+          <div className="col-span-full py-8 text-center text-white/60 font-serif-display text-xs italic my-auto">
+            Gõ tên vào ô tìm kiếm hoặc lọc theo chữ cái/Team để chọn {label}
           </div>
-        ) : list.length === 0 ? (
-          <div className="text-center text-white/50 font-serif-display text-xs py-6">Không tìm thấy thành viên phù hợp với từ khóa "{search}"</div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-            {list.map(member => {
-              const isSelected = selectedId === member.id || selectedId === member.name;
-              const isOtherSelected = !!otherSelectedId && (otherSelectedId === member.id || otherSelectedId === member.name);
-              const badge = TEAM_BADGES[member.teamId];
+        ) : list.length > 0 ? (
+          list.map(member => {
+            const isSelected = selectedId === member.id || selectedId === member.name;
+            const isDisabled = otherSelectedId === member.id || otherSelectedId === member.name;
+            const badge = TEAM_BADGES[member.teamId];
 
-              return (
-                <button
-                  key={member.id}
-                  onClick={() => {
-                    if (isOtherSelected) {
-                      soundFx.playClick();
-                      alert('Thành viên này đã được chọn làm đồng đội bên kia! Vui lòng chọn 2 người khác nhau.');
-                      return;
-                    }
-                    onSelect(member);
-                  }}
-                  className={`p-2 rounded-xl text-left font-serif-display text-xs transition-all flex items-center justify-between cursor-pointer border ${isSelected
-                      ? selectedBg + ' shadow-md scale-[1.01]'
-                      : isOtherSelected
-                        ? 'bg-red-950/30 border-red-500/30 text-white/40 cursor-not-allowed opacity-60'
-                        : 'bg-white/10 hover:bg-white/20 border-white/10 text-white'
-                    }`}
-                >
-                  <div className="truncate flex items-center gap-1">
-                    <span className="truncate font-semibold">{member.name}</span>
-                    {isOtherSelected && (
-                      <span className="text-[0.6rem] text-red-300 font-bold bg-red-900/60 px-1 py-0.5 rounded shrink-0">
-                        Đã chọn
-                      </span>
-                    )}
+            return (
+              <button
+                key={member.id}
+                type="button"
+                disabled={isDisabled}
+                onClick={() => {
+                  soundFx.playSelect();
+                  onSelect(member);
+                }}
+                className={`p-2 rounded-xl text-left font-serif-display transition-all flex items-center justify-between border cursor-pointer ${isSelected
+                    ? selectedBg
+                    : isDisabled
+                      ? 'bg-white/5 border-white/10 text-white/30 cursor-not-allowed opacity-50'
+                      : 'bg-white/10 hover:bg-white/20 border-white/15 text-white'
+                  }`}
+              >
+                <div className="truncate min-w-0 pr-1">
+                  <div className="text-xs font-bold truncate leading-tight">{member.name}</div>
+                  <div className={`text-[0.6rem] inline-flex items-center gap-1 opacity-90 ${isSelected ? 'text-gray-900 font-bold' : badge.text}`}>
+                    <img src={badge.image} alt={badge.name} className="w-3 h-3 object-contain rounded-full shrink-0" />
+                    <span className="truncate">{badge.name}</span>
                   </div>
-                  <span className={`text-[0.65rem] shrink-0 ml-1 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full border ${badge.bg} ${badge.text}`}>
-                    <img src={badge.image} alt={badge.name} className="w-3.5 h-3.5 object-contain rounded-full shrink-0" />
-                  </span>
-                </button>
-              );
-            })}
+                </div>
+                {isSelected && <Check className="w-3.5 h-3.5 shrink-0" />}
+              </button>
+            );
+          })
+        ) : (
+          <div className="col-span-full py-6 text-center text-white/50 font-serif-display text-xs">
+            Không tìm thấy thành viên phù hợp
           </div>
         )}
       </div>
@@ -194,8 +171,12 @@ export const PerfectDuoScreen: React.FC<PerfectDuoScreenProps> = ({
   onNext
 }) => {
   const initialList = Array.isArray(selectedDuoIds) ? selectedDuoIds : (selectedDuoIds ? [selectedDuoIds] : []);
+  const requiredCount = activeRoundConfig.requiredVotesPerCategory;
 
-  // Track 3 pair objects
+  // Round 2 selection state
+  const [selectedR2Duos, setSelectedR2Duos] = useState<string[]>(initialList);
+
+  // Round 1 state
   const [pairs, setPairs] = useState<Array<{ a: string; b: string }>>(() => {
     const list: Array<{ a: string; b: string }> = [
       { a: '', b: '' },
@@ -212,17 +193,30 @@ export const PerfectDuoScreen: React.FC<PerfectDuoScreenProps> = ({
   });
 
   const [activeSlot, setActiveSlot] = useState<number>(0);
-
   const [searchA, setSearchA] = useState('');
   const [searchB, setSearchB] = useState('');
   const [teamFilterA, setTeamFilterA] = useState<HugoTeam | 'all'>('all');
   const [teamFilterB, setTeamFilterB] = useState<HugoTeam | 'all'>('all');
-
-  // Mobile sub-tab inside current active slot: 'A' or 'B'
   const [mobileSubTab, setMobileSubTab] = useState<'A' | 'B'>('A');
 
-  // Current active slot pair
   const currentPair = pairs[activeSlot] || { a: '', b: '' };
+
+  const handleSelectR2Duo = (duo: Top5Candidate) => {
+    soundFx.playSelect();
+    const isSelected = selectedR2Duos.includes(duo.id) || selectedR2Duos.includes(duo.name);
+    let next: string[];
+    if (isSelected) {
+      next = selectedR2Duos.filter(id => id !== duo.id && id !== duo.name);
+    } else {
+      if (selectedR2Duos.length >= requiredCount) {
+        alert(`Bạn chỉ được chọn tối đa ${requiredCount} cặp cho hạng mục Perfect Duo! Vui lòng bỏ chọn 1 cặp trước nếu muốn thay đổi.`);
+        return;
+      }
+      next = [...selectedR2Duos, duo.id];
+    }
+    setSelectedR2Duos(next);
+    onSelectDuos(next);
+  };
 
   const handleSetPersonA = (id: string) => {
     const updated = [...pairs];
@@ -251,8 +245,8 @@ export const PerfectDuoScreen: React.FC<PerfectDuoScreenProps> = ({
     onSelectDuos(formatted);
   };
 
-  const validPairsCount = pairs.filter(p => p.a && p.b).length;
-  const isComplete = validPairsCount === 3;
+  const validPairsCount = CURRENT_ROUND === 2 ? selectedR2Duos.length : pairs.filter(p => p.a && p.b).length;
+  const isComplete = validPairsCount === requiredCount;
 
   return (
     <div className="relative flex-1 flex flex-col w-full h-full min-h-0 py-2 px-3 sm:px-6 overflow-y-auto custom-scrollbar pb-64 sm:pb-72">
@@ -273,9 +267,9 @@ export const PerfectDuoScreen: React.FC<PerfectDuoScreenProps> = ({
         <button
           type="button"
           onClick={() => {
-            if (validPairsCount < 3) {
+            if (validPairsCount < requiredCount) {
               soundFx.playClick();
-              alert(`Yêu cầu phải chọn đủ 3 cặp Perfect Duo mới qua được! (Hiện tại bạn mới chọn ${validPairsCount}/3 cặp)`);
+              alert(`Yêu cầu phải chọn đủ ${requiredCount} cặp Perfect Duo mới qua được! (Hiện tại bạn mới chọn ${validPairsCount}/${requiredCount} cặp)`);
               return;
             }
             soundFx.playSelect();
@@ -286,7 +280,7 @@ export const PerfectDuoScreen: React.FC<PerfectDuoScreenProps> = ({
               : 'bg-white/40 text-gray-800 opacity-60'
             }`}
         >
-          <span>Next ({validPairsCount}/3 cặp)</span>
+          <span>Next ({validPairsCount}/{requiredCount} cặp)</span>
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>
@@ -294,188 +288,207 @@ export const PerfectDuoScreen: React.FC<PerfectDuoScreenProps> = ({
       {/* Title Header */}
       <div className="text-center mb-2 shrink-0">
         <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-400/20 border border-amber-400/40 text-amber-300 text-[0.65rem] sm:text-xs font-bold mb-1 shadow-md">
-          <span>⏱️ VÒNG 1 (01/08 - 03/08)</span>
-          <span className="opacity-50">•</span>
-          <span>VÒNG 2 (05/08 - 09/08)</span>
-          <span className="opacity-50">•</span>
-          <span>BẮT BUỘC CHỌN ĐỦ 3 CẶP</span>
+          {CURRENT_ROUND === 2 ? (
+            <>
+              <span>🔥 VÒNG 2 (05/08 - 09/08)</span>
+              <span className="opacity-50">•</span>
+              <span>CHỌN ĐÚNG 2 CẶP DUO TOP 5</span>
+            </>
+          ) : (
+            <>
+              <span>⏱️ VÒNG 1 (01/08 - 03/08)</span>
+              <span className="opacity-50">•</span>
+              <span>BẮT BUỘC CHỌN ĐỦ 3 CẶP</span>
+            </>
+          )}
         </div>
         <h2 className="font-serif-display text-2xl sm:text-4xl md:text-5xl font-black tracking-wider text-white text-stroke-gold drop-shadow-[0_8px_20px_rgba(0,0,0,0.8)] uppercase">
           THE PERFECT DUO
         </h2>
         <p className="font-serif-display text-[0.7rem] sm:text-sm text-amber-300 font-bold mt-0.5 max-w-2xl mx-auto drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)]">
-          🎗 Tôn vinh cặp cạ & đồng đội ăn ý • <span className="text-white underline">Yêu cầu chọn đủ 3 CẶP</span> (6 người) mới qua được!
+          🎗 Tôn vinh cặp cạ & đồng đội ăn ý • <span className="text-white underline">Yêu cầu chọn đủ {requiredCount} CẶP</span> mới qua được!
         </p>
       </div>
 
-      {/* 3 PAIRS OVERVIEW TABS */}
-      <div className="max-w-4xl mx-auto w-full mb-2 shrink-0">
-        <div className="grid grid-cols-3 gap-2">
-          {[0, 1, 2].map(slotIdx => {
-            const pair = pairs[slotIdx];
-            const memA = ALL_MEMBERS.find(m => m.id === pair.a || m.name === pair.a);
-            const memB = ALL_MEMBERS.find(m => m.id === pair.b || m.name === pair.b);
-            const isPairReady = Boolean(memA && memB);
-            const isActive = activeSlot === slotIdx;
+      {/* Main Content Layout */}
+      <div className="relative flex-1 flex flex-col min-h-0 max-w-5xl mx-auto w-full py-1 overflow-hidden">
+        {CURRENT_ROUND === 2 ? (
+          /* ROUND 2 TOP 5 CARDS DISPLAY */
+          <div className="flex flex-col min-h-0 h-full overflow-y-auto custom-scrollbar p-1">
+            <div className="mb-3 p-3 rounded-2xl bg-black/60 border border-amber-400/50 backdrop-blur-md text-amber-200 text-center text-xs sm:text-sm font-bold font-serif-display shrink-0">
+              💖 Top 5 Cặp Đôi Xuất Sắc Nhất Vòng 1 — Vui lòng chọn đúng 2 cặp ({validPairsCount}/{requiredCount})
+            </div>
 
-            return (
-              <button
-                key={slotIdx}
-                type="button"
-                onClick={() => {
-                  soundFx.playClick();
-                  setActiveSlot(slotIdx);
-                }}
-                className={`p-2.5 sm:p-3 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${isActive
-                    ? 'bg-amber-400/30 border-amber-300 shadow-[0_0_20px_rgba(251,191,36,0.5)] scale-[1.02]'
-                    : isPairReady
-                      ? 'bg-emerald-950/40 border-emerald-400/60 text-white'
-                      : 'bg-black/50 border-white/20 text-white/60 hover:bg-black/70'
-                  }`}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[0.65rem] sm:text-xs font-bold uppercase tracking-wider text-amber-300">
-                    CẶP #{slotIdx + 1}
-                  </span>
-                  <span className={`text-[0.6rem] px-1.5 py-0.5 rounded-full font-bold ${isPairReady ? 'bg-emerald-400 text-black' : 'bg-white/10 text-amber-200/70'}`}>
-                    {isPairReady ? '✓ Xong' : 'Đang chọn'}
-                  </span>
-                </div>
-                <div className="font-serif-display text-xs sm:text-sm font-bold truncate">
-                  {memA && memB ? (
-                    <span className="text-white">{memA.name} & {memB.name}</span>
-                  ) : memA ? (
-                    <span className="text-amber-200">{memA.name} & ...</span>
-                  ) : memB ? (
-                    <span className="text-amber-200">... & {memB.name}</span>
-                  ) : (
-                    <span className="text-white/40 italic">Chưa chọn Cặp #{slotIdx + 1}</span>
-                  )}
-                </div>
-              </button>
-            );
-          })}
-        </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 my-auto">
+              {TOP_5_PERFECT_DUOS.map((candidate) => {
+                const isSelected = selectedR2Duos.includes(candidate.id) || selectedR2Duos.includes(candidate.name);
+
+                return (
+                  <div
+                    key={candidate.id}
+                    onClick={() => handleSelectR2Duo(candidate)}
+                    className={`relative p-4 rounded-2xl border transition-all duration-300 flex flex-col items-center text-center justify-between cursor-pointer select-none group shadow-xl ${
+                      isSelected
+                        ? 'bg-gradient-to-b from-amber-400/90 to-amber-500/90 border-amber-300 text-gray-950 font-extrabold shadow-[0_0_30px_rgba(251,191,36,0.85)] scale-105 z-10'
+                        : 'bg-black/65 hover:bg-black/85 border-amber-400/30 text-white hover:scale-102'
+                    }`}
+                  >
+                    <span className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-full bg-black/80 border border-amber-400/40 text-amber-300 text-[0.65rem] font-black">
+                      TOP 5
+                    </span>
+                    {isSelected && (
+                      <span className="absolute top-2.5 right-2.5 w-6 h-6 rounded-full bg-emerald-500 text-white text-xs font-black flex items-center justify-center shadow-lg">
+                        ✓
+                      </span>
+                    )}
+
+                    <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden border-2 border-amber-300/60 my-2 shadow-lg group-hover:scale-105 transition-transform duration-300 bg-black/40">
+                      <img src={candidate.image} alt={candidate.name} className="w-full h-full object-cover" />
+                    </div>
+
+                    <div className="w-full">
+                      <h3 className={`font-serif-display text-xs sm:text-sm font-black leading-snug truncate ${isSelected ? 'text-gray-950' : 'text-amber-200'}`}>
+                        {candidate.name}
+                      </h3>
+                      <p className={`text-[0.7rem] mt-1.5 line-clamp-2 ${isSelected ? 'text-gray-900 font-medium' : 'text-white/70'}`}>
+                        {candidate.description}
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      className={`w-full mt-3 py-1.5 rounded-xl font-serif-display text-xs font-black transition-all ${
+                        isSelected
+                          ? 'bg-gray-950 text-amber-300 shadow'
+                          : 'bg-amber-400/20 text-amber-300 group-hover:bg-amber-400 group-hover:text-black'
+                      }`}
+                    >
+                      {isSelected ? '✓ ĐÃ BÌNH CHỌN' : 'BÌNH CHỌN'}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          /* ROUND 1 VIEW */
+          <>
+            {/* Slot Tabs */}
+            <div className="flex items-center justify-between gap-2 mb-2 bg-black/60 p-2 rounded-2xl backdrop-blur-md border border-amber-300/40 shadow-xl shrink-0">
+              <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar">
+                {[0, 1, 2].map(idx => {
+                  const p = pairs[idx];
+                  const isPairDone = p.a && p.b;
+                  const isActive = activeSlot === idx;
+
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => {
+                        setActiveSlot(idx);
+                        soundFx.playClick();
+                      }}
+                      className={`px-3 py-1.5 rounded-xl font-serif-display text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 border ${isActive
+                          ? 'bg-amber-400 border-amber-300 text-gray-950 shadow-[0_0_15px_rgba(251,191,36,0.6)] scale-105'
+                          : isPairDone
+                            ? 'bg-emerald-950/60 border-emerald-400/60 text-emerald-200'
+                            : 'bg-white/10 border-white/15 text-white/70 hover:bg-white/20'
+                        }`}
+                    >
+                      <Heart className={`w-3.5 h-3.5 ${isActive ? 'text-gray-950 fill-gray-950' : isPairDone ? 'text-emerald-400 fill-emerald-400' : 'text-amber-400'}`} />
+                      <span>Cặp #{idx + 1}</span>
+                      {isPairDone && <span className="text-[0.65rem] font-black">✓</span>}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="hidden sm:flex items-center gap-1 text-xs font-serif-display font-bold text-amber-200">
+                <Sparkles className="w-4 h-4 text-amber-300" />
+                <span>Tiến độ: {validPairsCount}/3 cặp</span>
+              </div>
+            </div>
+
+            {/* Main Member Pickers (Desktop Split / Mobile Subtab) */}
+            <div className="flex-1 min-h-0 flex flex-col md:flex-row gap-2.5 overflow-hidden">
+              <div className="md:hidden flex rounded-xl bg-black/60 p-1 border border-white/15 shrink-0 mb-1">
+                <button
+                  type="button"
+                  onClick={() => setMobileSubTab('A')}
+                  className={`flex-1 py-1.5 rounded-lg text-xs font-bold font-serif-display transition-all ${mobileSubTab === 'A' ? 'bg-cyan-400 text-black shadow' : 'text-white/70'}`}
+                >
+                  Thành viên 1 ({currentPair.a ? 'Đã chọn' : 'Chưa chọn'})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMobileSubTab('B')}
+                  className={`flex-1 py-1.5 rounded-lg text-xs font-bold font-serif-display transition-all ${mobileSubTab === 'B' ? 'bg-emerald-400 text-black shadow' : 'text-white/70'}`}
+                >
+                  Thành viên 2 ({currentPair.b ? 'Đã chọn' : 'Chưa chọn'})
+                </button>
+              </div>
+
+              <div className={`flex-1 min-h-0 ${mobileSubTab === 'A' ? 'block' : 'hidden md:block'}`}>
+                <MemberPicker
+                  label={`Thành viên 1 (Cặp #${activeSlot + 1})`}
+                  color="cyan"
+                  selectedId={currentPair.a}
+                  otherSelectedId={currentPair.b}
+                  search={searchA}
+                  teamFilter={teamFilterA}
+                  onSearch={setSearchA}
+                  onTeamFilter={setTeamFilterA}
+                  onSelect={(m) => handleSetPersonA(m.id)}
+                />
+              </div>
+
+              <div className={`flex-1 min-h-0 ${mobileSubTab === 'B' ? 'block' : 'hidden md:block'}`}>
+                <MemberPicker
+                  label={`Thành viên 2 (Cặp #${activeSlot + 1})`}
+                  color="emerald"
+                  selectedId={currentPair.b}
+                  otherSelectedId={currentPair.a}
+                  search={searchB}
+                  teamFilter={teamFilterB}
+                  onSearch={setSearchB}
+                  onTeamFilter={setTeamFilterB}
+                  onSelect={(m) => handleSetPersonB(m.id)}
+                />
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
-      {/* Active Pair Slot Indicator */}
-      <div className="max-w-4xl mx-auto w-full mb-2 shrink-0">
-        <div className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-black/60 border border-amber-300/40 text-xs text-amber-200">
-          <span className="font-bold flex items-center gap-1.5">
-            <Sparkles className="w-4 h-4 text-cyan-300" />
-            <span>Đang thiết lập: CẶP #{activeSlot + 1}</span>
-          </span>
-          <span className="text-[0.7rem] text-emerald-300 font-bold">
-            {currentPair.a && currentPair.b ? '✓ Đã hoàn thành Cặp này' : 'Hãy chọn Đồng đội #1 và Đồng đội #2'}
-          </span>
-        </div>
-      </div>
-
-      {/* Mobile Sub-Tab Switcher (hidden on md+) */}
-      <div className="flex md:hidden gap-2 mb-2 shrink-0">
+      {/* Fixed Navigation Buttons */}
+      <div className="w-full max-w-6xl flex justify-between items-center pt-2 sm:pt-3 border-t border-white/15 shrink-0 px-4 sm:px-8">
         <button
-          onClick={() => setMobileSubTab('A')}
-          className={`flex-1 py-1.5 rounded-xl font-serif-display text-xs font-bold transition-all border ${mobileSubTab === 'A'
-              ? 'bg-cyan-400 text-black border-cyan-300'
-              : 'bg-white/10 text-white/70 border-white/20 hover:bg-white/20'
-            }`}
-        >
-          {currentPair.a ? '✓ ' : ''}Đồng đội #1
-        </button>
-        <button
-          onClick={() => setMobileSubTab('B')}
-          className={`flex-1 py-1.5 rounded-xl font-serif-display text-xs font-bold transition-all border ${mobileSubTab === 'B'
-              ? 'bg-emerald-400 text-black border-emerald-300'
-              : 'bg-white/10 text-white/70 border-white/20 hover:bg-white/20'
-            }`}
-        >
-          {currentPair.b ? '✓ ' : ''}Đồng đội #2
-        </button>
-      </div>
-
-      {/* Selection Grid (Cyan & Emerald non-romantic colors) */}
-      <div className="flex-1 min-h-0 overflow-hidden max-w-4xl mx-auto w-full">
-        {/* Desktop: side by side */}
-        <div className="hidden md:grid md:grid-cols-2 gap-4 h-full">
-          <MemberPicker
-            label={`1. Đồng đội #1 (Cặp ${activeSlot + 1})`}
-            color="cyan"
-            selectedId={currentPair.a}
-            otherSelectedId={currentPair.b}
-            search={searchA}
-            teamFilter={teamFilterA}
-            onSearch={setSearchA}
-            onTeamFilter={setTeamFilterA}
-            onSelect={(m) => { soundFx.playSelect(); handleSetPersonA(m.id); }}
-          />
-          <MemberPicker
-            label={`2. Đồng đội #2 (Cặp ${activeSlot + 1})`}
-            color="emerald"
-            selectedId={currentPair.b}
-            otherSelectedId={currentPair.a}
-            search={searchB}
-            teamFilter={teamFilterB}
-            onSearch={setSearchB}
-            onTeamFilter={setTeamFilterB}
-            onSelect={(m) => { soundFx.playSelect(); handleSetPersonB(m.id); }}
-          />
-        </div>
-
-        {/* Mobile: single tab view */}
-        <div className="md:hidden h-full">
-          {mobileSubTab === 'A' ? (
-            <MemberPicker
-              label={`1. Đồng đội #1 (Cặp ${activeSlot + 1})`}
-              color="cyan"
-              selectedId={currentPair.a}
-              otherSelectedId={currentPair.b}
-              search={searchA}
-              teamFilter={teamFilterA}
-              onSearch={setSearchA}
-              onTeamFilter={setTeamFilterA}
-              onSelect={(m) => { soundFx.playSelect(); handleSetPersonA(m.id); setMobileSubTab('B'); }}
-            />
-          ) : (
-            <MemberPicker
-              label={`2. Đồng đội #2 (Cặp ${activeSlot + 1})`}
-              color="emerald"
-              selectedId={currentPair.b}
-              otherSelectedId={currentPair.a}
-              search={searchB}
-              teamFilter={teamFilterB}
-              onSearch={setSearchB}
-              onTeamFilter={setTeamFilterB}
-              onSelect={(m) => { soundFx.playSelect(); handleSetPersonB(m.id); }}
-            />
-          )}
-        </div>
-      </div>
-
-      {/* Navigation */}
-      <div className="w-full max-w-4xl mx-auto flex justify-between items-center pt-2 sm:pt-3 mt-2 border-t border-white/15 shrink-0">
-        <button
-          onClick={() => { soundFx.playClick(); onBack(); }}
-          className="px-5 py-2 sm:px-8 sm:py-2.5 min-w-[80px] sm:min-w-[120px] rounded-full border-2 border-white/90 bg-black/60 hover:bg-black/80 text-white font-serif-display text-sm sm:text-lg transition-all shadow-[0_4px_20px_rgba(0,0,0,0.6)] cursor-pointer"
+          onClick={() => {
+            soundFx.playClick();
+            onBack();
+          }}
+          className="px-6 py-2 sm:px-9 sm:py-2.5 min-w-[95px] sm:min-w-[130px] rounded-full border-2 border-white/90 bg-black/60 hover:bg-black/80 text-white font-serif-display text-base sm:text-xl transition-all shadow-[0_4px_20px_rgba(0,0,0,0.6)] cursor-pointer"
         >
           Back
         </button>
 
         <button
           onClick={() => {
-            if (validPairsCount < 3) {
+            if (validPairsCount < requiredCount) {
               soundFx.playClick();
-              alert(`Yêu cầu phải chọn đủ 3 cặp Perfect Duo mới qua được! (Hiện tại bạn mới chọn ${validPairsCount}/3 cặp)`);
+              alert(`Yêu cầu phải chọn đủ ${requiredCount} cặp Perfect Duo mới qua được! (Hiện tại bạn mới chọn ${validPairsCount}/${requiredCount} cặp)`);
               return;
             }
             soundFx.playSelect();
             onNext();
           }}
-          className={`px-5 py-2 sm:px-8 sm:py-2.5 min-w-[80px] sm:min-w-[120px] rounded-full border-2 border-white/90 font-serif-display text-sm sm:text-lg transition-all shadow-[0_4px_20px_rgba(0,0,0,0.6)] cursor-pointer ${isComplete
+          className={`px-6 py-2 sm:px-9 sm:py-2.5 min-w-[95px] sm:min-w-[130px] rounded-full border-2 border-white/90 font-serif-display text-base sm:text-xl transition-all shadow-[0_4px_20px_rgba(0,0,0,0.6)] cursor-pointer ${isComplete
               ? 'bg-white/90 hover:bg-white text-gray-900 font-medium hover:scale-105'
               : 'bg-white/40 text-gray-800 opacity-60'
             }`}
         >
-          Next ({validPairsCount}/3 cặp)
+          Next ({validPairsCount}/{requiredCount} cặp)
         </button>
       </div>
 

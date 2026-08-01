@@ -1,6 +1,7 @@
 import React from 'react';
 import { ScreenStep, VotingState } from '../types';
 import { soundFx } from '../utils/soundEffects';
+import { activeRoundConfig } from '../config/roundConfig';
 import {
   Volume2,
   VolumeX,
@@ -92,12 +93,13 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   // Count votes cast
+  const requiredCount = activeRoundConfig.requiredVotesPerCategory;
   const votesCount = [
     Boolean(votingState.selectedTeam),
-    Array.isArray(votingState.selectedBestMember) && votingState.selectedBestMember.length === 3,
-    Array.isArray(votingState.selectedBestEvent) && votingState.selectedBestEvent.length === 3,
-    Array.isArray(votingState.selectedRookie) && votingState.selectedRookie.length === 3,
-    Array.isArray(votingState.selectedDuo) && votingState.selectedDuo.length === 3
+    Array.isArray(votingState.selectedBestMember) && votingState.selectedBestMember.length === requiredCount,
+    Array.isArray(votingState.selectedBestEvent) && votingState.selectedBestEvent.length === requiredCount,
+    Array.isArray(votingState.selectedRookie) && votingState.selectedRookie.length === requiredCount,
+    Array.isArray(votingState.selectedDuo) && votingState.selectedDuo.length === requiredCount
   ].filter(Boolean).length;
 
   return (
@@ -215,17 +217,19 @@ export const Header: React.FC<HeaderProps> = ({
           )}
 
           {/* Live Results Leaderboard Button */}
-          <button
-            onClick={() => {
-              soundFx.playClick();
-              onOpenAdminLeaderboard();
-            }}
-            className="px-3 py-1.5 rounded-full bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 text-amber-200 text-xs font-sans-clean font-medium flex items-center space-x-2 shadow-md backdrop-blur-md transition-all duration-200 shrink-0"
-            title="View Live Leaderboard"
-          >
-            <BarChart2 className="w-4 h-4 text-amber-300 shrink-0" />
-            <span>Live Stats</span>
-          </button>
+          {activeRoundConfig.showLiveStats && (
+            <button
+              onClick={() => {
+                soundFx.playClick();
+                onOpenAdminLeaderboard();
+              }}
+              className="px-3 py-1.5 rounded-full bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 text-amber-200 text-xs font-sans-clean font-medium flex items-center space-x-2 shadow-md backdrop-blur-md transition-all duration-200 shrink-0"
+              title="View Live Leaderboard"
+            >
+              <BarChart2 className="w-4 h-4 text-amber-300 shrink-0" />
+              <span>Live Stats</span>
+            </button>
+          )}
 
           {/* Google Auth / Profile Card */}
           {!votingState.userName ? (
@@ -452,20 +456,22 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
 
             {/* Live Stats Leaderboard */}
-            <button
-              onClick={() => {
-                soundFx.playClick();
-                onOpenAdminLeaderboard();
-                setIsMobileMenuOpen(false);
-              }}
-              className="w-full p-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-400/40 text-amber-200 flex items-center justify-between text-xs font-semibold transition-all shadow-sm cursor-pointer"
-            >
-              <div className="flex items-center space-x-2.5">
-                <BarChart2 className="w-4 h-4 text-amber-300" />
-                <span>Bảng xếp hạng Trực tiếp</span>
-              </div>
-              <ChevronRight className="w-4 h-4 text-amber-400/60" />
-            </button>
+            {activeRoundConfig.showLiveStats && (
+              <button
+                onClick={() => {
+                  soundFx.playClick();
+                  onOpenAdminLeaderboard();
+                  setIsMobileMenuOpen(false);
+                }}
+                className="w-full p-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-400/40 text-amber-200 flex items-center justify-between text-xs font-semibold transition-all shadow-sm cursor-pointer"
+              >
+                <div className="flex items-center space-x-2.5">
+                  <BarChart2 className="w-4 h-4 text-amber-300" />
+                  <span>Bảng xếp hạng Trực tiếp</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-amber-400/60" />
+              </button>
+            )}
           </div>
 
           {/* Sound Controls Header & Buttons */}
