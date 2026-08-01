@@ -4,7 +4,7 @@ import html2canvas from 'html2canvas';
 import { VotingState, ScreenStep } from '../../types';
 import { soundFx } from '../../utils/soundEffects';
 import { ButterflyParticle } from '../ButterflyParticle';
-import { Check, Sparkles, Award, RotateCcw, Share2, Printer, Vote, Download, Mail, ChevronLeft } from 'lucide-react';
+import { Check, Sparkles, Award, RotateCcw, Share2, Printer, Vote, Download, Mail, ChevronLeft, X } from 'lucide-react';
 import { sendBallotEmailAuto } from '../../utils/emailService';
 import {
   getResolvedTeamName,
@@ -155,7 +155,7 @@ async function generateFallbackCanvasReceipt(votingState: VotingState): Promise<
   ctx.textAlign = 'center';
   ctx.font = '14px sans-serif';
   ctx.fillStyle = '#9ca3af';
-  const submittedStr = votingState.submittedAt ? new Date(votingState.submittedAt).toLocaleString('vi-VN') : new Date().toLocaleString('vi-VN');
+  const submittedStr = votingState.submittedAt ? new Date(votingState.submittedAt).toLocaleString('en-US') : new Date().toLocaleString('en-US');
   ctx.fillText(`Submitted on: ${submittedStr}`, canvas.width / 2, 840);
 
   ctx.font = 'italic 15px Georgia, serif';
@@ -199,7 +199,7 @@ export const SubmissionScreen: React.FC<SubmissionScreenProps> = ({
   const handleDownloadPNG = async () => {
     soundFx.playClick();
     setIsDownloading(true);
-    setEmailNotice('⌛ Đang tạo và tải xuống ảnh PNG...');
+    setEmailNotice('⌛ Generating and downloading PNG receipt...');
 
     try {
       if (receiptRef.current) {
@@ -212,7 +212,7 @@ export const SubmissionScreen: React.FC<SubmissionScreenProps> = ({
         });
         const dataUrl = canvas.toDataURL('image/png');
         triggerDownload(dataUrl);
-        setEmailNotice('✨ Đã tải xuống ảnh Ballot Receipt PNG thành công!');
+        setEmailNotice('✨ Ballot receipt PNG downloaded successfully!');
       } else {
         throw new Error('receiptRef element null');
       }
@@ -221,10 +221,10 @@ export const SubmissionScreen: React.FC<SubmissionScreenProps> = ({
       try {
         const fallbackDataUrl = await generateFallbackCanvasReceipt(votingState);
         triggerDownload(fallbackDataUrl);
-        setEmailNotice('✨ Đã tải xuống ảnh Ballot Receipt PNG thành công!');
+        setEmailNotice('✨ Ballot receipt PNG downloaded successfully!');
       } catch (fallbackErr) {
         console.error('Fallback canvas download failed:', fallbackErr);
-        setEmailNotice('❌ Thao tác tải PNG thất bại. Vui lòng thử lại!');
+        setEmailNotice('❌ Failed to download PNG. Please try again!');
       }
     } finally {
       setIsDownloading(false);
@@ -238,9 +238,9 @@ export const SubmissionScreen: React.FC<SubmissionScreenProps> = ({
     let targetEmail = votingState.userEmail;
 
     if (!targetEmail) {
-      const input = prompt('Vui lòng nhập Địa chỉ Gmail / Email của bạn để tự động nhận phiếu:');
+      const input = prompt('Please enter your email address to receive your ballot receipt:');
       if (!input || !input.trim()) {
-        setEmailNotice('⚠️ Chưa có địa chỉ Email để tự động gửi.');
+        setEmailNotice('⚠️ Email address is required.');
         setTimeout(() => setEmailNotice(null), 4000);
         return;
       }
@@ -249,7 +249,7 @@ export const SubmissionScreen: React.FC<SubmissionScreenProps> = ({
     }
 
     setIsSendingEmail(true);
-    setEmailNotice(`⌛ Đang tự động gửi Email xác nhận tới ${targetEmail}...`);
+    setEmailNotice(`⌛ Sending confirmation email to ${targetEmail}...`);
 
     try {
       const res = await sendBallotEmailAuto({
@@ -259,11 +259,11 @@ export const SubmissionScreen: React.FC<SubmissionScreenProps> = ({
       if (res.message) {
         setEmailNotice(res.message);
       } else {
-        setEmailNotice(`✉️ Đã tự động gửi Email xác nhận tới ${targetEmail}!`);
+        setEmailNotice(`✉️ Confirmation email sent to ${targetEmail}!`);
       }
     } catch (err) {
       console.error('Auto send email error:', err);
-      setEmailNotice(`✉️ Đã gửi tín hiệu tự động tới Email ${targetEmail}!`);
+      setEmailNotice(`✉️ Confirmation email sent to ${targetEmail}!`);
     } finally {
       setIsSendingEmail(false);
       setTimeout(() => setEmailNotice(null), 6000);
@@ -295,7 +295,7 @@ export const SubmissionScreen: React.FC<SubmissionScreenProps> = ({
         setEmailNotice(res.message);
       }
     } else {
-      setEmailNotice('💡 Mẹo: Đăng nhập Google để tự động nhận Email xác nhận!');
+      setEmailNotice('💡 Tip: Sign in with Google to automatically receive confirmation emails!');
     }
   };
 
@@ -433,12 +433,25 @@ export const SubmissionScreen: React.FC<SubmissionScreenProps> = ({
 
       {/* Ballot Submission Receipt Modal */}
       {showReceiptModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
-          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl custom-scrollbar">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in animate-duration-300">
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl custom-scrollbar shadow-[0_25px_60px_rgba(0,0,0,0.6)]">
             <div
               ref={receiptRef}
-              className="w-full border-2 border-amber-400/80 rounded-3xl p-6 sm:p-8 shadow-[0_0_60px_rgba(251,191,36,0.45)] text-white text-left relative overflow-hidden backdrop-blur-2xl bg-[#101b13]"
+              className="w-full border border-white/20 rounded-3xl p-6 sm:p-8 text-white text-left relative overflow-hidden backdrop-blur-2xl bg-[#101b13]"
             >
+              {/* Close Button at top right */}
+              <button
+                type="button"
+                data-html2canvas-ignore="true"
+                onClick={() => {
+                  soundFx.playClick();
+                  setShowReceiptModal(false);
+                }}
+                className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white/70 hover:text-white transition-colors border border-white/10 z-30 cursor-pointer"
+                title="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
               {/* Site Background Image (Explicit img tag for 100% html2canvas compatibility) */}
               <img
                 src="/assets/bg.webp"
@@ -512,50 +525,26 @@ export const SubmissionScreen: React.FC<SubmissionScreenProps> = ({
                 </div>
 
                 {/* Modal Actions - Ignored during HTML2Canvas PNG capture */}
-                <div data-html2canvas-ignore="true" className="space-y-3 pt-2">
-                  <button
-                    onClick={() => {
-                      soundFx.playClick();
-                      setShowReceiptModal(false);
-                      onOpenLeaderboard();
-                    }}
-                    className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 text-black font-serif-display font-black text-sm shadow-lg hover:scale-102 transition-all flex items-center justify-center space-x-2 cursor-pointer"
-                  >
-                    <Vote className="w-4 h-4" />
-                    <span>View Live Leaderboard</span>
-                  </button>
-
-                  <div className="grid grid-cols-3 gap-2">
+                <div data-html2canvas-ignore="true" className="space-y-3 pt-4">
+                  <div className="grid grid-cols-2 gap-3">
                     <button
                       onClick={handleDownloadPNG}
                       disabled={isDownloading}
-                      className="py-2.5 px-2 rounded-xl bg-amber-400/20 hover:bg-amber-400/35 text-amber-100 border border-amber-400/50 font-sans-clean text-xs font-bold flex items-center justify-center space-x-1 transition-colors cursor-pointer disabled:opacity-50 shadow-sm"
-                      title="Tải xuống hình ảnh PNG phiếu bình chọn"
+                      className="py-3 px-4 rounded-xl bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 hover:from-amber-300 hover:to-amber-500 text-black font-serif-display font-extrabold text-xs sm:text-sm flex items-center justify-center space-x-2 transition-all hover:scale-[1.02] active:scale-98 cursor-pointer disabled:opacity-50 shadow-[0_4px_15px_rgba(251,191,36,0.3)]"
+                      title="Download ballot receipt as PNG image"
                     >
-                      <Download className="w-4 h-4 text-amber-300 shrink-0" />
-                      <span>{isDownloading ? 'Đang tải...' : 'Tải PNG'}</span>
+                      <Download className="w-4 h-4 text-black shrink-0" />
+                      <span>{isDownloading ? 'Downloading...' : 'Download PNG'}</span>
                     </button>
 
                     <button
                       onClick={handleSendEmail}
                       disabled={isSendingEmail}
-                      className="py-2.5 px-2 rounded-xl bg-amber-400/20 hover:bg-amber-400/35 text-amber-100 border border-amber-400/50 font-sans-clean text-xs font-bold flex items-center justify-center space-x-1 transition-colors cursor-pointer disabled:opacity-50 shadow-sm"
-                      title="Tự động gửi Email xác nhận phiếu bình chọn"
+                      className="py-3 px-4 rounded-xl bg-white/10 hover:bg-white/15 text-white border border-white/20 hover:border-white/35 font-serif-display font-extrabold text-xs sm:text-sm flex items-center justify-center space-x-2 transition-all hover:scale-[1.02] active:scale-98 cursor-pointer disabled:opacity-50 shadow-sm"
+                      title="Send confirmation email"
                     >
                       <Mail className="w-4 h-4 text-amber-300 shrink-0" />
-                      <span>{isSendingEmail ? 'Đang gửi...' : 'Gửi Email Auto'}</span>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        soundFx.playClick();
-                        setShowReceiptModal(false);
-                        onReset();
-                      }}
-                      className="py-2.5 px-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-sans-clean text-xs font-bold flex items-center justify-center space-x-1 transition-colors cursor-pointer border border-white/20"
-                    >
-                      <RotateCcw className="w-4 h-4 text-amber-300 shrink-0" />
-                      <span>Revote</span>
+                      <span>{isSendingEmail ? 'Sending...' : 'Email Receipt'}</span>
                     </button>
                   </div>
 
@@ -564,6 +553,17 @@ export const SubmissionScreen: React.FC<SubmissionScreenProps> = ({
                       {emailNotice}
                     </div>
                   )}
+
+                  {/* Secondary Close Button for better UX */}
+                  <button
+                    onClick={() => {
+                      soundFx.playClick();
+                      setShowReceiptModal(false);
+                    }}
+                    className="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/80 hover:text-white font-serif-display font-medium text-xs border border-white/10 transition-colors cursor-pointer"
+                  >
+                    Close Receipt
+                  </button>
                 </div>
               </div>
             </div>

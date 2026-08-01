@@ -3,6 +3,7 @@ import { VotingState, ScreenStep } from '../types';
 import { X, CheckCircle2, AlertCircle, Edit2 } from 'lucide-react';
 import { soundFx } from '../utils/soundEffects';
 import {
+  getResolvedTeamName,
   getResolvedBestMemberName,
   getResolvedEventName,
   getResolvedRookieName,
@@ -30,6 +31,12 @@ export const BallotDrawer: React.FC<BallotDrawerProps> = ({
       value: votingState.userName || 'Not entered yet',
       step: 'name_input' as ScreenStep,
       filled: Boolean(votingState.userName)
+    },
+    {
+      title: 'Voter Team',
+      value: getResolvedTeamName(votingState.selectedTeam, 'Incomplete (Select Team)'),
+      step: 'team_selection' as ScreenStep,
+      filled: Boolean(votingState.selectedTeam)
     },
     {
       title: 'Best Member',
@@ -88,12 +95,12 @@ export const BallotDrawer: React.FC<BallotDrawerProps> = ({
           <div className="my-6 p-4 rounded-xl bg-emerald-950/50 border border-emerald-500/20">
             <div className="flex justify-between text-xs font-sans-clean font-semibold mb-2">
               <span className="text-amber-200">Ballot Completion</span>
-              <span className="text-emerald-300">{Math.round((totalFilled / 6) * 100)}%</span>
+              <span className="text-emerald-300">{Math.round((totalFilled / categories.length) * 100)}%</span>
             </div>
             <div className="w-full h-2.5 bg-black/40 rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-emerald-400 via-amber-300 to-amber-400 transition-all duration-500 rounded-full"
-                style={{ width: `${(totalFilled / 6) * 100}%` }}
+                style={{ width: `${(totalFilled / categories.length) * 100}%` }}
               />
             </div>
           </div>
@@ -145,7 +152,7 @@ export const BallotDrawer: React.FC<BallotDrawerProps> = ({
           <button
             onClick={() => {
               soundFx.playClick();
-              if (totalFilled === 6) {
+              if (totalFilled === categories.length) {
                 onNavigate('submission');
               } else {
                 // Navigate to next unfulfilled step
@@ -156,7 +163,7 @@ export const BallotDrawer: React.FC<BallotDrawerProps> = ({
             }}
             className="w-full py-3 px-4 rounded-xl font-serif-display font-bold text-sm bg-gradient-to-r from-amber-400 to-amber-500 text-black shadow-lg hover:from-amber-300 hover:to-amber-400 transition-all duration-200 text-center"
           >
-            {totalFilled === 6 ? 'Proceed to Final Submission 🚀' : 'Continue Voting'}
+            {totalFilled === categories.length ? 'Proceed to Final Submission 🚀' : 'Continue Voting'}
           </button>
         </div>
       </div>

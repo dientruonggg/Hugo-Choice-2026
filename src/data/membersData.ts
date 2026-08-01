@@ -224,6 +224,7 @@ const rawNifflerMembers = [
   'Nguyễn Anh Bão'
 ];
 
+
 export const ALL_MEMBERS: ClubMember[] = [
   ...rawBananaMembers.map((name, idx) => ({
     id: `bnn-${idx + 1}`,

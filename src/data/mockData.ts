@@ -8,7 +8,7 @@ export const TEAMS: TeamInfo[] = [
     image: '/assets/teams/PRs.png',
     activeImage: '/assets/teams/PRs2.png',
     heroLogo: '/team_logo/POWER RANGERS.png',
-    description: 'Dynamic & Heroic - Unstoppable energy and teamwork in every challenge',
+    description: 'Justice for all',
     color: '#ef4444',
     glow: 'rgba(239, 68, 68, 0.6)'
   },
@@ -19,7 +19,7 @@ export const TEAMS: TeamInfo[] = [
     image: '/assets/teams/HC.png',
     activeImage: '/assets/teams/HC2.png',
     heroLogo: '/team_logo/Heroes.png',
-    description: 'Brave & Dedicated - Protecting excellence and inspiring greatness',
+    description: 'Stronger Together',
     color: '#3b82f6',
     glow: 'rgba(59, 130, 246, 0.6)'
   },
@@ -30,7 +30,7 @@ export const TEAMS: TeamInfo[] = [
     image: '/assets/teams/BNN.png',
     activeImage: '/assets/teams/BNN2.png',
     heroLogo: '/team_logo/BANANA.png',
-    description: 'Joyful & Vibrant - Brightening the club with humor and passion',
+    description: 'We come in bunch',
     color: '#eab308',
     glow: 'rgba(234, 179, 8, 0.6)'
   },
@@ -41,9 +41,9 @@ export const TEAMS: TeamInfo[] = [
     image: '/assets/teams/Niff.png',
     activeImage: '/assets/teams/Niff2.png',
     heroLogo: '/team_logo/NIFFLER.png',
-    description: 'Clever & Curious - Always hunting for hidden treasures and success',
-    color: '#10b981',
-    glow: 'rgba(16, 185, 129, 0.6)'
+    description: 'Friends forever',
+    color: '#a855f7',
+    glow: 'rgba(168, 85, 247, 0.6)'
   }
 ];
 
@@ -111,7 +111,12 @@ export const BEST_EVENTS: EventOption[] = [
 
 export const INITIAL_LIVE_RESULTS: LiveResultsData = {
   totalSubmissions: 0,
-  teams: {},
+  teams: {
+    prs: 0,
+    hc: 0,
+    bnn: 0,
+    niff: 0
+  },
   bestMember: {},
   bestEvent: {},
   rookie: {},

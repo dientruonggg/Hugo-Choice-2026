@@ -365,7 +365,7 @@ export default function App() {
                   userName: name
                 }));
               }
-              navigateTo('best_member');
+              navigateTo('team_selection');
             }}
           />
         )}
@@ -386,7 +386,7 @@ export default function App() {
             userTeam={votingState.selectedTeam}
             userName={votingState.userName}
             onSelectCandidates={(ids) => setVotingState(prev => ({ ...prev, selectedBestMember: ids }))}
-            onBack={() => navigateTo('name_input')}
+            onBack={() => navigateTo('team_selection')}
             onNext={() => navigateTo('best_event')}
             onNavigate={navigateTo}
           />

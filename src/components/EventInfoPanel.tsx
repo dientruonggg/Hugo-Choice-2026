@@ -16,9 +16,8 @@ export const EventInfoPanel: React.FC<EventInfoPanelProps> = ({
   return (
     <div
       ref={infoRef}
-      className={`w-full overflow-hidden transition-all duration-500 ease-in-out scroll-mt-20 ${
-        isOpen ? 'max-h-[1600px] opacity-100 mt-2 sm:mt-4' : 'max-h-0 opacity-0 mt-0 pointer-events-none'
-      }`}
+      className={`w-full overflow-hidden transition-all duration-500 ease-in-out scroll-mt-20 ${isOpen ? 'max-h-[1600px] opacity-100 mt-2 sm:mt-4' : 'max-h-0 opacity-0 mt-0 pointer-events-none'
+        }`}
     >
       <div className="relative rounded-3xl bg-white/15 backdrop-blur-2xl border border-white/35 p-5 sm:p-8 shadow-[0_15px_40px_rgba(0,0,0,0.3)] text-white text-left space-y-5 sm:space-y-6">
         {/* Header info note */}
@@ -68,7 +67,7 @@ export const EventInfoPanel: React.FC<EventInfoPanelProps> = ({
             <div className="p-3.5 sm:p-4 rounded-xl bg-white/10 backdrop-blur-md border border-white/25">
               <h5 className="font-extrabold text-amber-200 text-sm sm:text-lg tracking-wide drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">Rookie Of The Year</h5>
               <p className="text-xs sm:text-sm text-white font-medium mt-1 leading-relaxed drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
-                The single most outstanding newcomer who truly shined this term. <span className="text-amber-100/90 font-normal">(Note: Must be a member who joined from October 2025; this is a club-wide vote).</span>
+                The single most outstanding newcomer who truly shined this term (10/2025 - 8/2026). <span className="text-amber-100/90 font-normal">(Note: Must be a member who joined from October 2025; this is a club-wide vote).</span>
               </p>
             </div>
 

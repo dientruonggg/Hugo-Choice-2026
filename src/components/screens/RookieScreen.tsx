@@ -75,7 +75,7 @@ export const RookieScreen: React.FC<RookieScreenProps> = ({
           The Rookie
         </h2>
         <p className="font-sans-clean text-xs sm:text-sm text-amber-200 font-bold mt-1 leading-relaxed drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
-          Honoring outstanding newcomers joined this term. Exactly 3 selections required.
+          Honoring outstanding newcomers joined this term (10/2025 - 8/2026). Exactly 3 selections required.
         </p>
       </div>
 
