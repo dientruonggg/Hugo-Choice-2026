@@ -7,6 +7,8 @@ import { PaginationFooter } from '../PaginationFooter';
 import { SelectedTray } from '../SelectedTray';
 import { requestAddMember } from '../../utils/approvalStorage';
 import { toast } from '../../utils/toast';
+import { activeRoundConfig, CURRENT_ROUND } from '../../config/roundConfig';
+import { TOP_5_ROOKIES } from '../../data/round2Data';
 
 interface RookieScreenProps {
   selectedRookieIds: string[];
@@ -38,19 +40,22 @@ export const RookieScreen: React.FC<RookieScreenProps> = ({
   const [teamFilter, setTeamFilter] = useState<HugoTeam | 'all'>('all');
 
   const selectedList = Array.isArray(selectedRookieIds) ? selectedRookieIds : (selectedRookieIds ? [selectedRookieIds] : []);
+  const requiredCount = activeRoundConfig.requiredVotesPerCategory;
+  const isRound2 = CURRENT_ROUND === 2;
+
   const allMembers = getAllRookies();
   const filteredList = filterRookies(searchQuery, teamFilter);
 
-  const handleSelectMember = (member: ClubMember) => {
+  const handleSelectMember = (id: string, name: string) => {
     soundFx.playSelect();
-    if (selectedList.includes(member.id) || selectedList.includes(member.name)) {
-      const nextList = selectedList.filter(id => id !== member.id && id !== member.name);
+    if (selectedList.includes(id) || selectedList.includes(name)) {
+      const nextList = selectedList.filter(s => s !== id && s !== name);
       onSelectRookies(nextList);
     } else {
-      if (selectedList.length >= 3) {
+      if (selectedList.length >= requiredCount) {
         return;
       }
-      onSelectRookies([...selectedList, member.id]);
+      onSelectRookies([...selectedList, id]);
     }
   };
 
@@ -61,7 +66,7 @@ export const RookieScreen: React.FC<RookieScreenProps> = ({
     setSearchQuery('');
   };
 
-  const isComplete = selectedList.length === 3;
+  const isComplete = selectedList.length === requiredCount;
   const isSearchEmptyAndNoCustom = searchQuery.trim() && !filteredList.some(m => m.name.toLowerCase() === searchQuery.trim().toLowerCase());
 
   return (
@@ -75,119 +80,175 @@ export const RookieScreen: React.FC<RookieScreenProps> = ({
           The Rookie
         </h2>
         <p className="font-sans-clean text-xs sm:text-sm text-amber-200 font-bold mt-1 leading-relaxed drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
-          Honoring outstanding newcomers joined this term (10/2025 - 8/2026). Exactly 3 selections required.
+          {isRound2
+            ? `Chọn ${requiredCount} tân binh từ Top 5 để bình chọn chính thức.`
+            : `Honoring outstanding newcomers joined this term (10/2025 - 8/2026). Exactly ${requiredCount} selections required.`
+          }
         </p>
       </div>
 
       {/* Main Container */}
       <div className="relative flex-1 flex flex-col min-h-0 max-w-4xl mx-auto w-full py-1">
-        {/* Full-width Standalone Search Bar */}
-        <div className="relative w-full mb-3 shrink-0">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Type rookie name to search..."
-            className="w-full py-3.5 pl-12 pr-10 rounded-2xl bg-black/85 text-white placeholder-slate-400 font-sans-clean text-sm sm:text-base font-bold focus:outline-none focus:ring-2 focus:ring-amber-300 border border-amber-300/50 shadow-2xl backdrop-blur-xl"
-          />
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-amber-300 pointer-events-none" />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs font-bold bg-white/10 rounded-full w-5 h-5 flex items-center justify-center"
-            >
-              ×
-            </button>
-          )}
-        </div>
 
-        {/* Team Filter Tabs */}
-        <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 mb-3.5 shrink-0">
-          {(['all', 'prs', 'hc', 'bnn', 'niff'] as const).map((filter) => {
-            const isActive = teamFilter === filter;
-            const label = filter === 'all' ? 'All Teams' : TEAM_BADGES[filter].name;
-
-            return (
-              <button
-                key={filter}
-                type="button"
-                onClick={() => {
-                  soundFx.playClick();
-                  setTeamFilter(filter);
-                }}
-                className={`px-3 py-1.5 rounded-full text-xs font-bold font-serif-display border transition-all cursor-pointer select-none ${
-                  isActive
-                    ? 'bg-amber-300 border-amber-300 text-slate-950 font-black shadow-md scale-102'
-                    : 'bg-black/40 hover:bg-black/60 border-white/15 text-slate-300'
-                }`}
-              >
-                {label}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Member Search Results Grid */}
-        <div className="relative shrink-0 max-h-[270px] overflow-y-auto pr-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 items-start content-start custom-scrollbar mb-0">
-          {filteredList.length > 0 ? (
-            filteredList.map((member) => {
-              const isSelected = selectedList.includes(member.id) || selectedList.includes(member.name);
-              const badge = TEAM_BADGES[member.teamId];
+        {/* ===== ROUND 2: Top 5 Rookie Cards ===== */}
+        {isRound2 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
+            {TOP_5_ROOKIES.map((candidate) => {
+              const isSelected = selectedList.includes(candidate.id) || selectedList.includes(candidate.name);
+              const badge = candidate.teamId ? TEAM_BADGES[candidate.teamId] : null;
 
               return (
                 <button
-                  key={member.id}
-                  onClick={() => handleSelectMember(member)}
-                  className={`p-3.5 rounded-xl font-sans-clean transition-all duration-200 flex items-center justify-between cursor-pointer border text-left ${isSelected
-                    ? 'bg-amber-400 border-amber-300 text-slate-950 font-black shadow-[0_0_20px_rgba(251,191,36,0.8)] scale-[1.02]'
-                    : 'bg-black/75 hover:bg-black/90 border-amber-300/40 text-white hover:border-amber-300/80 shadow-lg'
+                  key={candidate.id}
+                  onClick={() => handleSelectMember(candidate.id, candidate.name)}
+                  className={`relative p-4 rounded-2xl font-sans-clean transition-all duration-300 flex flex-col items-center cursor-pointer border text-center overflow-hidden ${isSelected
+                    ? 'bg-amber-400 border-amber-300 text-slate-950 font-black shadow-[0_0_25px_rgba(251,191,36,0.8)] scale-[1.03]'
+                    : 'bg-black/80 hover:bg-black/95 border-amber-300/40 text-white hover:border-amber-300/80 shadow-lg'
                     }`}
                 >
-                  <div className="flex items-center gap-2.5 overflow-hidden min-w-0">
-                    <UserCheck className={`w-4 h-4 sm:w-5 sm:h-5 shrink-0 ${isSelected ? 'text-slate-950' : 'text-amber-300'}`} />
-                    <div className="truncate min-w-0">
-                      <div className="text-xs sm:text-sm font-bold truncate leading-snug">{member.name}</div>
-                      <div className={`text-[0.65rem] sm:text-xs inline-flex items-center gap-1 ${isSelected ? 'text-slate-900 font-extrabold' : badge.text}`}>
-                        <img src={badge.image} alt={badge.name} className="w-3.5 h-3.5 object-contain rounded-full shrink-0" />
-                        <span className="truncate">{badge.shortName}</span>
-                      </div>
-                    </div>
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-3 border-amber-300/60 mb-3 shadow-xl">
+                    <img
+                      src={candidate.image}
+                      alt={candidate.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => { (e.target as HTMLImageElement).src = '/assets/logo.webp'; }}
+                    />
                   </div>
+                  <div className="text-sm sm:text-base font-black truncate w-full leading-snug">{candidate.name}</div>
+                  {badge && (
+                    <div className={`text-[0.65rem] sm:text-xs inline-flex items-center gap-1 mt-1 ${isSelected ? 'text-slate-900 font-extrabold' : badge.text}`}>
+                      <img src={badge.image} alt={badge.name} className="w-3.5 h-3.5 object-contain rounded-full shrink-0" />
+                      <span>{badge.shortName}</span>
+                    </div>
+                  )}
+                  {candidate.description && (
+                    <p className={`text-[0.65rem] mt-2 line-clamp-2 ${isSelected ? 'text-slate-800' : 'text-slate-400'}`}>{candidate.description}</p>
+                  )}
                   {isSelected && (
-                    <span className="w-5 h-5 rounded-full bg-slate-950 text-amber-300 flex items-center justify-center shrink-0 ml-1 font-black text-xs">
+                    <span className="absolute top-2 right-2 w-6 h-6 rounded-full bg-slate-950 text-amber-300 flex items-center justify-center font-black text-xs shadow-md">
                       ✓
                     </span>
                   )}
                 </button>
               );
-            })
-          ) : isSearchEmptyAndNoCustom ? (
-            <button
-              type="button"
-              onClick={handleAddCustom}
-              className="col-span-full py-8 px-4 text-center font-bold bg-amber-400/20 hover:bg-amber-400/30 border-2 border-dashed border-amber-300 rounded-xl text-amber-200 text-sm flex flex-col items-center justify-center gap-2 transition-all cursor-pointer shadow-lg active:scale-98"
-            >
-              <UserPlus className="w-8 h-8 text-amber-300 animate-bounce" />
-              <span>Add rookie "{searchQuery.trim()}" to database and select</span>
-            </button>
-          ) : (
-            <div className="col-span-full py-10 text-center text-amber-200 font-bold bg-black/60 rounded-xl border border-amber-300/30 text-xs sm:text-sm">
-              No matching rookie found.
+            })}
+          </div>
+        ) : (
+          /* ===== ROUND 1: Search + Full Rookie List ===== */
+          <>
+            {/* Full-width Standalone Search Bar */}
+            <div className="relative w-full mb-3 shrink-0">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Type rookie name to search..."
+                className="w-full py-3.5 pl-12 pr-10 rounded-2xl bg-black/85 text-white placeholder-slate-400 font-sans-clean text-sm sm:text-base font-bold focus:outline-none focus:ring-2 focus:ring-amber-300 border border-amber-300/50 shadow-2xl backdrop-blur-xl"
+              />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-amber-300 pointer-events-none" />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs font-bold bg-white/10 rounded-full w-5 h-5 flex items-center justify-center"
+                >
+                  ×
+                </button>
+              )}
             </div>
-          )}
-        </div>
 
-        {/* Selected Candidates Placement Bar at Bottom (Reusable Light Glass Tray) */}
+            {/* Team Filter Tabs */}
+            <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 mb-3.5 shrink-0">
+              {(['all', 'prs', 'hc', 'bnn', 'niff'] as const).map((filter) => {
+                const isActive = teamFilter === filter;
+                const label = filter === 'all' ? 'All Teams' : TEAM_BADGES[filter].name;
+
+                return (
+                  <button
+                    key={filter}
+                    type="button"
+                    onClick={() => {
+                      soundFx.playClick();
+                      setTeamFilter(filter);
+                    }}
+                    className={`px-3 py-1.5 rounded-full text-xs font-bold font-serif-display border transition-all cursor-pointer select-none ${
+                      isActive
+                        ? 'bg-amber-300 border-amber-300 text-slate-950 font-black shadow-md scale-102'
+                        : 'bg-black/40 hover:bg-black/60 border-white/15 text-slate-300'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Member Search Results Grid */}
+            <div className="relative shrink-0 max-h-[270px] overflow-y-auto pr-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 items-start content-start custom-scrollbar mb-0">
+              {filteredList.length > 0 ? (
+                filteredList.map((member) => {
+                  const isSelected = selectedList.includes(member.id) || selectedList.includes(member.name);
+                  const badge = TEAM_BADGES[member.teamId];
+
+                  return (
+                    <button
+                      key={member.id}
+                      onClick={() => handleSelectMember(member.id, member.name)}
+                      className={`p-3.5 rounded-xl font-sans-clean transition-all duration-200 flex items-center justify-between cursor-pointer border text-left ${isSelected
+                        ? 'bg-amber-400 border-amber-300 text-slate-950 font-black shadow-[0_0_20px_rgba(251,191,36,0.8)] scale-[1.02]'
+                        : 'bg-black/75 hover:bg-black/90 border-amber-300/40 text-white hover:border-amber-300/80 shadow-lg'
+                        }`}
+                    >
+                      <div className="flex items-center gap-2.5 overflow-hidden min-w-0">
+                        <UserCheck className={`w-4 h-4 sm:w-5 sm:h-5 shrink-0 ${isSelected ? 'text-slate-950' : 'text-amber-300'}`} />
+                        <div className="truncate min-w-0">
+                          <div className="text-xs sm:text-sm font-bold truncate leading-snug">{member.name}</div>
+                          <div className={`text-[0.65rem] sm:text-xs inline-flex items-center gap-1 ${isSelected ? 'text-slate-900 font-extrabold' : badge.text}`}>
+                            <img src={badge.image} alt={badge.name} className="w-3.5 h-3.5 object-contain rounded-full shrink-0" />
+                            <span className="truncate">{badge.shortName}</span>
+                          </div>
+                        </div>
+                      </div>
+                      {isSelected && (
+                        <span className="w-5 h-5 rounded-full bg-slate-950 text-amber-300 flex items-center justify-center shrink-0 ml-1 font-black text-xs">
+                          ✓
+                        </span>
+                      )}
+                    </button>
+                  );
+                })
+              ) : isSearchEmptyAndNoCustom ? (
+                <button
+                  type="button"
+                  onClick={handleAddCustom}
+                  className="col-span-full py-8 px-4 text-center font-bold bg-amber-400/20 hover:bg-amber-400/30 border-2 border-dashed border-amber-300 rounded-xl text-amber-200 text-sm flex flex-col items-center justify-center gap-2 transition-all cursor-pointer shadow-lg active:scale-98"
+                >
+                  <UserPlus className="w-8 h-8 text-amber-300 animate-bounce" />
+                  <span>Add rookie "{searchQuery.trim()}" to database and select</span>
+                </button>
+              ) : (
+                <div className="col-span-full py-10 text-center text-amber-200 font-bold bg-black/60 rounded-xl border border-amber-300/30 text-xs sm:text-sm">
+                  No matching rookie found.
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* Selected Candidates Placement Bar at Bottom */}
         <SelectedTray
           title="Selected Rookies"
-          items={[0, 1, 2].map(idx => {
+          items={Array.from({ length: requiredCount }, (_, idx) => {
             const selectedId = selectedList[idx];
-            const memObj = selectedId ? allMembers.find(m => m.id === selectedId || m.name === selectedId) : null;
-            return memObj ? { id: memObj.id, name: memObj.name } : null;
+            if (!selectedId) return null;
+            if (isRound2) {
+              const t5 = TOP_5_ROOKIES.find(m => m.id === selectedId || m.name === selectedId);
+              if (t5) return { id: t5.id, name: t5.name };
+            }
+            const memObj = allMembers.find(m => m.id === selectedId || m.name === selectedId);
+            return memObj ? { id: memObj.id, name: memObj.name } : selectedId ? { id: selectedId, name: selectedId } : null;
           })}
           onRemove={(item) => {
-            const memObj = allMembers.find(m => m.id === item.id || m.name === item.name);
-            if (memObj) handleSelectMember(memObj);
+            handleSelectMember(item.id, item.name);
           }}
         />
       </div>
@@ -211,8 +272,8 @@ export const RookieScreen: React.FC<RookieScreenProps> = ({
         <button
           type="button"
           onClick={() => {
-            if (selectedList.length < 3) {
-              toast.warning(`Please select 3 rookies before proceeding (${selectedList.length}/3 selected)`);
+            if (selectedList.length < requiredCount) {
+              toast.warning(`Please select ${requiredCount} rookies before proceeding (${selectedList.length}/${requiredCount} selected)`);
               return;
             }
             soundFx.playSelect();
@@ -223,7 +284,7 @@ export const RookieScreen: React.FC<RookieScreenProps> = ({
             : 'bg-white/40 border-white/30 text-gray-800 opacity-60'
             }`}
         >
-          <span>Next ({selectedList.length}/3)</span>
+          <span>Next ({selectedList.length}/{requiredCount})</span>
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>

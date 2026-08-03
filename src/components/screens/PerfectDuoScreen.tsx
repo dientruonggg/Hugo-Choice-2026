@@ -7,6 +7,8 @@ import { PaginationFooter } from '../PaginationFooter';
 import { SelectedTray } from '../SelectedTray';
 import { requestAddMember } from '../../utils/approvalStorage';
 import { toast } from '../../utils/toast';
+import { activeRoundConfig, CURRENT_ROUND } from '../../config/roundConfig';
+import { TOP_5_PERFECT_DUOS } from '../../data/round2Data';
 
 interface PerfectDuoScreenProps {
   selectedDuoIds: string[];
@@ -141,15 +143,14 @@ export const PerfectDuoScreen: React.FC<PerfectDuoScreenProps> = ({
 }) => {
   const initialList = Array.isArray(selectedDuoIds) ? selectedDuoIds : (selectedDuoIds ? [selectedDuoIds] : []);
   const allMembers = getAllMembers();
+  const requiredCount = activeRoundConfig.requiredVotesPerCategory;
+  const isRound2 = CURRENT_ROUND === 2;
 
+  // Round 1: pair builder state
   const [pairs, setPairs] = useState<Array<{ a: string; b: string }>>(() => {
-    const list: Array<{ a: string; b: string }> = [
-      { a: '', b: '' },
-      { a: '', b: '' },
-      { a: '', b: '' }
-    ];
+    const list: Array<{ a: string; b: string }> = Array.from({ length: requiredCount }, () => ({ a: '', b: '' }));
     initialList.forEach((str, idx) => {
-      if (idx < 3) {
+      if (idx < requiredCount) {
         const parts = str.split(/\s*&\s*/);
         list[idx] = { a: parts[0] || '', b: parts[1] || '' };
       }
@@ -159,6 +160,18 @@ export const PerfectDuoScreen: React.FC<PerfectDuoScreenProps> = ({
 
   const [activeSlot, setActiveSlot] = useState<number>(0);
 
+  // Round 2: simple selection from Top 5
+  const handleSelectDuoR2 = (id: string) => {
+    soundFx.playSelect();
+    if (initialList.includes(id)) {
+      onSelectDuos(initialList.filter(d => d !== id));
+    } else {
+      if (initialList.length >= requiredCount) return;
+      onSelectDuos([...initialList, id]);
+    }
+  };
+
+  // Round 1: pair builder handlers
   const handleSetPersonA = (m: ClubMember) => {
     const updated = [...pairs];
     updated[activeSlot] = { ...updated[activeSlot], a: m.id };
@@ -186,8 +199,8 @@ export const PerfectDuoScreen: React.FC<PerfectDuoScreenProps> = ({
     onSelectDuos(formatted);
   };
 
-  const validPairsCount = pairs.filter(p => p.a && p.b).length;
-  const isComplete = validPairsCount === 3;
+  const validPairsCount = isRound2 ? initialList.length : pairs.filter(p => p.a && p.b).length;
+  const isComplete = validPairsCount === requiredCount;
   const currentPair = pairs[activeSlot] || { a: '', b: '' };
 
   return (
@@ -201,48 +214,100 @@ export const PerfectDuoScreen: React.FC<PerfectDuoScreenProps> = ({
           The Perfect Duo
         </h2>
         <p className="font-sans-clean text-xs sm:text-sm text-amber-200 font-bold mt-1 leading-relaxed drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
-          Honoring seamless synergy and chemistry. Exactly 3 pairs required.
+          {isRound2
+            ? `Chọn ${requiredCount} cặp đôi từ Top 5 để bình chọn chính thức.`
+            : `Honoring seamless synergy and chemistry. Exactly ${requiredCount} pairs required.`
+          }
         </p>
       </div>
 
       {/* Main Container */}
       <div className="relative flex-1 flex flex-col min-h-0 max-w-4xl mx-auto w-full py-1">
-        {/* Member Pickers Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1 min-h-0 mb-1 sm:mb-2">
-          <SingleMemberPicker
-            title={`Teammate #1 (Pair ${activeSlot + 1})`}
-            selectedId={currentPair.a}
-            otherSelectedId={currentPair.b}
-            userName={userName}
-            onSelect={handleSetPersonA}
-          />
-          <SingleMemberPicker
-            title={`Teammate #2 (Pair ${activeSlot + 1})`}
-            selectedId={currentPair.b}
-            otherSelectedId={currentPair.a}
-            userName={userName}
-            onSelect={handleSetPersonB}
-          />
-        </div>
 
-        {/* 3 Slot Tabs Bar placed at Bottom (Reusable Light Glass Tray) */}
+        {/* ===== ROUND 2: Top 5 Duo Cards ===== */}
+        {isRound2 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
+            {TOP_5_PERFECT_DUOS.map((duo) => {
+              const isSelected = initialList.includes(duo.id) || initialList.includes(duo.name);
+
+              return (
+                <button
+                  key={duo.id}
+                  onClick={() => handleSelectDuoR2(duo.id)}
+                  className={`relative p-4 rounded-2xl font-sans-clean transition-all duration-300 flex flex-col items-center cursor-pointer border text-center overflow-hidden ${isSelected
+                    ? 'bg-amber-400 border-amber-300 text-slate-950 font-black shadow-[0_0_25px_rgba(251,191,36,0.8)] scale-[1.03]'
+                    : 'bg-black/80 hover:bg-black/95 border-amber-300/40 text-white hover:border-amber-300/80 shadow-lg'
+                    }`}
+                >
+                  <div className="w-full h-28 sm:h-32 rounded-xl overflow-hidden border border-amber-300/30 mb-3 shadow-xl">
+                    <img
+                      src={duo.image}
+                      alt={duo.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => { (e.target as HTMLImageElement).src = '/assets/logo.webp'; }}
+                    />
+                  </div>
+                  <div className="text-sm sm:text-base font-black leading-snug w-full">{duo.name}</div>
+                  {duo.description && (
+                    <p className={`text-[0.65rem] mt-1.5 line-clamp-2 ${isSelected ? 'text-slate-800' : 'text-slate-400'}`}>{duo.description}</p>
+                  )}
+                  {isSelected && (
+                    <span className="absolute top-2 right-2 w-6 h-6 rounded-full bg-slate-950 text-amber-300 flex items-center justify-center font-black text-xs shadow-md">
+                      ✓
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          /* ===== ROUND 1: Pair Builder ===== */
+          <>
+            {/* Member Pickers Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1 min-h-0 mb-1 sm:mb-2">
+              <SingleMemberPicker
+                title={`Teammate #1 (Pair ${activeSlot + 1})`}
+                selectedId={currentPair.a}
+                otherSelectedId={currentPair.b}
+                userName={userName}
+                onSelect={handleSetPersonA}
+              />
+              <SingleMemberPicker
+                title={`Teammate #2 (Pair ${activeSlot + 1})`}
+                selectedId={currentPair.b}
+                otherSelectedId={currentPair.a}
+                userName={userName}
+                onSelect={handleSetPersonB}
+              />
+            </div>
+          </>
+        )}
+
+        {/* Selected Duo Pairs Tray */}
         <SelectedTray
           title="Selected Duo Pairs"
-          activeSlotIndex={activeSlot}
-          onSlotClick={(idx) => {
+          activeSlotIndex={isRound2 ? undefined : activeSlot}
+          onSlotClick={isRound2 ? undefined : (idx) => {
             soundFx.playClick();
             setActiveSlot(idx);
           }}
-          customStatusText={`Complete ${3 - validPairsCount} more pairs`}
-          items={[0, 1, 2].map(slotIdx => {
-            const pair = pairs[slotIdx];
-            const memA = allMembers.find(m => m.id === pair.a || m.name === pair.a);
-            const memB = allMembers.find(m => m.id === pair.b || m.name === pair.b);
-            if (!memA && !memB) return null;
-            return {
-              id: `pair-${slotIdx}`,
-              name: memA && memB ? `${memA.name} & ${memB.name}` : memA ? `${memA.name} & ...` : `... & ${memB.name}`
-            };
+          customStatusText={`Complete ${requiredCount - validPairsCount} more ${isRound2 ? 'selections' : 'pairs'}`}
+          items={Array.from({ length: requiredCount }, (_, slotIdx) => {
+            if (isRound2) {
+              const duoId = initialList[slotIdx];
+              if (!duoId) return null;
+              const t5 = TOP_5_PERFECT_DUOS.find(d => d.id === duoId || d.name === duoId);
+              return t5 ? { id: t5.id, name: t5.name } : { id: duoId, name: duoId };
+            } else {
+              const pair = pairs[slotIdx];
+              const memA = allMembers.find(m => m.id === pair.a || m.name === pair.a);
+              const memB = allMembers.find(m => m.id === pair.b || m.name === pair.b);
+              if (!memA && !memB) return null;
+              return {
+                id: `pair-${slotIdx}`,
+                name: memA && memB ? `${memA.name} & ${memB.name}` : memA ? `${memA.name} & ...` : `... & ${memB!.name}`
+              };
+            }
           })}
         />
       </div>
@@ -266,8 +331,8 @@ export const PerfectDuoScreen: React.FC<PerfectDuoScreenProps> = ({
         <button
           type="button"
           onClick={() => {
-            if (validPairsCount < 3) {
-              toast.warning(`Please complete 3 pairs before proceeding (${validPairsCount}/3 completed)`);
+            if (validPairsCount < requiredCount) {
+              toast.warning(`Please ${isRound2 ? 'select' : 'complete'} ${requiredCount} ${isRound2 ? 'duos' : 'pairs'} before proceeding (${validPairsCount}/${requiredCount} ${isRound2 ? 'selected' : 'completed'})`);
               return;
             }
             soundFx.playSelect();
@@ -278,7 +343,7 @@ export const PerfectDuoScreen: React.FC<PerfectDuoScreenProps> = ({
             : 'bg-white/40 border-white/30 text-gray-800 opacity-60'
             }`}
         >
-          <span>Next ({validPairsCount}/3 pairs)</span>
+          <span>Next ({validPairsCount}/{requiredCount} {isRound2 ? 'duos' : 'pairs'})</span>
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>

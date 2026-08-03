@@ -1,6 +1,7 @@
 import React from 'react';
 import { soundFx } from '../../utils/soundEffects';
 import { ButterflyParticle } from '../ButterflyParticle';
+import { activeRoundConfig, CURRENT_ROUND } from '../../config/roundConfig';
 
 interface ProcessModalScreenProps {
   onProceed: () => void;
@@ -44,7 +45,7 @@ export const ProcessModalScreen: React.FC<ProcessModalScreenProps> = ({ onProcee
             />
           </svg>
           <span className="relative z-10 font-serif-display text-xs sm:text-sm font-extrabold uppercase tracking-[0.25em] text-amber-200 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
-            Round 1 • Nominations
+            {CURRENT_ROUND === 1 ? 'Round 1 • Nominations' : 'Round 2 • Final Vote'}
           </span>
         </div>
 
@@ -94,16 +95,20 @@ export const ProcessModalScreen: React.FC<ProcessModalScreenProps> = ({ onProcee
           </h3>
 
           <ul className="text-xs sm:text-sm text-slate-100 font-medium leading-relaxed space-y-2.5 text-left bg-white/10 backdrop-blur-md p-4 sm:p-5 rounded-2xl border border-white/20 shadow-lg">
-            <li className="flex justify-between items-center border-b border-white/15 pb-2">
+            <li className={`flex justify-between items-center border-b border-white/15 pb-2 ${CURRENT_ROUND === 1 ? '' : 'opacity-50'}`}>
               <span className="font-bold text-amber-200">Round 1: Nominations</span>
               <span className="font-mono text-amber-100 text-xs">August 1st - August 4th</span>
             </li>
-            <li className="flex justify-between items-center border-b border-white/15 pb-2">
-              <span className="font-bold text-slate-200">Round 2: Final Vote</span>
-              <span className="font-mono text-slate-300 text-xs">August 5th - August 7th</span>
+            <li className={`flex justify-between items-center border-b border-white/15 pb-2 ${CURRENT_ROUND === 2 ? '' : 'opacity-50'}`}>
+              <span className="font-bold text-amber-200">Round 2: Final Vote</span>
+              <span className="font-mono text-amber-100 text-xs">August 5th - August 7th</span>
             </li>
             <li className="pt-1 text-slate-100 font-normal leading-normal">
-              <span className="font-semibold text-amber-200">Voting Requirement:</span> Select up to 3 nominees per category in Round 1.
+              <span className="font-semibold text-amber-200">Voting Requirement:</span>{' '}
+              {CURRENT_ROUND === 1
+                ? `Select up to ${activeRoundConfig.requiredVotesPerCategory} nominees per category.`
+                : `Pick ${activeRoundConfig.requiredVotesPerCategory} from the Top 5 in each category.`
+              }
             </li>
           </ul>
         </div>

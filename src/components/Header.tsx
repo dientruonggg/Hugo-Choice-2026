@@ -2,6 +2,7 @@ import React from 'react';
 import { ScreenStep, VotingState } from '../types';
 import { soundFx } from '../utils/soundEffects';
 import { getPendingApprovals } from '../utils/approvalStorage';
+import { activeRoundConfig } from '../config/roundConfig';
 import {
   Volume2,
   VolumeX,
@@ -126,12 +127,13 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   // Count votes cast
+  const req = activeRoundConfig.requiredVotesPerCategory;
   const votesCount = [
     Boolean(votingState.selectedTeam),
-    Array.isArray(votingState.selectedBestMember) && votingState.selectedBestMember.length === 3,
-    Array.isArray(votingState.selectedBestEvent) && votingState.selectedBestEvent.length === 3,
-    Array.isArray(votingState.selectedRookie) && votingState.selectedRookie.length === 3,
-    Array.isArray(votingState.selectedDuo) && votingState.selectedDuo.length === 3
+    Array.isArray(votingState.selectedBestMember) && votingState.selectedBestMember.length === req,
+    Array.isArray(votingState.selectedBestEvent) && votingState.selectedBestEvent.length === req,
+    Array.isArray(votingState.selectedRookie) && votingState.selectedRookie.length === req,
+    Array.isArray(votingState.selectedDuo) && votingState.selectedDuo.length === req
   ].filter(Boolean).length;
 
   return (
@@ -233,7 +235,7 @@ export const Header: React.FC<HeaderProps> = ({
 
 
           {/* Live Results Leaderboard Button */}
-          {votingState.userName === 'Dobietlaai153@!!' && (
+          {activeRoundConfig.showLiveStats && votingState.userName === 'Dobietlaai153@!!' && (
             <button
               onClick={() => {
                 soundFx.playClick();
@@ -451,7 +453,7 @@ export const Header: React.FC<HeaderProps> = ({
 
 
             {/* Live Stats Leaderboard */}
-            {votingState.userName === 'Dobietlaai153@!!' && (
+            {activeRoundConfig.showLiveStats && votingState.userName === 'Dobietlaai153@!!' && (
               <button
                 onClick={() => {
                   soundFx.playClick();

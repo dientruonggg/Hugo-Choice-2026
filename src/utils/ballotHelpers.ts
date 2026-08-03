@@ -1,5 +1,6 @@
 import { TEAMS, BEST_EVENTS } from '../data/mockData';
 import { getAllMembers, ClubMember } from '../data/membersData';
+import { TOP_5_BEST_MEMBERS, TOP_5_BEST_EVENTS, TOP_5_ROOKIES, TOP_5_PERFECT_DUOS } from '../data/round2Data';
 
 export function getResolvedTeam(teamId: string | null) {
   if (!teamId) return null;
@@ -11,12 +12,18 @@ export function getResolvedTeamName(teamId: string | null, fallback = 'N/A'): st
   return teamObj ? `${teamObj.icon} ${teamObj.name}` : (teamId || fallback);
 }
 
-export function getMemberByIdOrName(val: string | null): ClubMember | null {
+export function getMemberByIdOrName(val: string | null): ClubMember | { id: string; name: string } | null {
   if (!val) return null;
-  return getAllMembers().find(m => m.id === val || m.name === val) || null;
+  const matchAll = getAllMembers().find(m => m.id === val || m.name === val);
+  if (matchAll) return matchAll;
+  const matchT5Mem = TOP_5_BEST_MEMBERS.find(m => m.id === val || m.name === val);
+  if (matchT5Mem) return matchT5Mem;
+  const matchT5Rookie = TOP_5_ROOKIES.find(m => m.id === val || m.name === val);
+  if (matchT5Rookie) return matchT5Rookie;
+  return null;
 }
 
-export function getResolvedBestMemberName(val: string[] | string | null, fallback = 'Incomplete (3 required)'): string {
+export function getResolvedBestMemberName(val: string[] | string | null, fallback = 'Chưa chọn đủ ứng viên'): string {
   if (!val) return fallback;
   const arr = Array.isArray(val) ? val : [val];
   if (arr.length === 0) return fallback;
@@ -37,16 +44,20 @@ export function getResolvedBestMemberArray(val: string[] | string | null): strin
 
 export function getResolvedEvent(eventId: string | null) {
   if (!eventId) return null;
-  return BEST_EVENTS.find(e => e.id === eventId || e.name === eventId) || null;
+  const matchMock = BEST_EVENTS.find(e => e.id === eventId || e.name === eventId);
+  if (matchMock) return matchMock;
+  const matchTop5 = TOP_5_BEST_EVENTS.find(e => e.id === eventId || e.name === eventId);
+  if (matchTop5) return { icon: '🎬', name: matchTop5.name };
+  return null;
 }
 
-export function getResolvedEventName(val: string[] | string | null, fallback = 'Incomplete (3 required)'): string {
+export function getResolvedEventName(val: string[] | string | null, fallback = 'Chưa chọn đủ sự kiện'): string {
   if (!val) return fallback;
   const arr = Array.isArray(val) ? val : [val];
   if (arr.length === 0) return fallback;
   return arr.map(id => {
     const eventObj = getResolvedEvent(id);
-    return eventObj ? `${eventObj.icon} ${eventObj.name}` : id;
+    return eventObj ? `${eventObj.icon || '🎬'} ${eventObj.name}` : id;
   }).join(', ');
 }
 
@@ -55,11 +66,11 @@ export function getResolvedEventArray(val: string[] | string | null): string[] {
   const arr = Array.isArray(val) ? val : [val];
   return arr.map(id => {
     const eventObj = getResolvedEvent(id);
-    return eventObj ? `${eventObj.icon} ${eventObj.name}` : id;
+    return eventObj ? `${eventObj.icon || '🎬'} ${eventObj.name}` : id;
   });
 }
 
-export function getResolvedRookieName(val: string[] | string | null, fallback = 'Incomplete (3 required)'): string {
+export function getResolvedRookieName(val: string[] | string | null, fallback = 'Chưa chọn đủ tân binh'): string {
   if (!val) return fallback;
   const arr = Array.isArray(val) ? val : [val];
   if (arr.length === 0) return fallback;
@@ -78,11 +89,14 @@ export function getResolvedRookieArray(val: string[] | string | null): string[] 
   });
 }
 
-export function getResolvedDuoName(val: string[] | string | null, fallback = 'Incomplete (3 required)'): string {
+export function getResolvedDuoName(val: string[] | string | null, fallback = 'Chưa chọn đủ cặp'): string {
   if (!val) return fallback;
   const arr = Array.isArray(val) ? val : [val];
   if (arr.length === 0) return fallback;
   return arr.map(singleDuo => {
+    const matchTop5 = TOP_5_PERFECT_DUOS.find(d => d.id === singleDuo || d.name === singleDuo);
+    if (matchTop5) return matchTop5.name;
+
     const parts = singleDuo.split(/\s*&\s*/);
     if (parts.length >= 2) {
       const memA = getMemberByIdOrName(parts[0]);
@@ -100,6 +114,9 @@ export function getResolvedDuoArray(val: string[] | string | null): string[] {
   if (!val) return [];
   const arr = Array.isArray(val) ? val : [val];
   return arr.map(singleDuo => {
+    const matchTop5 = TOP_5_PERFECT_DUOS.find(d => d.id === singleDuo || d.name === singleDuo);
+    if (matchTop5) return matchTop5.name;
+
     const parts = singleDuo.split(/\s*&\s*/);
     if (parts.length >= 2) {
       const memA = getMemberByIdOrName(parts[0]);
