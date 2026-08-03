@@ -5,8 +5,9 @@ export interface RoundConfig {
   enableEmail: boolean; // true for both
 }
 
-// Current Active Round for Dev Branch: Round 2
-export const CURRENT_ROUND: 1 | 2 = 2;
+// Current Active Round — Round 1: Aug 1-4, Round 2: Aug 5-7
+// Đổi sang 2 khi bắt đầu Round 2 (5/8)
+export const CURRENT_ROUND: 1 | 2 = 1;
 
 export const ROUND_CONFIG: Record<1 | 2, RoundConfig> = {
   1: {
