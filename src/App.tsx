@@ -7,7 +7,8 @@ import { BallotDrawer } from './components/BallotDrawer';
 import { AdminLeaderboardModal } from './components/AdminLeaderboardModal';
 import { GoogleAuthModal } from './components/GoogleAuthModal';
 import { subscribeToAuthChanges, logoutGoogle } from './utils/firebase';
-import { saveUserBallot, getSavedBallotForUser } from './utils/ballotStorage';
+import { saveUserBallot, getSavedBallotForUser, syncAllLocalBallotsToFirestore } from './utils/ballotStorage';
+
 import { ToastContainer } from './components/ToastContainer';
 
 import { LandingScreen } from './components/screens/LandingScreen';
@@ -93,6 +94,12 @@ export default function App() {
       // Ignore
     }
   }, [liveResults]);
+
+  // Auto-sync any previously saved local ballots to Firestore when app mounts
+  useEffect(() => {
+    syncAllLocalBallotsToFirestore().catch(() => {});
+  }, []);
+
 
   // Handle restoring or linking ballot for a logged in Google user
   const handleUserLogin = (user: { name: string; email: string; avatar: string }) => {

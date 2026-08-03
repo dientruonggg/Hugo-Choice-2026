@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { LiveResultsData, HugoTeam } from '../types';
 import { BEST_EVENTS, TEAMS } from '../data/mockData';
 import { getResolvedBestMemberName, getResolvedRookieName, getResolvedDuoName } from '../utils/ballotHelpers';
-import { X, Award, Flame, Users, Calendar, Sparkles, Check, XCircle } from 'lucide-react';
+import { X, Award, Flame, Users, Calendar, Sparkles, Check, XCircle, CloudUpload, Download, Upload } from 'lucide-react';
 import { soundFx } from '../utils/soundEffects';
 import {
   getPendingApprovals,
@@ -11,6 +11,13 @@ import {
   PendingApproval
 } from '../utils/approvalStorage';
 import { addCustomMember } from '../data/membersData';
+import {
+  syncAllLocalBallotsToFirestore,
+  exportLocalBallotsJSON,
+  importBallotsJSON
+} from '../utils/ballotStorage';
+import { showToast } from '../utils/toast';
+
 
 interface AdminLeaderboardModalProps {
   isOpen: boolean;
@@ -53,6 +60,43 @@ export const AdminLeaderboardModal: React.FC<AdminLeaderboardModalProps> = ({
     window.dispatchEvent(new CustomEvent('approvals-updated'));
   };
 
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  const handleSyncToFirestore = async () => {
+    soundFx.playClick();
+    setIsSyncing(true);
+    try {
+      const res = await syncAllLocalBallotsToFirestore();
+      showToast(`Đã đồng bộ thành công ${res.synced}/${res.total} phiếu bầu lên Firestore Cloud!`, 'success');
+    } catch (e) {
+      showToast('Có lỗi xảy ra khi đồng bộ lên Firestore', 'error');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleExportBackup = () => {
+    soundFx.playClick();
+    exportLocalBallotsJSON();
+    showToast('Đã tải xuống file sao lưu danh sách phiếu bầu (.json)', 'info');
+  };
+
+  const handleImportBackup = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const text = event.target?.result as string;
+        const count = await importBallotsJSON(text);
+        showToast(`Đã khôi phục và đồng bộ ${count} phiếu bầu vào DB!`, 'success');
+      } catch (err) {
+        showToast('File backup JSON không hợp lệ!', 'error');
+      }
+    };
+    reader.readAsText(file);
+  };
+
   const handleDecline = (item: PendingApproval) => {
     soundFx.playClick();
     // Remove from pending list
@@ -61,6 +105,7 @@ export const AdminLeaderboardModal: React.FC<AdminLeaderboardModalProps> = ({
     savePendingApprovals(updated);
     window.dispatchEvent(new CustomEvent('approvals-updated'));
   };
+
 
   const pendingCount = pendingList.length;
 
@@ -370,6 +415,41 @@ export const AdminLeaderboardModal: React.FC<AdminLeaderboardModalProps> = ({
               )}
             </div>
           )}
+        </div>
+
+        {/* Admin Data Tools Bar */}
+        <div className="px-6 py-3 bg-[#0a120c] border-t border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleSyncToFirestore}
+              disabled={isSyncing}
+              className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold flex items-center gap-1.5 cursor-pointer transition-all shadow-md active:scale-95"
+            >
+              <CloudUpload className={`w-4 h-4 ${isSyncing ? 'animate-bounce' : ''}`} />
+              <span>{isSyncing ? 'Đang đồng bộ...' : 'Đẩy phiếu Local lên Cloud DB'}</span>
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleExportBackup}
+              className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-amber-300 border border-white/10 font-medium flex items-center gap-1.5 cursor-pointer transition-all active:scale-95"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Xuất Backup (.json)</span>
+            </button>
+
+            <label className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-emerald-300 border border-white/10 font-medium flex items-center gap-1.5 cursor-pointer transition-all active:scale-95">
+              <Upload className="w-3.5 h-3.5" />
+              <span>Nhập Backup</span>
+              <input
+                type="file"
+                accept=".json"
+                onChange={handleImportBackup}
+                className="hidden"
+              />
+            </label>
+          </div>
         </div>
 
         {/* Modal Footer */}

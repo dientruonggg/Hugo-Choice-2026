@@ -71,3 +71,76 @@ export async function saveUserBallot(state: VotingState) {
   // 2. Sync to Firestore if configured
   await saveBallotToFirestore(record);
 }
+
+/**
+ * Sync all local ballots stored in localStorage up to Firestore.
+ * Useful when Firestore was created after some local votes were submitted.
+ */
+export async function syncAllLocalBallotsToFirestore(): Promise<{ total: number; synced: number }> {
+  const map = getAllSavedBallots();
+  const records = Object.values(map);
+  const uniqueRecordsMap: Record<string, SavedBallotRecord> = {};
+
+  // Deduplicate by email or username
+  records.forEach(r => {
+    const key = (r.userEmail || r.userName).toLowerCase();
+    if (key) {
+      uniqueRecordsMap[key] = r;
+    }
+  });
+
+  const uniqueList = Object.values(uniqueRecordsMap);
+  let synced = 0;
+
+  for (const record of uniqueList) {
+    try {
+      await saveBallotToFirestore(record);
+      synced++;
+    } catch (err) {
+      console.warn('Error syncing ballot to Firestore:', err);
+    }
+  }
+
+  return { total: uniqueList.length, synced };
+}
+
+/**
+ * Export all local ballots as a JSON file backup.
+ */
+export function exportLocalBallotsJSON() {
+  const map = getAllSavedBallots();
+  const jsonStr = JSON.stringify(map, null, 2);
+  const blob = new Blob([jsonStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `hugo_ballots_backup_${Date.now()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Import JSON backup of ballots and sync to Firestore + LocalStorage
+ */
+export async function importBallotsJSON(jsonString: string): Promise<number> {
+  try {
+    const importedMap = JSON.parse(jsonString) as Record<string, SavedBallotRecord>;
+    const currentMap = getAllSavedBallots();
+    const mergedMap = { ...currentMap, ...importedMap };
+    
+    localStorage.setItem(STORAGE_KEY_SAVED_BALLOTS, JSON.stringify(mergedMap));
+    
+    let count = 0;
+    for (const key of Object.keys(importedMap)) {
+      await saveBallotToFirestore(importedMap[key]);
+      count++;
+    }
+    return count;
+  } catch (err) {
+    console.error('Failed to import ballots JSON:', err);
+    throw err;
+  }
+}
+
