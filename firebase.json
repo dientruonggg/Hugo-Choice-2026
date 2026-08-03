@@ -17,11 +17,11 @@
         ]
       },
       {
-        "source": "**",
+        "source": "**/*.@(js|css|webp|png|jpg|jpeg|gif|svg|wav|mp3|woff|woff2)",
         "headers": [
           {
             "key": "Cache-Control",
-            "value": "no-cache, no-store, must-revalidate"
+            "value": "public, max-age=31536000, immutable"
           }
         ]
       }
