@@ -135,12 +135,28 @@ export default function App() {
         navigateTo('submission');
       }
     } else {
-      setVotingState(prev => ({
-        ...prev,
-        userName: user.name,
-        userEmail: user.email,
-        userAvatar: user.avatar
-      }));
+      if (firestoreBallot === null) {
+        // DB says no ballot, wipe any resurrected local state
+        setVotingState({
+          userName: user.name,
+          userEmail: user.email,
+          userAvatar: user.avatar,
+          selectedTeam: null,
+          selectedBestMember: [],
+          selectedBestEvent: [],
+          selectedRookie: [],
+          selectedDuo: [],
+          isSubmitted: false,
+          submittedAt: undefined
+        });
+      } else {
+        setVotingState(prev => ({
+          ...prev,
+          userName: user.name,
+          userEmail: user.email,
+          userAvatar: user.avatar
+        }));
+      }
     }
   };
 
