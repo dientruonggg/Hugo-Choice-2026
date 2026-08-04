@@ -103,6 +103,34 @@ export default function App() {
     }
   }, [liveResults]);
 
+  // On mount, verify the initially loaded state against Firestore.
+  // If Firestore says it doesn't exist (e.g. admin deleted it), wipe it locally too.
+  useEffect(() => {
+    const verifyInitialState = async () => {
+      const id = votingState.userEmail || votingState.userName;
+      if (id) {
+        const firestoreBallot = await getBallotFromFirestore(id);
+        if (firestoreBallot === null) {
+          // It was deleted! Wipe local state
+          setVotingState(prev => ({
+            userName: prev.userName,
+            userEmail: prev.userEmail,
+            userAvatar: prev.userAvatar,
+            selectedTeam: null,
+            selectedBestMember: [],
+            selectedBestEvent: [],
+            selectedRookie: [],
+            selectedDuo: [],
+            isSubmitted: false,
+            submittedAt: undefined
+          }));
+        }
+      }
+    };
+    verifyInitialState();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
 
 
   // Handle restoring or linking ballot for a logged in Google user
