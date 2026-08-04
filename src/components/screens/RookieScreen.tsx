@@ -237,6 +237,7 @@ export const RookieScreen: React.FC<RookieScreenProps> = ({
         {/* Selected Candidates Placement Bar at Bottom */}
         <SelectedTray
           title="Selected Rookies"
+          maxItems={requiredCount}
           items={Array.from({ length: requiredCount }, (_, idx) => {
             const selectedId = selectedList[idx];
             if (!selectedId) return null;

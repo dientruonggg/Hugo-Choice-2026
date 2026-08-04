@@ -3,6 +3,9 @@ import { soundFx } from '../../utils/soundEffects';
 import { ButterflyParticle } from '../ButterflyParticle';
 import { EventInfoPanel } from '../EventInfoPanel';
 
+import { CURRENT_ROUND, IS_VOTING_CLOSED } from '../../config/roundConfig';
+import { toast } from '../../utils/toast';
+
 interface LandingScreenProps {
   userName?: string;
   onStart: () => void;
@@ -17,6 +20,10 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ userName, onStart,
 
   const handleStartClick = () => {
     soundFx.playSelect();
+    if (IS_VOTING_CLOSED) {
+      toast.info('🔒 Cổng bình chọn đang tạm đóng để chuẩn bị cho Round 2 (05/08)!');
+      return;
+    }
     if (!userName) {
       const loginBtn = document.getElementById('header-login-button');
       if (loginBtn) {
@@ -75,12 +82,12 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ userName, onStart,
           <span className="w-1.5 h-1.5 rounded-full bg-amber-300 animate-pulse" />
         </div>
 
-        {/* Round 1 Status Ribbon Banner with Crisp Pointed Border */}
+        {/* Round Status Ribbon Banner */}
         <div className="flex items-center justify-center gap-2 sm:gap-3 mb-4 sm:mb-6">
           <div className="h-[1px] w-6 sm:w-16 bg-gradient-to-r from-transparent via-amber-200/50 to-amber-300/80" />
           
           <div className="relative inline-flex items-center justify-center px-8 sm:px-10 py-1.5">
-            {/* Background SVG Ribbon Shape with Golden Border */}
+            {/* Background SVG Ribbon Shape */}
             <svg
               className="absolute inset-0 w-full h-full drop-shadow-[0_0_12px_rgba(251,191,36,0.4)]"
               viewBox="0 0 200 40"
@@ -88,15 +95,15 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ userName, onStart,
             >
               <polygon
                 points="14,0 186,0 200,20 186,40 14,40 0,20"
-                className="fill-amber-300/15 stroke-amber-300/70"
+                className={IS_VOTING_CLOSED ? "fill-rose-500/20 stroke-rose-400/70" : "fill-amber-300/15 stroke-amber-300/70"}
                 strokeWidth="1.5"
               />
             </svg>
 
             {/* Banner Text */}
-            <div className="relative z-10 flex items-center gap-2 text-amber-200 font-serif-display text-xs sm:text-sm font-extrabold tracking-[0.2em] uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-300 animate-ping" />
-              <span>Round 1 • Nominations</span>
+            <div className={`relative z-10 flex items-center gap-2 font-serif-display text-xs sm:text-sm font-extrabold tracking-[0.2em] uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] ${IS_VOTING_CLOSED ? 'text-rose-200' : 'text-amber-200'}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${IS_VOTING_CLOSED ? 'bg-rose-400 animate-pulse' : 'bg-amber-300 animate-ping'}`} />
+              <span>{IS_VOTING_CLOSED ? 'Voting Closed • Round 2 Starts Aug 5' : `Round ${CURRENT_ROUND} • ${CURRENT_ROUND === 1 ? 'Nominations' : 'Final Vote'}`}</span>
             </div>
           </div>
 
@@ -136,12 +143,18 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ userName, onStart,
 
           <button
             onClick={handleStartClick}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 sm:px-10 py-3.5 rounded-full bg-gradient-to-r from-amber-300 via-amber-200 to-amber-400 hover:from-amber-200 hover:to-amber-300 text-slate-950 font-sans-clean font-bold text-xs sm:text-sm tracking-widest uppercase shadow-[0_0_25px_rgba(251,191,36,0.4)] transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
+            className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 sm:px-10 py-3.5 rounded-full font-sans-clean font-bold text-xs sm:text-sm tracking-widest uppercase transition-all duration-300 cursor-pointer ${
+              IS_VOTING_CLOSED
+                ? 'bg-rose-950/60 hover:bg-rose-900/70 text-rose-200 border border-rose-400/40 shadow-[0_0_15px_rgba(244,63,94,0.3)]'
+                : 'bg-gradient-to-r from-amber-300 via-amber-200 to-amber-400 hover:from-amber-200 hover:to-amber-300 text-slate-950 shadow-[0_0_25px_rgba(251,191,36,0.4)] hover:scale-105 active:scale-95'
+            }`}
           >
-            <span>{userName ? 'Start Voting' : 'Log In & Vote'}</span>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-            </svg>
+            <span>{IS_VOTING_CLOSED ? '🔒 Voting Closed' : userName ? 'Start Voting' : 'Log In & Vote'}</span>
+            {!IS_VOTING_CLOSED && (
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            )}
           </button>
         </div>
 

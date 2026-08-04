@@ -286,6 +286,7 @@ export const PerfectDuoScreen: React.FC<PerfectDuoScreenProps> = ({
         {/* Selected Duo Pairs Tray */}
         <SelectedTray
           title="Selected Duo Pairs"
+          maxItems={requiredCount}
           activeSlotIndex={isRound2 ? undefined : activeSlot}
           onSlotClick={isRound2 ? undefined : (idx) => {
             soundFx.playClick();

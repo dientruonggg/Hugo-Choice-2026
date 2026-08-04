@@ -197,6 +197,7 @@ export const BestEventScreen: React.FC<BestEventScreenProps> = ({
         {/* Selected Events Placement Bar at Bottom */}
         <SelectedTray
           title="Selected Events"
+          maxItems={requiredCount}
           items={Array.from({ length: requiredCount }, (_, idx) => {
             const selectedId = selectedList[idx];
             if (!selectedId) return null;

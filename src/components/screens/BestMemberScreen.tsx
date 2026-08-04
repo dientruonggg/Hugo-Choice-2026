@@ -211,6 +211,7 @@ export const BestMemberScreen: React.FC<BestMemberScreenProps> = ({
         {/* Selected Candidates Placement Bar at Bottom */}
         <SelectedTray
           title="Selected Candidates"
+          maxItems={requiredCount}
           items={Array.from({ length: requiredCount }, (_, idx) => {
             const selectedId = selectedList[idx];
             if (!selectedId) return null;
