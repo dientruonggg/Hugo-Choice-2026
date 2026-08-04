@@ -72,18 +72,20 @@ export const saveBallotToFirestore = async (ballotData: any) => {
 };
 
 export const getBallotFromFirestore = async (userEmailOrName: string, roundNum = CURRENT_ROUND) => {
-  if (!db) return null;
+  if (!db) return undefined;
   try {
     const baseId = userEmailOrName.toLowerCase().replace(/[^a-z0-9_@.-]/g, '_');
     const docRef = doc(db, `ballots_r${roundNum}`, baseId);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
       return docSnap.data();
+    } else {
+      return null;
     }
   } catch (err) {
     console.warn("Could not fetch ballot from Firestore:", err);
+    return undefined;
   }
-  return null;
 };
 
 export const saveMomentToFirestore = async (moment: TeamMoment) => {
