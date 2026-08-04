@@ -392,8 +392,19 @@ export default function App() {
           <NameInputScreen
             initialName={votingState.userName}
             onBack={() => navigateTo('process')}
-            onNext={(name) => {
-              const existingBallot = getSavedBallotForUser(votingState.userEmail, name);
+            onNext={async (name) => {
+              // ALWAYS fetch from Firestore first to see if it was manually deleted
+              const firestoreBallot = await getBallotFromFirestore(votingState.userEmail || name);
+              
+              let existingBallot = null;
+              if (firestoreBallot !== undefined) {
+                // Successfully talked to Firestore
+                existingBallot = firestoreBallot as any;
+              } else {
+                // Network error, fallback to local storage
+                existingBallot = getSavedBallotForUser(votingState.userEmail, name);
+              }
+
               if (existingBallot) {
                 setVotingState({
                   userName: name,
@@ -412,10 +423,26 @@ export default function App() {
                   return;
                 }
               } else {
-                setVotingState(prev => ({
-                  ...prev,
-                  userName: name
-                }));
+                if (firestoreBallot === null) {
+                   // DB explicitly says no ballot, wipe any resurrected local state
+                   setVotingState({
+                     userName: name,
+                     userEmail: votingState.userEmail,
+                     userAvatar: votingState.userAvatar,
+                     selectedTeam: null,
+                     selectedBestMember: [],
+                     selectedBestEvent: [],
+                     selectedRookie: [],
+                     selectedDuo: [],
+                     isSubmitted: false,
+                     submittedAt: undefined
+                   });
+                } else {
+                   setVotingState(prev => ({
+                     ...prev,
+                     userName: name
+                   }));
+                }
               }
               navigateTo('team_selection');
             }}
