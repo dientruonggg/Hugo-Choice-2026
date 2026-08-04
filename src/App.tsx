@@ -6,7 +6,7 @@ import { Header } from './components/Header';
 import { BallotDrawer } from './components/BallotDrawer';
 import { AdminLeaderboardModal } from './components/AdminLeaderboardModal';
 import { GoogleAuthModal } from './components/GoogleAuthModal';
-import { subscribeToAuthChanges, logoutGoogle } from './utils/firebase';
+import { subscribeToAuthChanges, logoutGoogle, getBallotFromFirestore } from './utils/firebase';
 import { saveUserBallot, getSavedBallotForUser, syncAllLocalBallotsToFirestore } from './utils/ballotStorage';
 
 import { ToastContainer } from './components/ToastContainer';
@@ -104,8 +104,17 @@ export default function App() {
 
 
   // Handle restoring or linking ballot for a logged in Google user
-  const handleUserLogin = (user: { name: string; email: string; avatar: string }) => {
-    const existingBallot = getSavedBallotForUser(user.email, user.name);
+  const handleUserLogin = async (user: { name: string; email: string; avatar: string }) => {
+    let existingBallot = getSavedBallotForUser(user.email, user.name);
+    
+    if (!existingBallot) {
+      // Try fetching from Firestore
+      const firestoreBallot = await getBallotFromFirestore(user.email || user.name);
+      if (firestoreBallot) {
+        existingBallot = firestoreBallot as any;
+      }
+    }
+
     if (existingBallot) {
       setVotingState({
         userName: user.name,

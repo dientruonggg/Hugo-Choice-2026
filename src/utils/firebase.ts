@@ -10,7 +10,7 @@ import {
   User,
   Auth
 } from 'firebase/auth';
-import { getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot, Firestore } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, onSnapshot, Firestore } from 'firebase/firestore';
 import { TeamMoment } from '../types';
 
 const firebaseConfig = {
@@ -69,6 +69,21 @@ export const saveBallotToFirestore = async (ballotData: any) => {
   } catch (err) {
     console.warn("Could not save ballot to Firestore:", err);
   }
+};
+
+export const getBallotFromFirestore = async (userEmailOrName: string, roundNum = CURRENT_ROUND) => {
+  if (!db) return null;
+  try {
+    const baseId = userEmailOrName.toLowerCase().replace(/[^a-z0-9_@.-]/g, '_');
+    const docRef = doc(db, `ballots_r${roundNum}`, baseId);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return docSnap.data();
+    }
+  } catch (err) {
+    console.warn("Could not fetch ballot from Firestore:", err);
+  }
+  return null;
 };
 
 export const saveMomentToFirestore = async (moment: TeamMoment) => {
