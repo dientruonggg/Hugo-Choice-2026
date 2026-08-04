@@ -7,7 +7,10 @@ export interface RoundConfig {
 
 // Current Active Round — Round 1: Aug 1-4, Round 2: Aug 5-7
 // Đổi sang 2 khi bắt đầu Round 2 (5/8)
-export const CURRENT_ROUND: 1 | 2 = 1;
+export const CURRENT_ROUND: 1 | 2 = 2;
+
+// Trạng thái cổng bình chọn — Set true để tạm đóng cổng bình chọn (chờ mở Vòng 2)
+export const IS_VOTING_CLOSED: boolean = false;
 
 export const ROUND_CONFIG: Record<1 | 2, RoundConfig> = {
   1: {
