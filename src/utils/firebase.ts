@@ -63,9 +63,6 @@ export const saveBallotToFirestore = async (ballotData: any) => {
 
     // 1. Save into specific round collection: ballots_r1 or ballots_r2
     await setDoc(doc(db, `ballots_r${roundNum}`, baseId), payload, { merge: true });
-
-    // 2. Save into main 'ballots' collection with compound docId (e.g. user_gmail_com_r2)
-    await setDoc(doc(db, 'ballots', `${baseId}_r${roundNum}`), payload, { merge: true });
   } catch (err) {
     console.warn("Could not save ballot to Firestore:", err);
   }
