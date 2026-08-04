@@ -21,8 +21,10 @@ import { RookieScreen } from './components/screens/RookieScreen';
 import { PerfectDuoScreen } from './components/screens/PerfectDuoScreen';
 import { SubmissionScreen } from './components/screens/SubmissionScreen';
 
-const STORAGE_KEY_VOTE = 'hugo_award_2026_user_state';
-const STORAGE_KEY_RESULTS = 'hugo_award_2026_live_results';
+import { CURRENT_ROUND } from './config/roundConfig';
+
+const STORAGE_KEY_VOTE = `hugo_award_2026_user_state_r${CURRENT_ROUND}`;
+const STORAGE_KEY_RESULTS = `hugo_award_2026_live_results_r${CURRENT_ROUND}`;
 
 function toArr(val: any): string[] {
   if (Array.isArray(val)) return val;

@@ -1,8 +1,9 @@
 import { VotingState, HugoTeam } from '../types';
 import { saveBallotToFirestore } from './firebase';
+import { CURRENT_ROUND } from '../config/roundConfig';
 
-const STORAGE_KEY_SAVED_BALLOTS = 'hugo_award_saved_ballots_map_2026';
-const STORAGE_KEY_CURRENT_VOTE = 'hugo_award_2026_user_state';
+const getStorageKeySavedBallots = (round = CURRENT_ROUND) => `hugo_award_saved_ballots_map_2026_r${round}`;
+const getStorageKeyCurrentVote = (round = CURRENT_ROUND) => `hugo_award_2026_user_state_r${round}`;
 
 export interface SavedBallotRecord {
   userEmail?: string;
@@ -15,20 +16,26 @@ export interface SavedBallotRecord {
   selectedDuo: string[] | string | null;
   isSubmitted: boolean;
   submittedAt?: string;
+  round?: number;
 }
 
-export function getAllSavedBallots(): Record<string, SavedBallotRecord> {
+export function getAllSavedBallots(round = CURRENT_ROUND): Record<string, SavedBallotRecord> {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY_SAVED_BALLOTS);
+    const raw = localStorage.getItem(getStorageKeySavedBallots(round));
     if (raw) return JSON.parse(raw);
+    // Backward compatibility for Round 1
+    if (round === 1) {
+      const fallbackRaw = localStorage.getItem('hugo_award_saved_ballots_map_2026');
+      if (fallbackRaw) return JSON.parse(fallbackRaw);
+    }
   } catch (e) {
     console.error('Error reading saved ballots map', e);
   }
   return {};
 }
 
-export function getSavedBallotForUser(email?: string, name?: string): SavedBallotRecord | null {
-  const map = getAllSavedBallots();
+export function getSavedBallotForUser(email?: string, name?: string, round = CURRENT_ROUND): SavedBallotRecord | null {
+  const map = getAllSavedBallots(round);
   if (email && map[email.toLowerCase()]) {
     return map[email.toLowerCase()];
   }
@@ -38,7 +45,7 @@ export function getSavedBallotForUser(email?: string, name?: string): SavedBallo
   return null;
 }
 
-export async function saveUserBallot(state: VotingState) {
+export async function saveUserBallot(state: VotingState, round = CURRENT_ROUND) {
   if (!state.userName && !state.userEmail) return;
 
   const key = (state.userEmail || state.userName).toLowerCase();
@@ -52,18 +59,19 @@ export async function saveUserBallot(state: VotingState) {
     selectedRookie: state.selectedRookie,
     selectedDuo: state.selectedDuo,
     isSubmitted: state.isSubmitted,
-    submittedAt: state.submittedAt || (state.isSubmitted ? new Date().toISOString() : undefined)
+    submittedAt: state.submittedAt || (state.isSubmitted ? new Date().toISOString() : undefined),
+    round: round
   };
 
   // 1. Save to local storage map (keyed by gmail/email or username)
   try {
-    const map = getAllSavedBallots();
+    const map = getAllSavedBallots(round);
     map[key] = record;
     if (state.userName) {
       map[state.userName.toLowerCase()] = record;
     }
-    localStorage.setItem(STORAGE_KEY_SAVED_BALLOTS, JSON.stringify(map));
-    localStorage.setItem(STORAGE_KEY_CURRENT_VOTE, JSON.stringify(state));
+    localStorage.setItem(getStorageKeySavedBallots(round), JSON.stringify(map));
+    localStorage.setItem(getStorageKeyCurrentVote(round), JSON.stringify(state));
   } catch (e) {
     console.error('Error saving ballot map to localStorage', e);
   }
@@ -130,7 +138,7 @@ export async function importBallotsJSON(jsonString: string): Promise<number> {
     const currentMap = getAllSavedBallots();
     const mergedMap = { ...currentMap, ...importedMap };
     
-    localStorage.setItem(STORAGE_KEY_SAVED_BALLOTS, JSON.stringify(mergedMap));
+    localStorage.setItem(getStorageKeySavedBallots(), JSON.stringify(mergedMap));
     
     let count = 0;
     for (const key of Object.keys(importedMap)) {
