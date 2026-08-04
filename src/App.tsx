@@ -420,59 +420,59 @@ export default function App() {
           <NameInputScreen
             initialName={votingState.userName}
             onBack={() => navigateTo('process')}
-            onNext={async (name) => {
+            onNext={(name) => {
               // ALWAYS fetch from Firestore first to see if it was manually deleted
-              const firestoreBallot = await getBallotFromFirestore(votingState.userEmail || name);
-              
-              let existingBallot = null;
-              if (firestoreBallot !== undefined) {
-                // Successfully talked to Firestore
-                existingBallot = firestoreBallot as any;
-              } else {
-                // Network error, fallback to local storage
-                existingBallot = getSavedBallotForUser(votingState.userEmail, name);
-              }
-
-              if (existingBallot) {
-                setVotingState({
-                  userName: name,
-                  userEmail: votingState.userEmail,
-                  userAvatar: votingState.userAvatar,
-                  selectedTeam: existingBallot.selectedTeam as any,
-                  selectedBestMember: toArr(existingBallot.selectedBestMember),
-                  selectedBestEvent: toArr(existingBallot.selectedBestEvent),
-                  selectedRookie: toArr(existingBallot.selectedRookie),
-                  selectedDuo: toArr(existingBallot.selectedDuo),
-                  isSubmitted: existingBallot.isSubmitted,
-                  submittedAt: existingBallot.submittedAt
-                });
-                if (existingBallot.isSubmitted) {
-                  navigateTo('submission');
-                  return;
-                }
-              } else {
-                if (firestoreBallot === null) {
-                   // DB explicitly says no ballot, wipe any resurrected local state
-                   setVotingState({
-                     userName: name,
-                     userEmail: votingState.userEmail,
-                     userAvatar: votingState.userAvatar,
-                     selectedTeam: undefined,
-                     selectedBestMember: [],
-                     selectedBestEvent: [],
-                     selectedRookie: [],
-                     selectedDuo: [],
-                     isSubmitted: false,
-                     submittedAt: undefined
-                   });
+              getBallotFromFirestore(votingState.userEmail || name).then(firestoreBallot => {
+                let existingBallot = null;
+                if (firestoreBallot !== undefined) {
+                  // Successfully talked to Firestore
+                  existingBallot = firestoreBallot as any;
                 } else {
-                   setVotingState(prev => ({
-                     ...prev,
-                     userName: name
-                   }));
+                  // Network error, fallback to local storage
+                  existingBallot = getSavedBallotForUser(votingState.userEmail, name);
                 }
-              }
-              navigateTo('team_selection');
+
+                if (existingBallot) {
+                  setVotingState({
+                    userName: name,
+                    userEmail: votingState.userEmail,
+                    userAvatar: votingState.userAvatar,
+                    selectedTeam: existingBallot.selectedTeam as any,
+                    selectedBestMember: toArr(existingBallot.selectedBestMember),
+                    selectedBestEvent: toArr(existingBallot.selectedBestEvent),
+                    selectedRookie: toArr(existingBallot.selectedRookie),
+                    selectedDuo: toArr(existingBallot.selectedDuo),
+                    isSubmitted: existingBallot.isSubmitted,
+                    submittedAt: existingBallot.submittedAt
+                  });
+                  if (existingBallot.isSubmitted) {
+                    navigateTo('submission');
+                    return;
+                  }
+                } else {
+                  if (firestoreBallot === null) {
+                     // DB explicitly says no ballot, wipe any resurrected local state
+                     setVotingState({
+                       userName: name,
+                       userEmail: votingState.userEmail,
+                       userAvatar: votingState.userAvatar,
+                       selectedTeam: undefined,
+                       selectedBestMember: [],
+                       selectedBestEvent: [],
+                       selectedRookie: [],
+                       selectedDuo: [],
+                       isSubmitted: false,
+                       submittedAt: undefined
+                     });
+                  } else {
+                     setVotingState(prev => ({
+                       ...prev,
+                       userName: name
+                     }));
+                  }
+                }
+                navigateTo('team_selection');
+              });
             }}
           />
         )}
