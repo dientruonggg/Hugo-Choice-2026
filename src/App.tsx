@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ScreenStep, VotingState, LiveResultsData } from './types';
 import { INITIAL_LIVE_RESULTS } from './data/mockData';
 import { BackgroundLandscape } from './components/BackgroundLandscape';
@@ -77,8 +77,14 @@ export default function App() {
     return INITIAL_LIVE_RESULTS;
   });
 
+  const isFirstRender = useRef(true);
+
   // Save voting state to localStorage and sync per user (gmail/name + ballot)
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
     try {
       if (votingState.userName || votingState.userEmail) {
         saveUserBallot(votingState);
@@ -97,10 +103,6 @@ export default function App() {
     }
   }, [liveResults]);
 
-  // Auto-sync any previously saved local ballots to Firestore when app mounts
-  useEffect(() => {
-    syncAllLocalBallotsToFirestore().catch(() => {});
-  }, []);
 
 
   // Handle restoring or linking ballot for a logged in Google user
