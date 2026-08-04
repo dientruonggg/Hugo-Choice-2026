@@ -34,6 +34,7 @@ export const AdminLeaderboardModal: React.FC<AdminLeaderboardModalProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'stats' | 'approvals'>('stats');
   const [pendingList, setPendingList] = useState<PendingApproval[]>([]);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -59,8 +60,6 @@ export const AdminLeaderboardModal: React.FC<AdminLeaderboardModalProps> = ({
     savePendingApprovals(updated);
     window.dispatchEvent(new CustomEvent('approvals-updated'));
   };
-
-  const [isSyncing, setIsSyncing] = useState(false);
 
   const handleSyncToFirestore = async () => {
     soundFx.playClick();
