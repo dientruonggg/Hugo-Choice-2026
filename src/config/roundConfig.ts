@@ -22,7 +22,7 @@ export const ROUND_CONFIG: Record<1 | 2, RoundConfig> = {
   2: {
     currentRound: 2,
     requiredVotesPerCategory: 2,
-    showLiveStats: false,
+    showLiveStats: true,
     enableEmail: true,
   }
 };
