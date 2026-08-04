@@ -6,8 +6,8 @@ import { Header } from './components/Header';
 import { BallotDrawer } from './components/BallotDrawer';
 import { AdminLeaderboardModal } from './components/AdminLeaderboardModal';
 import { GoogleAuthModal } from './components/GoogleAuthModal';
-import { subscribeToAuthChanges, logoutGoogle, getBallotFromFirestore } from './utils/firebase';
-import { saveUserBallot, getSavedBallotForUser, syncAllLocalBallotsToFirestore } from './utils/ballotStorage';
+import { subscribeToAuthChanges, logoutGoogle, getBallotFromFirestore, subscribeToBallotsFirestore } from './utils/firebase';
+import { saveUserBallot, getSavedBallotForUser, syncAllLocalBallotsToFirestore, calculateLiveResultsFromBallots } from './utils/ballotStorage';
 
 import { ToastContainer } from './components/ToastContainer';
 
@@ -129,6 +129,16 @@ export default function App() {
     };
     verifyInitialState();
   // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Subscribe to real-time ballots collection in Firestore to keep live results in sync with DB
+  useEffect(() => {
+    const unsubscribe = subscribeToBallotsFirestore((firestoreBallots) => {
+      const calculated = calculateLiveResultsFromBallots(firestoreBallots);
+      setLiveResults(calculated);
+    }, CURRENT_ROUND);
+
+    return () => unsubscribe();
   }, []);
 
 

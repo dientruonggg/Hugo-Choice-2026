@@ -1,4 +1,4 @@
-import { VotingState, HugoTeam } from '../types';
+import { VotingState, HugoTeam, LiveResultsData } from '../types';
 import { saveBallotToFirestore } from './firebase';
 import { CURRENT_ROUND } from '../config/roundConfig';
 
@@ -150,5 +150,59 @@ export async function importBallotsJSON(jsonString: string): Promise<number> {
     console.error('Failed to import ballots JSON:', err);
     throw err;
   }
+}
+
+/**
+ * Dynamically calculate LiveResultsData from an array of ballot records
+ */
+export function calculateLiveResultsFromBallots(ballots: SavedBallotRecord[]): LiveResultsData {
+  const results: LiveResultsData = {
+    totalSubmissions: 0,
+    teams: { prs: 0, hc: 0, bnn: 0, niff: 0 },
+    bestMember: {},
+    bestEvent: {},
+    rookie: {},
+    perfectDuo: {}
+  };
+
+  // Deduplicate by unique user key (email or username)
+  const uniqueBallotsMap: Record<string, SavedBallotRecord> = {};
+  ballots.forEach(b => {
+    const key = (b.userEmail || b.userName || '').toLowerCase().trim();
+    if (key) {
+      uniqueBallotsMap[key] = b;
+    }
+  });
+
+  const uniqueList = Object.values(uniqueBallotsMap);
+
+  const toArr = (val: any): string[] => {
+    if (Array.isArray(val)) return val;
+    if (typeof val === 'string' && val.trim() !== '') return [val];
+    return [];
+  };
+
+  const submittedBallots = uniqueList.filter(b => b.isSubmitted);
+  results.totalSubmissions = submittedBallots.length;
+
+  submittedBallots.forEach(b => {
+    if (b.selectedTeam && results.teams[b.selectedTeam] !== undefined) {
+      results.teams[b.selectedTeam] = (results.teams[b.selectedTeam] || 0) + 1;
+    }
+    toArr(b.selectedBestMember).forEach(id => {
+      if (id) results.bestMember[id] = (results.bestMember[id] || 0) + 1;
+    });
+    toArr(b.selectedBestEvent).forEach(id => {
+      if (id) results.bestEvent[id] = (results.bestEvent[id] || 0) + 1;
+    });
+    toArr(b.selectedRookie).forEach(id => {
+      if (id) results.rookie[id] = (results.rookie[id] || 0) + 1;
+    });
+    toArr(b.selectedDuo).forEach(id => {
+      if (id) results.perfectDuo[id] = (results.perfectDuo[id] || 0) + 1;
+    });
+  });
+
+  return results;
 }
 

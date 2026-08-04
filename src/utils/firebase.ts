@@ -125,6 +125,26 @@ export const subscribeToMomentsFirestore = (onMomentsUpdate: (moments: TeamMomen
   }
 };
 
+export const subscribeToBallotsFirestore = (
+  onBallotsUpdate: (ballots: any[]) => void,
+  roundNum: number = CURRENT_ROUND
+) => {
+  if (!db) return () => {};
+  try {
+    const ballotsRef = collection(db, `ballots_r${roundNum}`);
+    return onSnapshot(ballotsRef, (snapshot) => {
+      const ballotsList: any[] = [];
+      snapshot.forEach((docSnap) => {
+        ballotsList.push(docSnap.data());
+      });
+      onBallotsUpdate(ballotsList);
+    });
+  } catch (err) {
+    console.warn("Firestore ballots subscription error:", err);
+    return () => {};
+  }
+};
+
 
 export interface GoogleUserProfile {
   name: string;
