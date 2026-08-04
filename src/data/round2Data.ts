@@ -10,148 +10,52 @@ export interface Top5Candidate {
 }
 
 export const TOP_5_BEST_MEMBERS: Top5Candidate[] = [
-  {
-    id: 'top5_member_1',
-    name: 'Đào Tiến Huy',
-    teamId: 'prs',
-    image: '/assets/profile_image/TheBestMember/dth.png',
-    description: 'Thành viên năng nổ với cống hiến vượt bậc'
-  },
-  {
-    id: 'top5_member_2',
-    name: 'Nguyễn Tuyết Mai',
-    teamId: 'hc',
-    image: '/assets/profile_image/TheBestMember/ntm.png',
-    description: 'Gương mặt nhiệt huyết và đầy trách nhiệm'
-  },
-  {
-    id: 'top5_member_3',
-    name: 'Trần Anh Khoa',
-    teamId: 'bnn',
-    image: '/assets/profile_image/TheBestMember/tak.png',
-    description: 'Tinh thần sáng tạo và kết nối xuất sắc'
-  },
-  {
-    id: 'top5_member_4',
-    name: 'Trịnh Đông Anh',
-    teamId: 'niff',
-    image: '/assets/profile_image/TheBestMember/tda.png',
-    description: 'Cá nhân bứt phá và tỏa sáng rực rỡ'
-  },
-  {
-    id: 'top5_member_5',
-    name: 'Trần Thị Thanh Thảo',
-    teamId: 'bnn',
-    image: '/assets/profile_image/TheBestMember/tttt.png',
-    description: 'Cống hiến bền bỉ và tạo động lực cho câu lạc bộ'
-  }
+  // BANANA
+  { id: 'top5_member_1', name: 'Nguyễn Trần Uyên Trang', teamId: 'bnn', image: '/assets/profile_image/TheBestMember/ntut.png' },
+  { id: 'top5_member_2', name: 'Bạch Nhật Minh', teamId: 'bnn', image: '/assets/profile_image/TheBestMember/bnm.png' },
+  { id: 'top5_member_3', name: 'Mai Vũ Phúc', teamId: 'bnn', image: '/assets/profile_image/TheBestMember/mvp.png' },
+  { id: 'top5_member_4', name: 'Hồ Thị Mỹ Duyên', teamId: 'bnn', image: '/assets/profile_image/TheBestMember/htmd.png' },
+  { id: 'top5_member_5', name: 'Phạm Phan Bảo Trúc', teamId: 'bnn', image: '/assets/profile_image/TheBestMember/ppbt.png' },
+  // NIFFLER
+  { id: 'top5_member_6', name: 'Lê Long Vũ', teamId: 'niff', image: '/assets/profile_image/TheBestMember/llv.png' },
+  { id: 'top5_member_7', name: 'Nguyễn Thị Thu Hiền', teamId: 'niff', image: '/assets/profile_image/TheBestMember/ntth.png' },
+  { id: 'top5_member_8', name: 'Trần Trương Đức Lộc', teamId: 'niff', image: '/assets/profile_image/TheBestMember/ttdl.png' },
+  { id: 'top5_member_9', name: 'Nguyễn Hữu Hòa Bình', teamId: 'niff', image: '/assets/profile_image/TheBestMember/nhhb.png' },
+  { id: 'top5_member_10', name: 'Trương Thị Trà My', teamId: 'niff', image: '/assets/profile_image/TheBestMember/tttm.png' },
+  // POWER RANGERS
+  { id: 'top5_member_11', name: 'Phạm Thanh Pha', teamId: 'prs', image: '/assets/profile_image/TheBestMember/ptp.png' },
+  { id: 'top5_member_12', name: 'Nguyễn Hữu Lập', teamId: 'prs', image: '/assets/profile_image/TheBestMember/nhl.png' },
+  { id: 'top5_member_13', name: 'Phạm Mạnh Dũng', teamId: 'prs', image: '/assets/profile_image/TheBestMember/pmd.png' },
+  { id: 'top5_member_14', name: 'Trần Dĩ Kha', teamId: 'prs', image: '/assets/profile_image/TheBestMember/tdk.png' },
+  { id: 'top5_member_15', name: 'Nguyễn Tấn Sinh Thời', teamId: 'prs', image: '/assets/profile_image/TheBestMember/ntst.png' },
+  // HEROES COMPANY
+  { id: 'top5_member_16', name: 'Hoàng Bảo Ngọc', teamId: 'hc', image: '/assets/profile_image/TheBestMember/hbn.png' },
+  { id: 'top5_member_17', name: 'Vũ Thanh Trà', teamId: 'hc', image: '/assets/profile_image/TheBestMember/vtt.png' },
+  { id: 'top5_member_18', name: 'Nguyễn Đại Phú', teamId: 'hc', image: '/assets/profile_image/TheBestMember/ndp.png' },
+  { id: 'top5_member_19', name: 'Trương Thị Ngọc Huyền', teamId: 'hc', image: '/assets/profile_image/TheBestMember/ttnh.png' },
+  { id: 'top5_member_20', name: 'Thái Thành Tài', teamId: 'hc', image: '/assets/profile_image/TheBestMember/ttt.png' }
 ];
 
 export const TOP_5_BEST_EVENTS: Top5Candidate[] = [
-  {
-    id: 'top5_event_1',
-    name: 'HUGO CAMPING 2026 - EMBERLINE',
-    image: '/assets/profile_image/TheBestEvent/Camping.png',
-    tag: 'CAMPING RETREAT',
-    description: 'Chuyến dã ngoại đáng nhớ bùng nổ năng lượng'
-  },
-  {
-    id: 'top5_event_2',
-    name: 'WELCOME NEWBIE 2026 - ECLIPSE',
-    image: '/assets/profile_image/TheBestEvent/WN.png',
-    tag: 'WELCOME EVENT',
-    description: 'Sự kiện chào đón tân binh ấn tượng'
-  },
-  {
-    id: 'top5_event_3',
-    name: 'HUGO WORKSHOP - INSIDER SECRETS',
-    image: '/assets/profile_image/TheBestEvent/Workshop.png',
-    tag: 'WORKSHOP',
-    description: 'Buổi chia sẻ kỹ năng chuyên sâu'
-  },
-  {
-    id: 'top5_event_4',
-    name: 'ANGEL & DEMON NIGHT',
-    image: '/assets/profile_image/TheBestEvent/angel.png',
-    tag: 'NIGHT EVENT',
-    description: 'Đêm tiệc giao lưu bùng nổ cảm xúc'
-  },
-  {
-    id: 'top5_event_5',
-    name: 'YEAR IN INK 2026',
-    image: '/assets/profile_image/TheBestEvent/yearinink.png',
-    tag: 'CELEBRATION',
-    description: 'Sự kiện tổng kết & vinh danh dấu ấn'
-  }
+  { id: 'top5_event_1', name: 'HUGO CAMPING 2026 - EMBERLINE', image: '/assets/profile_image/TheBestEvent/HC26-E.png', tag: 'CAMPING RETREAT' },
+  { id: 'top5_event_2', name: 'HUGO CHRISTMAS 2025 - THE GOLDEN HOUR', image: '/assets/profile_image/TheBestEvent/HC25-TGH.png', tag: 'CHRISTMAS EVENT' },
+  { id: 'top5_event_3', name: 'WELCOME NEWBIE 2026 - ECLIPSE', image: '/assets/profile_image/TheBestEvent/WN26-E.png', tag: 'WELCOME EVENT' },
+  { id: 'top5_event_4', name: 'ONLINE TALKSHOW - TẤM VÉ VIỄN PHƯƠNG', image: '/assets/profile_image/TheBestEvent/OT-TVVP.png', tag: 'TALKSHOW' },
+  { id: 'top5_event_5', name: 'WELCOME NEWBIE 2025 - FLAREON', image: '/assets/profile_image/TheBestEvent/WN25-F.png', tag: 'WELCOME EVENT' }
 ];
 
 export const TOP_5_ROOKIES: Top5Candidate[] = [
-  {
-    id: 'top5_rookie_1',
-    name: 'Huỳnh Tiến Phát',
-    teamId: 'prs',
-    image: '/assets/profile_image/TheRookie/htp.png',
-    description: 'Tân binh triển vọng và bứt phá mạnh mẽ'
-  },
-  {
-    id: 'top5_rookie_2',
-    name: 'Nguyễn Thị Uyên Trang',
-    teamId: 'hc',
-    image: '/assets/profile_image/TheRookie/ntut.png',
-    description: 'Thế hệ Gen mới tràn đầy năng lượng'
-  },
-  {
-    id: 'top5_rookie_3',
-    name: 'Phạm Thị Quỳnh Trang',
-    teamId: 'bnn',
-    image: '/assets/profile_image/TheRookie/ptqt.png',
-    description: 'Tích cực tham gia mọi hoạt động CLB'
-  },
-  {
-    id: 'top5_rookie_4',
-    name: 'Trần Minh Triết',
-    teamId: 'niff',
-    image: '/assets/profile_image/TheRookie/tmt.png',
-    description: 'Gương mặt tân binh tài năng và sáng tạo'
-  },
-  {
-    id: 'top5_rookie_5',
-    name: 'Trần Thị Thuý Linh',
-    teamId: 'bnn',
-    image: '/assets/profile_image/TheRookie/tttl.png',
-    description: 'Sự xuất hiện nổi bật trong thế hệ mới'
-  }
+  { id: 'top5_rookie_1', name: 'Lê Long Vũ', teamId: 'niff', image: '/assets/profile_image/TheRookie/llv.png' },
+  { id: 'top5_rookie_2', name: 'Nguyễn Đại Phú', teamId: 'hc', image: '/assets/profile_image/TheRookie/ndp.png' },
+  { id: 'top5_rookie_3', name: 'Thái Thành Tài', teamId: 'hc', image: '/assets/profile_image/TheRookie/ttt.png' },
+  { id: 'top5_rookie_4', name: 'Huỳnh Thị Thanh Lịch', teamId: 'prs', image: '/assets/profile_image/TheRookie/httl.png' },
+  { id: 'top5_rookie_5', name: 'Nguyễn Tấn Sinh Thời', teamId: 'prs', image: '/assets/profile_image/TheRookie/ntst.png' }
 ];
 
 export const TOP_5_PERFECT_DUOS: Top5Candidate[] = [
-  {
-    id: 'top5_duo_1',
-    name: 'Đông Anh & Lê Khanh',
-    image: '/assets/profile_image/PerfectDuo/DA-LK.png',
-    description: 'Bộ đôi ăn ý & đồng hành tích cực'
-  },
-  {
-    id: 'top5_duo_2',
-    name: 'Hữu Phước & Hồng Giang',
-    image: '/assets/profile_image/PerfectDuo/Phuoc-Giang.png',
-    description: 'Cặp cạ cứng tạo nên nhiều dấu ấn'
-  },
-  {
-    id: 'top5_duo_3',
-    name: 'Tuấn Anh & Nhật Quang',
-    image: '/assets/profile_image/PerfectDuo/TA-QN.png',
-    description: 'Đồng đội nhịp nhàng trong mọi sự kiện'
-  },
-  {
-    id: 'top5_duo_4',
-    name: 'Phương Uyên & Anh Khoa',
-    image: '/assets/profile_image/PerfectDuo/Uyen-Khoa.png',
-    description: 'Bộ đôi kết hợp ăn ý và sáng tạo'
-  },
-  {
-    id: 'top5_duo_5',
-    name: 'Trần Võ & Văn Thiện',
-    image: '/assets/profile_image/PerfectDuo/Vo-Thien.png',
-    description: 'Cặp đôi năng nổ và hết mình'
-  }
+  { id: 'top5_duo_1', name: 'Huỳnh Thị Thanh Lịch & Trần Dĩ Kha', image: '/assets/profile_image/PerfectDuo/Lich-Kha.png' },
+  { id: 'top5_duo_2', name: 'Đoàn Thanh Hậu & Hoàng Bảo Ngọc', image: '/assets/profile_image/PerfectDuo/Hau-Ngoc.png' },
+  { id: 'top5_duo_3', name: 'Nguyễn Thị Thu Hiền & Trần Quốc Thái', image: '/assets/profile_image/PerfectDuo/Hien-Thai.png' },
+  { id: 'top5_duo_4', name: 'Nguyễn Hữu Lập & Phạm Thanh Pha', image: '/assets/profile_image/PerfectDuo/Lap-Pha.png' },
+  { id: 'top5_duo_5', name: 'Lê Long Vũ & Nguyễn Hữu Hòa Bình', image: '/assets/profile_image/PerfectDuo/Vu-Binh.png' }
 ];
